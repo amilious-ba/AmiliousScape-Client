@@ -81,10 +81,25 @@ public final class DisplayMode {
 			GlRenderer.quit();
 		}
 		if (GameShell.fullScreenFrame != null && (arg1 != 3 || arg4 != Preferences.fullScreenWidth || arg5 != Preferences.fullScreenHeight)) {
+			// Hide windowed frame before exiting fullscreen to prevent visible resizing/repositioning
+			if (GameShell.frame != null) {
+				GameShell.frame.setVisible(false);
+			}
 			exitFullScreen(GameShell.fullScreenFrame, GameShell.signLink);
 			GameShell.fullScreenFrame = null;
 		}
 		if (arg1 == 3 && GameShell.fullScreenFrame == null) {
+			// Save current windowed size and position before entering fullscreen (only once)
+			if (GameShell.frame != null && mode != 3 && GameShell.windowedFrameWidth == 0) {
+				@Pc(87) java.awt.Dimension currentSize = GameShell.frame.getSize();
+				@Pc(88) java.awt.Insets insets = GameShell.frame.getInsets();
+				@Pc(89) java.awt.Point location = GameShell.frame.getLocation();
+				GameShell.windowedFrameWidth = currentSize.width - insets.left - insets.right;
+				GameShell.windowedFrameHeight = currentSize.height - insets.top - insets.bottom;
+				GameShell.windowedFrameX = location.x;
+				GameShell.windowedFrameY = location.y;
+				System.out.println("Saved windowed size: " + GameShell.windowedFrameWidth + "x" + GameShell.windowedFrameHeight + " at " + GameShell.windowedFrameX + "," + GameShell.windowedFrameY);
+			}
 			GameShell.fullScreenFrame = method3176(0, arg5, arg4, GameShell.signLink);
 			if (GameShell.fullScreenFrame != null) {
 				Preferences.fullScreenHeight = arg5;
@@ -104,8 +119,15 @@ public final class DisplayMode {
 		} else {
 			local85 = GameShell.frame;
 		}
-		GameShell.frameWidth = local85.getSize().width;
-		GameShell.frameHeight = local85.getSize().height;
+		// Restore windowed size when exiting fullscreen, otherwise use current container size
+		if (GameShell.fullScreenFrame == null && GameShell.windowedFrameWidth > 0 && mode == 3) {
+			GameShell.frameWidth = GameShell.windowedFrameWidth;
+			GameShell.frameHeight = GameShell.windowedFrameHeight;
+			System.out.println("Restoring windowed size: " + GameShell.frameWidth + "x" + GameShell.frameHeight);
+		} else {
+			GameShell.frameWidth = local85.getSize().width;
+			GameShell.frameHeight = local85.getSize().height;
+		}
 		@Pc(109) Insets local109;
 		if (GameShell.frame == local85) {
 			local109 = GameShell.frame.getInsets();
@@ -248,7 +270,8 @@ public final class DisplayMode {
 			label52:
 			for (@Pc(24) int local24 = 0; local24 < local16.length; local24++) {
 				@Pc(32) DisplayMode local32 = local16[local24];
-				if ((local32.bitDepth <= 0 || local32.bitDepth >= 24) && local32.width >= 800 && local32.height >= 600) {
+				// Filter to minimum 1024x768 to avoid mouse coordinate issues and poor quality on modern monitors
+				if ((local32.bitDepth <= 0 || local32.bitDepth >= 24) && local32.width >= 1024 && local32.height >= 768) {
 					for (@Pc(52) int local52 = 0; local52 < local22; local52++) {
 						@Pc(59) DisplayMode local59 = local20[local52];
 						if (local32.width == local59.width && local59.height == local32.height) {

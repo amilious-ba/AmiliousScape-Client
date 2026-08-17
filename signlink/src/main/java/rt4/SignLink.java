@@ -6,6 +6,7 @@ import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
+//noinspection removal
 import java.applet.Applet;
 import java.awt.*;
 import java.io.DataInputStream;
@@ -22,6 +23,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Hashtable;
 
 @OriginalClass("signlink!ll")
+@SuppressWarnings("removal")
 public final class SignLink implements Runnable {
 
 	@OriginalMember(owner = "signlink!ll", name = "o", descriptor = "Ljava/lang/String;")
@@ -428,6 +430,9 @@ public final class SignLink implements Runnable {
 				} else if (type == 17) {
 					args = (Object[]) request.objectArg;
 					this.cursorManager.setCursor((Point) args[2], request.intArg2, (Component) args[0], request.intArg1, (int[]) args[1]);
+				} else if (type == 18) {
+					// Get native display mode
+					request.result = this.fullScreenManager.getNativeDisplayMode();
 				} else if (type == 16) {
 					try {
 						if (!osName.startsWith("win")) {
@@ -538,5 +543,14 @@ public final class SignLink implements Runnable {
 	@OriginalMember(owner = "signlink!ll", name = "a", descriptor = "(B)Lsignlink!im;")
 	public final PrivilegedRequest getDisplayModes() {
 		return this.enqueue(5, 0, null, 0);
+	}
+
+	/**
+	 * Gets the native (current) display resolution of the monitor.
+	 * Use this to auto-select the best fullscreen resolution.
+	 * @return PrivilegedRequest that will contain int[] of [width, height, bitDepth, refreshRate]
+	 */
+	public final PrivilegedRequest getNativeDisplayMode() {
+		return this.enqueue(18, 0, null, 0);
 	}
 }

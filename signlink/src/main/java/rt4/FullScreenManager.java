@@ -36,27 +36,15 @@ public final class FullScreenManager {
 
 	@OriginalMember(owner = "signlink!e", name = "a", descriptor = "(Ljava/awt/Frame;B)V")
 	private void setFullScreenWindow(@OriginalArg(0) Frame frame) {
-		@Pc(1) boolean wasValid = false;
-		try {
-			@Pc(6) Field valid = Class.forName("sun.awt.Win32GraphicsDevice").getDeclaredField("valid");
-			valid.setAccessible(true);
-			@Pc(16) boolean v = (Boolean) valid.get(this.device);
-			if (v) {
-				valid.set(this.device, Boolean.FALSE);
-				wasValid = true;
-			}
-		} catch (@Pc(27) Throwable ex) {
-		}
+		// Java 11+ fix: Direct call without reflection hacks
+		// The old code tried to access internal sun.awt.Win32GraphicsDevice fields
+		// which is blocked by the module system in Java 11+
 		try {
 			this.device.setFullScreenWindow(frame);
-		} finally {
-			if (wasValid) {
-				try {
-					@Pc(66) Field valid = Class.forName("sun.awt.Win32GraphicsDevice").getDeclaredField("valid");
-					valid.set(this.device, Boolean.TRUE);
-				} catch (@Pc(73) Throwable ex) {
-				}
-			}
+		} catch (@Pc(27) Throwable ex) {
+			// If fullscreen fails, log the error
+			System.err.println("Failed to set fullscreen window: " + ex.getMessage());
+			ex.printStackTrace();
 		}
 	}
 
@@ -112,5 +100,20 @@ public final class FullScreenManager {
 			this.previousDisplayMode = null;
 		}
 		this.setFullScreenWindow(null);
+	}
+
+	/**
+	 * Gets the native (current) display mode of the monitor.
+	 * This is the monitor's native resolution and should be used as the default for fullscreen.
+	 * @return Array containing [width, height, bitDepth, refreshRate]
+	 */
+	public final int[] getNativeDisplayMode() {
+		DisplayMode currentMode = this.device.getDisplayMode();
+		return new int[] {
+			currentMode.getWidth(),
+			currentMode.getHeight(),
+			currentMode.getBitDepth(),
+			currentMode.getRefreshRate()
+		};
 	}
 }

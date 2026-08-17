@@ -5,6 +5,7 @@ import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
+//noinspection removal
 import java.applet.Applet;
 import java.awt.*;
 import java.net.MalformedURLException;
@@ -671,6 +672,7 @@ public final class JagString implements StringInterface {
 	}
 
 	@OriginalMember(owner = "client!na", name = "a", descriptor = "(ZLjava/applet/Applet;)V")
+	@SuppressWarnings("removal")
 	public final void method3134(@OriginalArg(1) Applet arg0) throws Throwable {
 		@Pc(16) String local16 = new String(this.chars, 0, this.length);
 		BrowserControl.eval(arg0, local16);
@@ -1009,6 +1011,7 @@ public final class JagString implements StringInterface {
 	}
 
 	@OriginalMember(owner = "client!na", name = "a", descriptor = "(BLjava/applet/Applet;)Lclient!na;")
+	@SuppressWarnings("removal")
 	public final JagString fromParameters(@OriginalArg(1) Applet arg0) {
 		@Pc(19) String local19 = new String(this.chars, 0, this.length);
 		@Pc(23) String local23 = arg0.getParameter(local19);
@@ -1044,6 +1047,7 @@ public final class JagString implements StringInterface {
 	}
 
 	@OriginalMember(owner = "client!na", name = "a", descriptor = "(ILjava/applet/Applet;)Ljava/lang/Object;")
+	@SuppressWarnings("removal")
 	public final Object browserControlCall(@OriginalArg(1) Applet arg0) throws Throwable {
 		@Pc(12) String local12 = new String(this.chars, 0, this.length);
 		@Pc(17) Object local17 = BrowserControl.call(local12, arg0);

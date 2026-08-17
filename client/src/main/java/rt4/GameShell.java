@@ -5,7 +5,9 @@ import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 
+//noinspection removal
 import java.applet.Applet;
+//noinspection removal
 import java.applet.AppletContext;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,6 +15,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 
 @OriginalClass("client!rc")
+@SuppressWarnings("removal")
 public abstract class GameShell extends Applet implements Runnable, FocusListener, WindowListener {
 
 	@OriginalMember(owner = "client!sh", name = "l", descriptor = "[J")
@@ -38,6 +41,12 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 	@OriginalMember(owner = "client!fh", name = "Y", descriptor = "Ljava/awt/Frame;")
 	public static Frame fullScreenFrame;
+
+	// Store windowed mode size and position before entering fullscreen
+	public static int windowedFrameWidth = 0;
+	public static int windowedFrameHeight = 0;
+	public static int windowedFrameX = 0;
+	public static int windowedFrameY = 0;
 
 	@OriginalMember(owner = "client!dl", name = "d", descriptor = "I")
 	public static int canvasWidth;
@@ -295,6 +304,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 	@OriginalMember(owner = "client!rc", name = "getAppletContext", descriptor = "()Ljava/applet/AppletContext;")
 	@Override
+	@SuppressWarnings("removal")
 	public final AppletContext getAppletContext() {
 		if (frame == null) {
 			return signLink == null || signLink.applet == this ? super.getAppletContext() : signLink.applet.getAppletContext();
@@ -340,8 +350,18 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		canvas.setSize(canvasWidth, canvasHeight);
 		canvas.setVisible(true);
 		if (container == frame) {
+			// Hide frame during resize/reposition to prevent flickering
+			frame.setVisible(false);
+
 			@Pc(66) Insets insets = frame.getInsets();
 			canvas.setLocation(leftMargin + insets.left, insets.top + topMargin);
+			// Resize and reposition frame to match the restored window size and position (fixes size/position after fullscreen exit)
+			frame.setSize(insets.left + frameWidth + insets.right, insets.top + frameHeight + insets.bottom);
+			if (windowedFrameX > 0 && windowedFrameY > 0) {
+				frame.setLocation(windowedFrameX, windowedFrameY);
+			}
+
+			frame.setVisible(true);
 		} else {
 			canvas.setLocation(leftMargin, topMargin);
 		}
@@ -683,11 +703,12 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			frame.setTitle("Jagex");
 			frame.setResizable(true);
 			frame.addWindowListener(this);
-			frame.setVisible(true);
 			frame.setBackground(Color.black);
-			frame.toFront();
 			@Pc(44) Insets insets = frame.getInsets();
 			frame.setSize(insets.left + frameWidth + insets.right, insets.top + frameHeight + insets.bottom);
+			frame.setLocationRelativeTo(null); // Center before making visible
+			frame.setVisible(true);
+			frame.toFront();
                         configureTargetFPS();
 			signLink2 = signLink = new SignLink(null, cacheId, cacheSubDir, 28);
 			@Pc(76) PrivilegedRequest request = signLink.startThread(1, this);

@@ -3,8 +3,10 @@ package rt4;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 
+//noinspection removal
 import java.applet.Applet;
 
+@SuppressWarnings("removal")
 public final class BrowserControl {
 
 	@OriginalMember(owner = "client!gh", name = "a", descriptor = "(Ljava/lang/String;BLjava/applet/Applet;)Ljava/lang/Object;")

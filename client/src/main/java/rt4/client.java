@@ -277,8 +277,7 @@ public final class client extends GameShell {
 			@Pc(146) client c = new client();
 			instance = c;
 			c.startApplication(modeWhat + 32, "runescape");
-			GameShell.frame.setLocationRelativeTo(null);
-			GameShell.frame.setSize(1024, 768); // set a reasonable size by default
+			// Note: Centering is now done in GameShell.startApplication() before window is visible
 		} catch (@Pc(167) Exception ex) {
 			TracingException.report(null, ex);
 		}
@@ -946,6 +945,7 @@ public final class client extends GameShell {
 		}
 
 		Preferences.read(GameShell.signLink);
+		Preferences.initializeNativeFullscreenResolution(GameShell.signLink);
 
 		if (modeWhere == 0) {
 			worldListHostname = GlobalConfig.DEFAULT_HOSTNAME; // this.getCodeBase().getHost();

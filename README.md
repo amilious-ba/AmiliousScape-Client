@@ -28,9 +28,3 @@ You must keep the project open source and provide corresponding source when dist
 - Java 8+ (SD mode)
 - HD mode on Windows currently works best with Java 15 or lower (JOGL WGL context issue on newer JDKs)
 - Gradle (wrapper included)
-
-```bash
-git clone https://github.com/amilious-ba/AmiliousScape-Client.git
-cd AmiliousScape-Client
-./gradlew run          # Linux/macOS
-gradlew.bat run        # Windows

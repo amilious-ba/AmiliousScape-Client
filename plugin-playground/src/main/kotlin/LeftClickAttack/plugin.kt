@@ -13,7 +13,7 @@ class plugin : Plugin() {
     override fun OnMiniMenuCreate(currentEntries: Array<out MiniMenuEntry>?) {
         if (currentEntries == null) return
         for (entry in currentEntries) {
-            if(entry.verb.toLowerCase() == "attack" && entry.isStrictlySecondary)
+            if(entry.verb.lowercase() == "attack" && entry.isStrictlySecondary)
                 entry.toggleStrictlySecondary()
         }
     }

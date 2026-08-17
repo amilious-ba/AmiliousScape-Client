@@ -1,12 +1,18 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23'
 }
 
 version 'unspecified'
 
-targetCompatibility = 1.8
-sourceCompatibility = 1.8
+targetCompatibility = 11
+sourceCompatibility = 11
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
 
 repositories {
     mavenCentral()
@@ -16,7 +22,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation(rootProject.project("client"))
-    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.23'
 }
 
 test {

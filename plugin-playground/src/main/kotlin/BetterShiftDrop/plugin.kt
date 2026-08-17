@@ -20,7 +20,7 @@ class plugin : Plugin() {
         if(currentEntries == null) return
         if(API.IsKeyPressed(Keyboard.KEY_SHIFT)) {
             for(entry in currentEntries) {
-                if(entry.verb.toLowerCase() == "drop" || entry.verb.toLowerCase() == "destroy") continue
+                if(entry.verb.lowercase() == "drop" || entry.verb.lowercase() == "destroy") continue
                 if(!entry.isStrictlySecondary) entry.toggleStrictlySecondary()
             }
         }

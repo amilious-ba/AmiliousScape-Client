@@ -1,14 +1,20 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23'
 }
 
 mainClassName = 'rt4.client'
 version = '1.0.0'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 11
+targetCompatibility = 11
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -39,7 +45,7 @@ dependencies {
     implementation 'lib:jogl-all-natives-macosx-universal'
     implementation 'lib:jogl-all-natives-android-aarch64'
 
-    runtime 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10'
+    runtimeOnly 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.23'
 }
 
 jar {

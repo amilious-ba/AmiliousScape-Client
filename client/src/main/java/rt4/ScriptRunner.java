@@ -226,17 +226,17 @@ public final class ScriptRunner {
 		@Pc(59) int local59;
 		@Pc(57) int local57;
 		if (Camera.cameraType == 1) {
-			local57 = Camera.anInt5161 + (int) Camera.yawTarget & 0x7FF;
+			local57 = Camera.cameraOffsetY + (int) Camera.yawTarget & 0x7FF;
 			local59 = (int) Camera.pitchTarget;
-			if (local59 < Camera.anInt5245 / 256) {
-				local59 = Camera.anInt5245 / 256;
+			if (local59 < Camera.maxCameraHeight / 256) {
+				local59 = Camera.maxCameraHeight / 256;
 			}
 			if (Camera.customCameraActive[4] && Camera.cameraAmplitude[4] + 128 > local59) {
 				local59 = Camera.cameraAmplitude[4] + 128;
 			}
 			Camera.method555(Camera.cameraX, arg0, SceneGraph.getTileHeight(Player.plane, PlayerList.self.xFine, PlayerList.self.zFine) - 50, Camera.ZOOM - -(local59 * 3), local57, Camera.cameraZ, local59);
 		}
-		local57 = Camera.anInt40;
+		local57 = Camera.renderY;
 		local59 = Camera.renderX;
 		@Pc(121) int local121 = Camera.renderZ;
 		@Pc(123) int local123 = Camera.cameraPitch;
@@ -262,7 +262,7 @@ public final class ScriptRunner {
 					Camera.renderZ += local171;
 				}
 				if (local127 == 1) {
-					Camera.anInt40 += local171;
+					Camera.renderY += local171;
 				}
 				if (local127 == 0) {
 					Camera.renderX += local171;
@@ -309,9 +309,9 @@ public final class ScriptRunner {
 			}
 			LightingManager.method2394(client.loop, !Preferences.flickeringEffectsOn);
 			GlRenderer.clearColorAndDepthBuffers(local171);
-			MaterialManager.method2731(Camera.cameraPitch, Camera.renderZ, Camera.anInt40, Camera.renderX, Camera.cameraYaw);
+			MaterialManager.method2731(Camera.cameraPitch, Camera.renderZ, Camera.renderY, Camera.renderX, Camera.cameraYaw);
 			GlRenderer.anInt5323 = client.loop;
-			SceneGraph.method2954(Camera.renderX, Camera.anInt40, Camera.renderZ, Camera.cameraPitch, Camera.cameraYaw, aByteArrayArrayArray15, anIntArray205, anIntArray338, anIntArray518, anIntArray134, anIntArray476, Player.plane + 1, local387, PlayerList.self.xFine >> 7, PlayerList.self.zFine >> 7);
+			SceneGraph.method2954(Camera.renderX, Camera.renderY, Camera.renderZ, Camera.cameraPitch, Camera.cameraYaw, aByteArrayArrayArray15, anIntArray205, anIntArray338, anIntArray518, anIntArray134, anIntArray476, Player.plane + 1, local387, PlayerList.self.xFine >> 7, PlayerList.self.zFine >> 7);
 			aBoolean299 = true;
 			LightingManager.method2390();
 			MaterialManager.method2731(0, 0, 0, 0, 0);
@@ -321,7 +321,7 @@ public final class ScriptRunner {
 			MiniMap.method4000(arg3, arg2, arg0, anInt5029, anInt5029, arg4);
 		} else {
 			SoftwareRaster.fillRect(arg2, arg4, arg3, arg0, 0);
-			SceneGraph.method2954(Camera.renderX, Camera.anInt40, Camera.renderZ, Camera.cameraPitch, Camera.cameraYaw, aByteArrayArrayArray15, anIntArray205, anIntArray338, anIntArray518, anIntArray134, anIntArray476, Player.plane + 1, local387, PlayerList.self.xFine >> 7, PlayerList.self.zFine >> 7);
+			SceneGraph.method2954(Camera.renderX, Camera.renderY, Camera.renderZ, Camera.cameraPitch, Camera.cameraYaw, aByteArrayArrayArray15, anIntArray205, anIntArray338, anIntArray518, anIntArray134, anIntArray476, Player.plane + 1, local387, PlayerList.self.xFine >> 7, PlayerList.self.zFine >> 7);
 			client.audioLoop();
 			method3858();
 			drawOverheads(arg4, arg3, arg2, 256, arg0, 256);
@@ -331,7 +331,7 @@ public final class ScriptRunner {
 		Player.method2310(arg3, arg4, arg0, arg2);
 		Camera.cameraPitch = local123;
 		Camera.renderZ = local121;
-		Camera.anInt40 = local57;
+		Camera.renderY = local57;
 		Camera.renderX = local59;
 		Camera.cameraYaw = local125;
 		if (aBoolean43 && client.js5NetQueue.getUrgentRequestCount() == 0) {
@@ -1245,7 +1245,7 @@ public final class ScriptRunner {
 		}
 		@Pc(38) int local38 = SceneGraph.getTileHeight(Player.plane, arg5, arg2) - arg3;
 		@Pc(42) int local42 = arg2 - Camera.renderZ;
-		@Pc(46) int local46 = local38 - Camera.anInt40;
+		@Pc(46) int local46 = local38 - Camera.renderY;
 		@Pc(50) int local50 = arg5 - Camera.renderX;
 		@Pc(54) int local54 = MathUtils.sin[Camera.cameraPitch];
 		@Pc(58) int local58 = MathUtils.cos[Camera.cameraPitch];
@@ -1340,7 +1340,7 @@ public final class ScriptRunner {
 		}
 		if (Camera.cameraType != 1) {
 			local33 = SceneGraph.getTileHeight(Player.plane, Camera.renderX, Camera.renderZ);
-			if (local33 - Camera.anInt40 < 800 && (SceneGraph.renderFlags[Player.plane][Camera.renderX >> 7][Camera.renderZ >> 7] & 0x4) != 0) {
+			if (local33 - Camera.renderY < 800 && (SceneGraph.renderFlags[Player.plane][Camera.renderX >> 7][Camera.renderZ >> 7] & 0x4) != 0) {
 				method4348(false, Camera.renderX >> 7, Camera.renderZ >> 7, SceneGraph.tiles, 1);
 			}
 			return;

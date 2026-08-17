@@ -417,12 +417,12 @@ public class Cs1ScriptRunner {
 									continue;
 								}
 								local276 -= component.height / 2;
-								memory = (int) Camera.yawTarget + MiniMap.anInt1814 & 0x7FF;
+								memory = (int) Camera.yawTarget + MiniMap.minimapOffsetY & 0x7FF;
 								local270 -= component.width / 2;
 								color = MathUtils.sin[memory];
 								cardMemory = MathUtils.cos[memory];
-								color = (MiniMap.anInt4130 + 256) * color >> 8;
-								cardMemory = (MiniMap.anInt4130 + 256) * cardMemory >> 8;
+								color = (MiniMap.minimapOffsetX + 256) * color >> 8;
+								cardMemory = (MiniMap.minimapOffsetX + 256) * cardMemory >> 8;
 								objId = cardMemory * local276 - color * local270 >> 11;
 								local556 = local276 * color + local270 * cardMemory >> 11;
 								local563 = PlayerList.self.xFine + local556 >> 7;

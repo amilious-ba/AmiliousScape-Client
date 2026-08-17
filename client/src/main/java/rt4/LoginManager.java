@@ -806,10 +806,10 @@ public class LoginManager {
 		if (arg4) {
 			Camera.renderX -= local86 * 128;
 			Camera.renderZ -= local81 * 128;
-			Camera.anInt4232 -= local81;
-			Camera.anInt5449 -= local86;
-			Camera.anInt5765 -= local81;
-			Camera.anInt5375 -= local86;
+			Camera.cameraTargetTileZ -= local81;
+			Camera.cameraLookAtTileX -= local86;
+			Camera.cameraLookAtTileZ -= local81;
+			Camera.cameraTargetTileX -= local86;
 		} else {
 			Camera.cameraType = 1;
 		}

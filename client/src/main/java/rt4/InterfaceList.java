@@ -1094,8 +1094,8 @@ public class InterfaceList {
 			return;
 		}
 		if (Camera.cameraType == 2) {
-			Camera.renderX = Camera.anInt5375 << 7;
-			Camera.renderZ = Camera.anInt4232 << 7;
+			Camera.renderX = Camera.cameraTargetTileX << 7;
+			Camera.renderZ = Camera.cameraTargetTileZ << 7;
 		} else {
 			Camera.updateLoginScreenCamera();
 		}

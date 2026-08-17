@@ -2912,54 +2912,54 @@ public class Protocol {
 												anInt3486 = 0;
 												modelId = (int) (Math.random() * 8.0D);
 												if ((modelId & 0x4) == 4) {
-													Camera.anInt5161 += anInt4941;
+													Camera.cameraOffsetY += anInt4941;
 												}
 												if ((modelId & 0x2) == 2) {
-													Camera.anInt4774 += anInt659;
+													Camera.cameraOffsetZ += anInt659;
 												}
 												if ((modelId & 0x1) == 1) {
-													Camera.anInt3291 += Camera.anInt4229;
+													Camera.cameraOffsetX += Camera.anInt4229;
 												}
 											}
 											if (MiniMap.anInt2252 > 500) {
 												MiniMap.anInt2252 = 0;
 												modelId = (int) (Math.random() * 8.0D);
 												if ((modelId & 0x1) == 1) {
-													MiniMap.anInt1814 += MiniMap.anInt5755;
+													MiniMap.minimapOffsetY += MiniMap.minimapZoom;
 												}
 												if ((modelId & 0x2) == 2) {
-													MiniMap.anInt4130 += MiniMap.anInt4262;
+													MiniMap.minimapOffsetX += MiniMap.minimapRotation;
 												}
 											}
-											if (Camera.anInt3291 < -50) {
+											if (Camera.cameraOffsetX < -50) {
 												Camera.anInt4229 = 2;
 											}
-											if (MiniMap.anInt1814 < -60) {
-												MiniMap.anInt5755 = 2;
+											if (MiniMap.minimapOffsetY < -60) {
+												MiniMap.minimapZoom = 2;
 											}
-											if (MiniMap.anInt4130 < -20) {
-												MiniMap.anInt4262 = 1;
+											if (MiniMap.minimapOffsetX < -20) {
+												MiniMap.minimapRotation = 1;
 											}
-											if (Camera.anInt4774 < -55) {
+											if (Camera.cameraOffsetZ < -55) {
 												anInt659 = 2;
 											}
-											if (Camera.anInt4774 > 55) {
+											if (Camera.cameraOffsetZ > 55) {
 												anInt659 = -2;
 											}
-											if (Camera.anInt5161 < -40) {
+											if (Camera.cameraOffsetY < -40) {
 												anInt4941 = 1;
 											}
-											if (Camera.anInt3291 > 50) {
+											if (Camera.cameraOffsetX > 50) {
 												Camera.anInt4229 = -2;
 											}
-											if (Camera.anInt5161 > 40) {
+											if (Camera.cameraOffsetY > 40) {
 												anInt4941 = -1;
 											}
-											if (MiniMap.anInt4130 > 10) {
-												MiniMap.anInt4262 = -1;
+											if (MiniMap.minimapOffsetX > 10) {
+												MiniMap.minimapRotation = -1;
 											}
-											if (MiniMap.anInt1814 > 60) {
-												MiniMap.anInt5755 = -2;
+											if (MiniMap.minimapOffsetY > 60) {
+												MiniMap.minimapZoom = -2;
 											}
 											if (anInt3251 > 50) {
 												outboundBuffer.p1isaac(93);

@@ -556,20 +556,20 @@ public final class client extends GameShell {
 			Chat.messages[local3506] = null;
 		}
 		MiniMenu.anInt5014 = 0;
-		Camera.anInt3291 = (int) (Math.random() * 100.0D) - 50;
+		Camera.cameraOffsetX = (int) (Math.random() * 100.0D) - 50;
 		LoginManager.mapFlagZ = 0;
 		Camera.yawTarget = (int) (Math.random() * 20.0D) - 10 & 0x7FF;
 		LightingManager.anInt2875 = -1;
 		PlayerList.size = 0;
 		MiniMap.state = 0;
-		Camera.anInt4774 = (int) (Math.random() * 110.0D) - 55;
+		Camera.cameraOffsetZ = (int) (Math.random() * 110.0D) - 55;
 		MiniMenu.aBoolean302 = false;
-		MiniMap.anInt4130 = (int) (Math.random() * 30.0D) - 20;
+		MiniMap.minimapOffsetX = (int) (Math.random() * 30.0D) - 20;
 		SoundPlayer.size = 0;
 		LoginManager.mapFlagX = 0;
-		MiniMap.anInt1814 = (int) (Math.random() * 120.0D) - 60;
+		MiniMap.minimapOffsetY = (int) (Math.random() * 120.0D) - 60;
 		Chat.size = 0;
-		Camera.anInt5161 = (int) (Math.random() * 80.0D) - 40;
+		Camera.cameraOffsetY = (int) (Math.random() * 80.0D) - 40;
 		NpcList.size = 0;
 		for (local3506 = 0; local3506 < 2048; local3506++) {
 			PlayerList.players[local3506] = null;
@@ -595,16 +595,16 @@ public final class client extends GameShell {
 		FriendsList.size = 0;
 		VarpDomain.reset();
 		DelayedStateChange.clear();
-		Camera.anInt5230 = 0;
-		Camera.anInt5217 = 0;
-		Camera.anInt5765 = 0;
-		Camera.anInt5203 = 0;
-		Camera.anInt4232 = 0;
-		Camera.anInt5375 = 0;
-		Camera.anInt1744 = 0;
-		Camera.anInt5449 = 0;
-		Camera.anInt4612 = 0;
-		Camera.anInt5225 = 0;
+		Camera.cameraAcceleration = 0;
+		Camera.cameraSpeed = 0;
+		Camera.cameraLookAtTileZ = 0;
+		Camera.cameraTargetHeight = 0;
+		Camera.cameraTargetTileZ = 0;
+		Camera.cameraTargetTileX = 0;
+		Camera.cameraLookAtHeight = 0;
+		Camera.cameraLookAtTileX = 0;
+		Camera.cameraSpeedMultiplier = 0;
+		Camera.cameraMinSpeed = 0;
 		for (local3506 = 0; local3506 < VarcDomain.varcs.length; local3506++) {
 			VarcDomain.varcs[local3506] = -1;
 		}

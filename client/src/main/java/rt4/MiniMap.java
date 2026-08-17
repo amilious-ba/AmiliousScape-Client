@@ -28,13 +28,13 @@ public class MiniMap {
 	@OriginalMember(owner = "client!wb", name = "d", descriptor = "I")
 	public static int state = 0;
 	@OriginalMember(owner = "client!we", name = "w", descriptor = "I")
-	public static int anInt4130 = 0;
+	public static int minimapOffsetX = 0;
 	@OriginalMember(owner = "client!ej", name = "W", descriptor = "I")
-	public static int anInt1814 = 0;
+	public static int minimapOffsetY = 0;
 	@OriginalMember(owner = "client!vg", name = "d", descriptor = "I")
-	public static int anInt5755 = 2;
+	public static int minimapZoom = 2;
 	@OriginalMember(owner = "client!oe", name = "n", descriptor = "I")
-	public static int anInt4262 = 1;
+	public static int minimapRotation = 1;
 	@OriginalMember(owner = "client!gi", name = "H", descriptor = "I")
 	public static int anInt2252 = 0;
 	@OriginalMember(owner = "client!nf", name = "i", descriptor = "I")
@@ -235,13 +235,13 @@ public class MiniMap {
 			SoftwareRaster.setClip(arg2, arg1, arg2 + arg3.width, arg1 + arg3.height);
 		}
 		if (state != 2 && state != 5 && sprite != null) {
-			@Pc(48) int local48 = anInt1814 + (int) Camera.yawTarget & 0x7FF;
+			@Pc(48) int local48 = minimapOffsetY + (int) Camera.yawTarget & 0x7FF;
 			@Pc(57) int local57 = PlayerList.self.xFine / 32 + 48;
 			@Pc(67) int local67 = 464 - PlayerList.self.zFine / 32;
 			if (GlRenderer.enabled) {
-				((GlSprite) sprite).renderRotatedTransparent(arg2, arg1, arg3.width, arg3.height, local57, local67, local48, anInt4130 + 256, (GlSprite) arg3.method489(false));
+				((GlSprite) sprite).renderRotatedTransparent(arg2, arg1, arg3.width, arg3.height, local57, local67, local48, minimapOffsetX + 256, (GlSprite) arg3.method489(false));
 			} else {
-				((SoftwareSprite) sprite).renderRotated(arg2, arg1, arg3.width, arg3.height, local57, local67, local48, anInt4130 + 256, arg3.anIntArray37, arg3.anIntArray45);
+				((SoftwareSprite) sprite).renderRotated(arg2, arg1, arg3.width, arg3.height, local57, local67, local48, minimapOffsetX + 256, arg3.anIntArray37, arg3.anIntArray45);
 			}
 			@Pc(146) int local146;
 			@Pc(181) int local181;
@@ -258,9 +258,9 @@ public class MiniMap {
 						local150 = MathUtils.sin[local48];
 						local154 = MathUtils.cos[local48];
 						@Pc(156) Font local156 = Fonts.p11Full;
-						@Pc(164) int local164 = local150 * 256 / (anInt4130 + 256);
+						@Pc(164) int local164 = local150 * 256 / (minimapOffsetX + 256);
 						local181 = (LoginManager.mapElementList.aShortArray72[local117] - Camera.originZ) * 4 + 2 - PlayerList.self.zFine / 32;
-						@Pc(189) int local189 = local154 * 256 / (anInt4130 + 256);
+						@Pc(189) int local189 = local154 * 256 / (minimapOffsetX + 256);
 						local200 = local181 * local189 - local146 * local164 >> 16;
 						if (LoginManager.mapElementList.method3894(local117) == 1) {
 							local156 = Fonts.p12Full;
@@ -417,15 +417,15 @@ public class MiniMap {
 			return;
 		}
 		@Pc(21) int local21 = arg3 * arg3 + arg2 * arg2;
-		@Pc(27) int local27 = anInt1814 + (int) Camera.yawTarget & 0x7FF;
+		@Pc(27) int local27 = minimapOffsetY + (int) Camera.yawTarget & 0x7FF;
 		@Pc(39) int local39 = Math.max(arg0.width / 2, arg0.height / 2) + 10;
 		if (local39 * local39 < local21) {
 			return;
 		}
 		@Pc(50) int local50 = MathUtils.sin[local27];
-		@Pc(58) int local58 = local50 * 256 / (anInt4130 + 256);
+		@Pc(58) int local58 = local50 * 256 / (minimapOffsetX + 256);
 		@Pc(62) int local62 = MathUtils.cos[local27];
-		@Pc(70) int local70 = local62 * 256 / (anInt4130 + 256);
+		@Pc(70) int local70 = local62 * 256 / (minimapOffsetX + 256);
 		@Pc(81) int local81 = local58 * arg2 + arg3 * local70 >> 16;
 		@Pc(92) int local92 = local70 * arg2 - arg3 * local58 >> 16;
 		if (GlRenderer.enabled) {
@@ -447,11 +447,11 @@ public class MiniMap {
 			return;
 		}
 		local30 -= 10;
-		@Pc(58) int local58 = anInt1814 + (int) Camera.yawTarget & 0x7FF;
+		@Pc(58) int local58 = minimapOffsetY + (int) Camera.yawTarget & 0x7FF;
 		@Pc(62) int local62 = MathUtils.cos[local58];
 		@Pc(66) int local66 = MathUtils.sin[local58];
-		@Pc(74) int local74 = local66 * 256 / (anInt4130 + 256);
-		@Pc(82) int local82 = local62 * 256 / (anInt4130 + 256);
+		@Pc(74) int local74 = local66 * 256 / (minimapOffsetX + 256);
+		@Pc(82) int local82 = local62 * 256 / (minimapOffsetX + 256);
 		@Pc(93) int local93 = arg4 * local74 + local82 * arg3 >> 16;
 		@Pc(104) int local104 = arg4 * local82 - local74 * arg3 >> 16;
 		@Pc(110) double local110 = Math.atan2(local93, local104);

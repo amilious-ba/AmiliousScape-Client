@@ -20,12 +20,12 @@ public final class InputController {
 
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_PAGE_UP:
-                    if (MapController.isOpen()) return;
-                    MenuTabCycle.previous();
+                    if (MapController.isOpen()) MapController.zoomOut();
+                    else MenuTabCycle.previous();
                     break;
                 case KeyEvent.VK_PAGE_DOWN:
-                    if (MapController.isOpen()) return;
-                    MenuTabCycle.next();
+                    if (MapController.isOpen()) MapController.zoomIn();
+                    else MenuTabCycle.next();
                     break;
                 case KeyEvent.VK_F12:
                     MenuTab current = MenuTabCycle.lastSelected();

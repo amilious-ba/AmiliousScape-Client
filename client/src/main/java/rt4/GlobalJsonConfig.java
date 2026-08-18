@@ -29,4 +29,5 @@ public class GlobalJsonConfig {
 	public String pluginsFolder = "plugins";
 	public boolean startFullscreen = false;
 	public boolean borderlessFullscreen = true;
+	public boolean enableAmiliousDebugAtStart = false;
 }

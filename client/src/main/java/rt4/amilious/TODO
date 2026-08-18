@@ -1,3 +1,4 @@
 TODO:
 listen for button presses and close the keyboard if launched.
 auto launch keyboard when press on text field.
+hook into minimunu and others to eaisly see ids

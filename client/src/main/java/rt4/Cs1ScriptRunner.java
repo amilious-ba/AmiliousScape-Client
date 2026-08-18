@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import rt4.amilious.AmiliousClient;
 
 import java.nio.charset.StandardCharsets;
 
@@ -485,6 +486,7 @@ public class Cs1ScriptRunner {
 							}
 							if (component.clientCode == 1405) {
 								PluginRepository.Draw();
+								AmiliousClient.onDraw();
 								InterfaceList.aBooleanArray100[rectangle] = true;
 								InterfaceList.rectangleRedraw[rectangle] = true;
 

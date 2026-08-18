@@ -321,16 +321,12 @@ public final class client extends GameShell {
 
 	@OriginalMember(owner = "client!pl", name = "a", descriptor = "(II)V")
 	public static void setGameState(@OriginalArg(0) int arg0) {
-		int previous = gameState;
 		if (gameState == arg0) {
 			return;
 		}
-		AmiliousClient.GameStateChange(previous, gameState);
+		AmiliousClient.GameStateChange(gameState, arg0);
 		if (gameState == 0) {
 			LoadingBarAwt.clear();
-		}
-		if (gameState == 30) {
-			PluginRepository.OnLogin();
 		}
 		if (arg0 == 40) {
 			LoginManager.clear();
@@ -825,7 +821,6 @@ public final class client extends GameShell {
 			Preferences.safeMode = false;
 			Preferences.write(GameShell.signLink);
 		}
-		AmiliousClient.onDraw();
 	}
 
 	@OriginalMember(owner = "client!client", name = "c", descriptor = "(B)V")

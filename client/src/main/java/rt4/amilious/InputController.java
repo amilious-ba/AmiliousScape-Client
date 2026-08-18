@@ -13,6 +13,7 @@ public final class InputController {
     private static final KeyAdapter LISTENER = new KeyAdapter() {
         @Override
         public void keyPressed(KeyEvent e) {
+            if(e.getKeyCode() == KeyEvent.VK_END) TouchKeyboard.show(true);
             if (client.gameState != 30) {return; }
 
             // if (shouldIgnoreHotkeys()) return;
@@ -38,9 +39,6 @@ public final class InputController {
                     break;
                 case KeyEvent.VK_HOME:
                     RunToggler.toggle();
-                    break;
-                case KeyEvent.VK_END:
-                    TouchKeyboard.show(true);
                     break;
                 case KeyEvent.VK_ESCAPE:
                     if (MapController.isOpen()) {

@@ -26,6 +26,8 @@ public final class AmiliousClient {
             DebugConsole.log("debug enabled at start");
         }
         //initialize components
+        CommandBinds.load();
+        AmiliousClient.AddCommand(new Bind_Command());
         DebugConsole.Init();
         DebugConsole.log("AmiliousScape client initialized!");
     }

@@ -24,6 +24,15 @@ public final class InputController {
                     if (MapController.isOpen()) MapController.zoomIn();
                     else MenuTabCycle.next();
                     break;
+                case KeyEvent.VK_F9:
+                    CommandBinds.run(0);
+                    break;
+                case KeyEvent.VK_F10:
+                    CommandBinds.run(1);
+                    break;
+                case KeyEvent.VK_F11:
+                    CommandBinds.run(2);
+                    break;
                 case KeyEvent.VK_F12:
                     MenuTab current = MenuTabCycle.lastSelected();
                     if (current == null) {

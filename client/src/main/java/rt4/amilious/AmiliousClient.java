@@ -1,10 +1,10 @@
 package rt4.amilious;
 
 import plugin.PluginRepository;
-import rt4.Chat;
-import rt4.DisplayMode;
-import rt4.GlobalJsonConfig;
-import rt4.JagString;
+import rt4.*;
+import rt4.amilious.cheats.*;
+
+import java.util.ArrayList;
 
 /**
  * All AmiliousScape client customizations.
@@ -12,6 +12,7 @@ import rt4.JagString;
  */
 public final class AmiliousClient {
 
+    private static final ArrayList<ICommand> commands = new ArrayList<>();
     private static boolean initialized = false;
 
     /** Call once after main client init (after PluginRepository.Init()). */
@@ -24,7 +25,29 @@ public final class AmiliousClient {
             DebugConsole.enabled = true;
             DebugConsole.log("debug enabled at start");
         }
+        //initialize components
+        DebugConsole.Init();
         DebugConsole.log("AmiliousScape client initialized!");
+    }
+
+    public static void AddCommand(ICommand c){
+        commands.add(c);
+    }
+
+    public static void RemoveCommand(ICommand c){
+        commands.remove(c);
+    }
+
+    /**
+     * @return true if the command was handled and Cheat should stop processing it
+     */
+    public static boolean processCommands(JagString command) {
+        if(command == null) return false;
+        String s = command.toString().trim();
+        //loop through all cheats
+        for (ICommand c : commands) if(c != null && c.compare(s))
+            return c.execute(s);
+        return false;
     }
 
     /** Call at end of GameShell.addCanvas() — survives canvas replace. */
@@ -44,39 +67,7 @@ public final class AmiliousClient {
         MapController.tickInput();
     }
 
-    /**
-     * @return true if the command was handled and Cheat should stop processing it
-     */
-    public static boolean handleCheat(JagString command) {
-        if(command == null) return false;
-        String s = command.toString().trim();
 
-        if (s.equalsIgnoreCase("::debug") || s.equalsIgnoreCase("::debugconsole")) {
-            DebugConsole.toggle();
-            Chat.add(null, 0, JagString.parse("Debug console: " + (DebugConsole.enabled ? "on" : "off")));
-            return true;
-        }
-        if (s.equalsIgnoreCase("::debugclear")) {
-            DebugConsole.clear();
-            Chat.add(null, 0, JagString.parse("Debug console cleared"));
-            return true;
-        }
-        if (s.toLowerCase().startsWith("::debuglog ")) {
-            DebugConsole.log(s.substring("::debuglog ".length()));
-            return true;
-        }
-        if (s.equalsIgnoreCase("::debuglog")) {
-            DebugConsole.log("(no message)");
-            return true;
-        }
-        if (s.equalsIgnoreCase("::debugshowinteractions")) {
-            var show = DebugConsole.showInteractions = !DebugConsole.showInteractions;
-            Chat.add(null, 0, JagString.parse("Debug console: " + (show ? "showing interactions" : "not showing interactions")));
-            return true;
-        }
-
-        return false;
-    }
 
     public static void onDraw() {
         DebugConsole.draw();

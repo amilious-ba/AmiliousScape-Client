@@ -1,9 +1,6 @@
 package rt4.amilious;
 
-import rt4.ClientProt;
-import rt4.GameShell;
-import rt4.JagString;
-import rt4.client;
+import rt4.*;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -41,11 +38,15 @@ public final class InputController {
                     RunToggler.toggle();
                     break;
                 case KeyEvent.VK_ESCAPE:
-                    if (MapController.isOpen()) {
+                    /*if (MapController.isOpen()) //close map
                         MapController.close();
-                    } else {
+                    else if(InterfaceList.openInterfaces.head()!=null) //close open widget
+                        ClientProt.closeWidget();*/
+                    if(ModalTools.hasModalOpen()) {
+                        ModalTools.closeOpenModalNextUpdate();
+                        break;
+                    }else //open the close game window
                         ClientProt.method4512(JagString.EMPTY, -1, 1, 48889868);
-                    }
                     break;
             }
         }

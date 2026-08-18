@@ -2,6 +2,10 @@ package rt4.amilious;
 
 import rt4.Fonts;
 import rt4.JagString;
+import rt4.amilious.cheats.DebugClear_Command;
+import rt4.amilious.cheats.DebugLog_Command;
+import rt4.amilious.cheats.DebugShowInteractions_Command;
+import rt4.amilious.cheats.Debug_Command;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,6 +33,14 @@ public final class DebugConsole {
     private static final int SHADOW = 0;
 
     private static final List<Entry> lines = new ArrayList<>();
+
+    public static void Init() {
+        AmiliousClient.AddCommand(new Debug_Command());
+        AmiliousClient.AddCommand(new DebugClear_Command());
+        AmiliousClient.AddCommand(new Debug_Command());
+        AmiliousClient.AddCommand(new DebugLog_Command());
+        AmiliousClient.AddCommand(new DebugShowInteractions_Command());
+    }
 
     private static final class Entry {
         final String text;

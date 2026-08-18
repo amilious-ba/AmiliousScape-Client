@@ -45,13 +45,20 @@ dependencies {
     implementation 'lib:jogl-all-natives-macosx-universal'
     implementation 'lib:jogl-all-natives-android-aarch64'
 
-    runtimeOnly 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.23'
+    // Required at runtime for Kotlin plugins (Intrinsics, etc.)
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.23'
 }
 
 jar {
+    archiveFileName = 'AmiliousScape.jar'
+
     manifest {
-        attributes 'Main-Class': "$mainClassName"
+        attributes 'Main-Class': mainClassName
     }
-    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+
+    // Pack compile classpath (includes implementation deps like kotlin-stdlib)
+    from {
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }

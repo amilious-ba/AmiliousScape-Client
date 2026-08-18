@@ -76,8 +76,12 @@ public class PluginRepository {
         }));
 
         try {
-            URL[] classPath = {pluginsDirectory.toURI().toURL()};
-            URLClassLoader loader = new URLClassLoader(classPath);
+            URL[] classPath = { pluginsDirectory.toURI().toURL() };
+            // Parent = client loader so kotlin-stdlib / shared libs resolve without per-plugin jars
+            URLClassLoader loader = new URLClassLoader(
+                    classPath,
+                    PluginRepository.class.getClassLoader()
+            );
 
             for(File file : Objects.requireNonNull(pluginsDirectory.listFiles())) {
                 if(!file.isDirectory()) continue;

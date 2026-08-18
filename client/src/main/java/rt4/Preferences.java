@@ -72,7 +72,7 @@ public class Preferences {
 	public static void write(@OriginalArg(0) SignLink arg0) {
 		@Pc(11) FileOnDisk local11 = null;
 		try {
-			@Pc(16) PrivilegedRequest local16 = arg0.openPreferences("runescape");
+			@Pc(16) PrivilegedRequest local16 = arg0.openPreferences("amilious");
 			while (local16.status == 0) {
 				ThreadUtils.sleep(1L);
 			}

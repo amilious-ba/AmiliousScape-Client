@@ -1,30 +1,32 @@
 # AmiliousScape-Client
 
-Unofficial, community-maintained client based on the 2009-era (revision ~530) RuneScape client.
+Unofficial community client based on the 2009-era (revision ~530) RuneScape client.
 
-This is a personal/educational fork intended for use with open-source private server projects such as 2009Scape.  
+This is a personal/educational fork intended for use with open-source private server projects (such as 2009Scape) and for handheld/modern Windows use (including ROG Ally).
+
 **Not affiliated with, endorsed by, or connected to Jagex Ltd. in any way.**
 
 ## Origins
 
 - Base: [Pazaz/RT4-Client](https://github.com/Pazaz/RT4-Client)
-- Further work and plugins: [2009Scape RT4 Client](https://gitlab.com/2009scape/rt4-client)
+- Further community work & plugins: [2009Scape RT4 Client](https://gitlab.com/2009scape/rt4-client)
 
-The original goals of the deobfuscation / modernization effort remain:
+## Requirements
 
-- Identify and organize classes, methods, fields, and variables
-- Remove remaining obfuscation
-- Improve readability and modernize libraries (High DPI, refresh rates, etc.)
-- Support existing servers via configurable packet behavior flags
+- **Java 11** (recommended and targeted)
+- Windows / Linux (JOGL natives included)
+- Gradle wrapper is included (no global Gradle install required)
 
-## License
-
-GNU Affero General Public License v3.0 (AGPL-3.0)  
-You must keep the project open source and provide corresponding source when distributing binaries or running modified versions as a network service.
+> HD mode on very new JDKs can still hit the classic JOGL WGL context issue on Windows. Java 11 is the sweet spot this fork is built around.
 
 ## Building & Running
 
-**Requirements**
-- Java 8+ (SD mode)
-- HD mode on Windows currently works best with Java 15 or lower (JOGL WGL context issue on newer JDKs)
-- Gradle (wrapper included)
+```bash
+git clone https://github.com/amilious-ba/AmiliousScape-Client.git
+cd AmiliousScape-Client
+
+# Windows
+gradlew.bat run
+
+# Linux / macOS
+./gradlew run

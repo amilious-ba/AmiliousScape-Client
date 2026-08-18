@@ -64,6 +64,7 @@ public final class AmiliousClient {
 
     /** call after PluginRepository.Update(); in client.mainLoop */
     public static void update() {
+        ModalTools.update();
         MapController.tickInput();
     }
 

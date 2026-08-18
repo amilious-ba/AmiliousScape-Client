@@ -38,11 +38,9 @@ public final class InputController {
                     RunToggler.toggle();
                     break;
                 case KeyEvent.VK_ESCAPE:
-                    /*if (MapController.isOpen()) //close map
+                    if (MapController.isOpen()) //close map
                         MapController.close();
-                    else if(InterfaceList.openInterfaces.head()!=null) //close open widget
-                        ClientProt.closeWidget();*/
-                    if(ModalTools.hasModalOpen()) {
+                    else if(ModalTools.hasModalOpen()) { //close modal
                         ModalTools.closeOpenModalNextUpdate();
                         break;
                     }else //open the close game window

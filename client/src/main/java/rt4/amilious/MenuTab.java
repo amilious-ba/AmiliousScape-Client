@@ -18,6 +18,7 @@ public enum MenuTab {
     EMOTES(48889909),
     MUSIC(48889910);
 
+
     public final int componentId;
 
     /** Last known selected sidebar tab */
@@ -25,7 +26,13 @@ public enum MenuTab {
 
     public static void onLogin(){
         int mode = DisplayMode.getWindowMode();
-        current = mode==0?MenuTab.INVENTORY:null;
+        setCurrent(mode==0?MenuTab.INVENTORY:null);
+    }
+    private static void setCurrent(MenuTab current){
+        if(MenuTab.current == current) return;
+        if(DebugConsole.showInteractions)
+            DebugConsole.log("MenuTab.setCurrent: " + (current==null?"none":current.name()));
+        MenuTab.current = current;
     }
 
     MenuTab(int componentId) {
@@ -58,8 +65,8 @@ public enum MenuTab {
         MenuTab tab = fromComponentId(componentId);
         if(tab == null) return; //not a tab click
         int mode = DisplayMode.getWindowMode();
-        if(mode!=0&&tab==current) current = null;
-        else current = tab;
+        if(mode!=0&&tab== current) setCurrent(null);
+        else setCurrent(tab);
     }
 
     public static MenuTab fromIndex(int index) {

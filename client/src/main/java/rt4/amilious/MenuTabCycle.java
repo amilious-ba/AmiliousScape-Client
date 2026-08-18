@@ -16,7 +16,10 @@ public final class MenuTabCycle {
     public static void next() {
         if (client.gameState != 30) return;
         var tab = MenuTab.current();
-        if(tab == null) return;
+        if(tab == null){
+            MenuTab.INVENTORY.select();
+            return;
+        }
         tab = tab.nextEnabled();
         if(tab == null) return;
         tab.select();
@@ -26,7 +29,10 @@ public final class MenuTabCycle {
     public static void previous() {
         if (client.gameState != 30) return;
         var tab = MenuTab.current();
-        if(tab == null) return;
+        if(tab == null){
+            MenuTab.INVENTORY.select();
+            return;
+        }
         tab = tab.prevEnabled();
         if(tab == null) return;
         tab.select();

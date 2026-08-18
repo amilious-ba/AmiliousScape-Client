@@ -128,7 +128,7 @@ public class Preferences {
 		hdr = false;
 		favoriteWorlds = 0;
 		try {
-			@Pc(78) PrivilegedRequest request = arg0.openPreferences("runescape");
+			@Pc(78) PrivilegedRequest request = arg0.openPreferences("amilious");
 			while (request.status == 0) {
 				ThreadUtils.sleep(1L);
 			}

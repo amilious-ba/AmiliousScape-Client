@@ -5,6 +5,7 @@ import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import rt4.amilious.AmiliousClient;
 
 import java.awt.*;
 import java.io.IOException;
@@ -214,12 +215,17 @@ public final class client extends GameShell {
 	@OriginalMember(owner = "client!ah", name = "t", descriptor = "I")
 	public static int anInt986;
 
+	public static boolean pendingFullscreen = false;
+
 	@OriginalMember(owner = "client!client", name = "main", descriptor = "([Ljava/lang/String;)V")
 	public static void main(@OriginalArg(0) String[] arg0) {
 		try {
 			GlobalJsonConfig.load(GlobalConfig.EXTENDED_CONFIG_PATH);
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		}
+		if (GlobalJsonConfig.instance != null) {
+			FullScreenManager.borderlessFullscreen = GlobalJsonConfig.instance.borderlessFullscreen;
 		}
 		try {
 			if (arg0.length != 4) {
@@ -276,7 +282,7 @@ public final class client extends GameShell {
 			settings = JagString.EMPTY;
 			@Pc(146) client c = new client();
 			instance = c;
-			c.startApplication(modeWhat + 32, "runescape");
+			c.startApplication(modeWhat + 32, "amilious");
 			// Note: Centering is now done in GameShell.startApplication() before window is visible
 		} catch (@Pc(167) Exception ex) {
 			TracingException.report(null, ex);
@@ -315,9 +321,11 @@ public final class client extends GameShell {
 
 	@OriginalMember(owner = "client!pl", name = "a", descriptor = "(II)V")
 	public static void setGameState(@OriginalArg(0) int arg0) {
+		int previous = gameState;
 		if (gameState == arg0) {
 			return;
 		}
+		AmiliousClient.GameStateChange(previous, gameState);
 		if (gameState == 0) {
 			LoadingBarAwt.clear();
 		}
@@ -817,6 +825,7 @@ public final class client extends GameShell {
 			Preferences.safeMode = false;
 			Preferences.write(GameShell.signLink);
 		}
+		AmiliousClient.onDraw();
 	}
 
 	@OriginalMember(owner = "client!client", name = "c", descriptor = "(B)V")
@@ -1024,6 +1033,7 @@ public final class client extends GameShell {
 		if (modeWhere != 0) {
 			//Cheat.displayFps = true;
 		}
+		AmiliousClient.Init();
 		PluginRepository.Init();
 	}
 
@@ -1569,7 +1579,14 @@ public final class client extends GameShell {
 			}
 			Preferences.safeMode = true;
 			Preferences.write(GameShell.signLink);
-			DisplayMode.setWindowMode(false, Preferences.favoriteWorlds, -1, -1);
+			int mode = Preferences.favoriteWorlds;
+			if (GlobalJsonConfig.instance != null && GlobalJsonConfig.instance.startFullscreen) {
+				mode = 2; // HD windowed first
+				Preferences.favoriteWorlds = 2;
+				Preferences.windowMode = 2;
+				pendingFullscreen = true; // real fullscreen later
+			}
+			DisplayMode.setWindowMode(false, mode, -1, -1);
 			mainLoadPercentage = 100;
 			mainLoadState = 160;
 			mainLoadSecondaryText = LocalizedText.MAINLOAD150B;
@@ -1599,6 +1616,19 @@ public final class client extends GameShell {
 		audioLoop();
 		Keyboard.loop();
 		Mouse.loop();
+		AmiliousClient.update();
+		if (pendingFullscreen && GlRenderer.enabled && gameState == 10) {
+			pendingFullscreen = false;
+			try {
+				GraphicsDevice gd = GraphicsEnvironment
+						.getLocalGraphicsEnvironment()
+						.getDefaultScreenDevice();
+				java.awt.DisplayMode dm = gd.getDisplayMode();
+				DisplayMode.setWindowMode(false, 3, dm.getWidth(), dm.getHeight());
+			} catch (Exception e) {
+				System.err.println("Deferred fullscreen failed: " + e);
+			}
+		}
 		if (GlRenderer.enabled) {
 			GlCleaner.process();
 		}

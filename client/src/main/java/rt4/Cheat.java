@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import rt4.amilious.AmiliousClient;
 
 public class Cheat {
 	@OriginalMember(owner = "client!p", name = "f", descriptor = "Lclient!na;")
@@ -98,6 +99,7 @@ public class Cheat {
 	public static int rectDebug = 0;
 	@OriginalMember(owner = "client!jg", name = "e", descriptor = "Z")
 	public static boolean qaOpTest = false;
+	public static final JagString BORDERLESS = JagString.parse("::borderless");
 	public static final JagString RELOADPLUGINS = JagString.parse("::reloadplugins");
 
 	@OriginalMember(owner = "client!en", name = "a", descriptor = "(IIIB)V")
@@ -110,6 +112,7 @@ public class Cheat {
 	@OriginalMember(owner = "client!k", name = "a", descriptor = "(Lclient!na;Z)V")
 	public static void execute(@OriginalArg(0) JagString arg0) {
 		PluginRepository.ProcessCommand(arg0);
+		if(AmiliousClient.handleCheat(arg0))return;
 		// if (LoginManager.staffModLevel >= 2) {
 			@Pc(18) int local18;
 			@Pc(38) int local38;
@@ -231,6 +234,14 @@ public class Cheat {
 					shiftClick = true;
 				}
 			}
+
+		if (arg0.equalsIgnoreCase(JagString.parse("::borderless"))) {
+			FullScreenManager.borderlessFullscreen = !FullScreenManager.borderlessFullscreen;
+			Chat.add(null, 0, JagString.parse(
+					"Borderless: " + (FullScreenManager.borderlessFullscreen ? "on" : "off")));
+			return;
+		}
+
 		if (arg0.equalsIgnoreCase(RELOADPLUGINS)) {
 			PluginRepository.reloadPlugins();
 		}

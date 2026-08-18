@@ -3,6 +3,7 @@ package rt4;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import rt4.amilious.AmiliousClient;
 
 import java.io.IOException;
 
@@ -54,6 +55,7 @@ public class ClientProt {
 		if (!local37 || !InterfaceList.getServerActiveProperties(local8).isButtonEnabled(arg2 - 1)) {
 			return;
 		}
+		AmiliousClient.onInterfaceButton(arg0, arg1, arg2, arg3);
 		if (arg2 == 1) {
 			Protocol.outboundBuffer.p1isaac(155);
 			Protocol.outboundBuffer.p4(arg3);

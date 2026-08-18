@@ -264,6 +264,63 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!ab", name = "c", descriptor = "(B)[Lclient!od;")
 	public static DisplayMode[] getDisplayModes() {
 		if (aClass114Array1 == null) {
+			DisplayMode[] local16 = method3558(GameShell.signLink);
+			DisplayMode[] local20 = new DisplayMode[local16.length];
+			int local22 = 0;
+
+			// Native size of the default screen (cap the list)
+			int maxW = Integer.MAX_VALUE;
+			int maxH = Integer.MAX_VALUE;
+			try {
+				java.awt.DisplayMode nativeDm = GraphicsEnvironment
+						.getLocalGraphicsEnvironment()
+						.getDefaultScreenDevice()
+						.getDisplayMode();
+				maxW = nativeDm.getWidth();
+				maxH = nativeDm.getHeight();
+			} catch (Exception ignored) {
+			}
+
+			label52:
+			for (int local24 = 0; local24 < local16.length; local24++) {
+				DisplayMode local32 = local16[local24];
+
+				if (local32.bitDepth > 0 && local32.bitDepth < 24) {
+					continue;
+				}
+				if (local32.width < 1024 || local32.height < 768) {
+					continue;
+				}
+				// no larger than native desktop
+				if (local32.width > maxW || local32.height > maxH) {
+					continue;
+				}
+
+				for (int local52 = 0; local52 < local22; local52++) {
+					DisplayMode local59 = local20[local52];
+					if (local32.width == local59.width && local59.height == local32.height) {
+						if (local32.bitDepth > local59.bitDepth) {
+							local20[local52] = local32;
+						}
+						continue label52;
+					}
+				}
+				local20[local22] = local32;
+				local22++;
+			}
+
+			aClass114Array1 = new DisplayMode[local22];
+			ArrayUtils.copy(local20, 0, aClass114Array1, 0, local22);
+
+			int[] local112 = new int[aClass114Array1.length];
+			for (int local114 = 0; local114 < aClass114Array1.length; local114++) {
+				DisplayMode local122 = aClass114Array1[local114];
+				local112[local114] = local122.height * local122.width;
+			}
+			ArrayUtils.sort(local112, aClass114Array1);
+		}
+		return aClass114Array1;
+		/*if (aClass114Array1 == null) {
 			@Pc(16) DisplayMode[] local16 = method3558(GameShell.signLink);
 			@Pc(20) DisplayMode[] local20 = new DisplayMode[local16.length];
 			@Pc(22) int local22 = 0;
@@ -294,7 +351,7 @@ public final class DisplayMode {
 			}
 			ArrayUtils.sort(local112, aClass114Array1);
 		}
-		return aClass114Array1;
+		return aClass114Array1;*/
 	}
 
 	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ILsignlink!ll;)[Lclient!od;")

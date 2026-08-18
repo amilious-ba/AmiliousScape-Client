@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import rt4.amilious.AmiliousClient;
 
 //noinspection removal
 import java.applet.Applet;
@@ -372,6 +373,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		focus = true;
 		replaceCanvas = false;
 		lastCanvasReplace = MonotonicClock.currentTimeMillis();
+		AmiliousClient.onCanvas();
 	}
 
 	@OriginalMember(owner = "client!rc", name = "destroy", descriptor = "()V")

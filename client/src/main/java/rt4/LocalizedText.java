@@ -105,7 +105,7 @@ public class LocalizedText {
 	private static final JagString ENG_FRIENDLOGOUT = JagString.parse(" has logged out)3");
 
 	@OriginalMember(owner = "client!ec", name = "r", descriptor = "Lclient!na;")
-	private static final JagString ENG_GAME0_LOADING = JagString.parse("RuneScape is loading )2 please wait)3)3)3");
+	private static final JagString ENG_GAME0_LOADING = JagString.parse("AmiliousScape is loading )2 please wait)3)3)3");
 
 	@OriginalMember(owner = "client!an", name = "Z", descriptor = "Lclient!na;")
 	private static final JagString ENG_HIDDEN = JagString.parse("Hidden");
@@ -773,7 +773,7 @@ public class LocalizedText {
 	public static final JagString GER_CANCEL = JagString.parse("Abbrechen");
 
 	@OriginalMember(owner = "client!uh", name = "fb", descriptor = "Lclient!na;")
-	public static final JagString GER_GAME0_LOADING = JagString.parse("RuneScape wird geladen )2 bitte warten)3)3)3");
+	public static final JagString GER_GAME0_LOADING = JagString.parse("AmiliousScape wird geladen )2 bitte warten)3)3)3");
 
 	@OriginalMember(owner = "client!hb", name = "p", descriptor = "Lclient!na;")
 	public static final JagString GER_MILLION_SUFFIX = JagString.parse("M");
@@ -960,7 +960,7 @@ public class LocalizedText {
 	public static final JagString FR_CHATCOL1 = JagString.parse("rouge:");
 
 	@OriginalMember(owner = "client!oe", name = "m", descriptor = "Lclient!na;")
-	public static final JagString FR_GAME0_LOADING = JagString.parse("Chargement de RuneScape en cours )2 veuillez patienter)3)3)3");
+	public static final JagString FR_GAME0_LOADING = JagString.parse("Chargement de AmiliousScape en cours )2 veuillez patienter)3)3)3");
 
 	@OriginalMember(owner = "client!ii", name = "j", descriptor = "Lclient!na;")
 	public static final JagString FR_MAINLOAD130B = JagString.parse("Interfaces charg-Bes");

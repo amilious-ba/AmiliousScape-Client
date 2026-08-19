@@ -21,10 +21,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Build with Gradle
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          arguments: build
+
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon
 
       - run: mv client/build/libs/client-*.jar client/build/libs/rt4-client.jar
       - run: sha256sum client/build/libs/rt4-client.jar | cut -d ' ' -f 1 | tr -d '\n' > client/build/libs/rt4-client.jar.sha256

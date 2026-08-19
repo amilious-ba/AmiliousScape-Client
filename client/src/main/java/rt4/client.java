@@ -740,7 +740,12 @@ public final class client extends GameShell {
 				DisplayMode.aLong89 = MonotonicClock.currentTimeMillis() + 500L;
 			}
 		}
-		if (GameShell.fullScreenFrame != null && !GameShell.focus && (gameState == 30 || gameState == 10)) {
+		// Only exit fullscreen on focus loss for exclusive mode.
+		// Borderless should stay fullscreen when alt-tabbing.
+		if (GameShell.fullScreenFrame != null
+				&& !GameShell.focus
+				&& !FullScreenManager.borderlessFullscreen
+				&& (gameState == 30 || gameState == 10)) {
 			DisplayMode.setWindowMode(false, Preferences.favoriteWorlds, -1, -1);
 		}
 		@Pc(158) boolean local158 = false;

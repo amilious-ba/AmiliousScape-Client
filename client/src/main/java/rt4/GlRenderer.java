@@ -7,6 +7,7 @@ import jogamp.newt.awt.NewtFactoryAWT;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import rt4.gl.GlBackend;
 
 import java.awt.*;
 import java.nio.ByteOrder;
@@ -14,6 +15,13 @@ import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 
 public final class GlRenderer {
+
+
+	public static GlBackend backend;
+
+
+
+
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "Ljava/lang/String;")
 	private static String vendor;
@@ -32,9 +40,6 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "k", descriptor = "F")
 	private static float aFloat32;
-
-	@OriginalMember(owner = "client!tf", name = "p", descriptor = "Lgl!javax/media/opengl/GLContext;")
-	private static GLContext context;
 
 	@OriginalMember(owner = "client!tf", name = "r", descriptor = "Z")
 	public static boolean extTexture3dSupported;
@@ -62,9 +67,6 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "D", descriptor = "I")
 	private static int maxTextureCoords;
-
-	@OriginalMember(owner = "client!tf", name = "E", descriptor = "Lgl!javax/media/opengl/GLDrawable;")
-	private static GLDrawable drawable;
 
 	@OriginalMember(owner = "client!tf", name = "H", descriptor = "Z")
 	public static boolean arbVertexProgramSupported;
@@ -122,8 +124,6 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "I", descriptor = "Lclient!na;")
 	private static final JagString RADEON = JagString.parse("radeon");
-
-	private static JAWTWindow window;
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/lang/String;)Lclient!na;")
 	private static JagString method4147(@OriginalArg(0) String arg0) {
@@ -195,10 +195,7 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "d", descriptor = "()V")
 	public static void swapBuffers() {
-		try {
-			drawable.swapBuffers();
-		} catch (@Pc(3) Exception local3) {
-		}
+		if (backend != null) backend.swapBuffers();
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Z)V")
@@ -385,7 +382,7 @@ public final class GlRenderer {
 	}
 
 	@OriginalMember(owner = "client!tf", name = "m", descriptor = "()I")
-	private static int checkContext() {
+	public static int checkContext() {
 		@Pc(1) int result = 0;
 		vendor = gl.glGetString(GL2.GL_VENDOR);
 		renderer = gl.glGetString(GL2.GL_RENDERER);
@@ -474,45 +471,14 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "o", descriptor = "()V")
 	public static void quit() {
-		if (gl != null) {
-			try {
-				MaterialManager.quit(); // MaterialManager
-			} catch (@Pc(5) Throwable local5) {
-			}
+		if (backend != null) {
+			backend.quit();
+			backend = null;
+		} else {
+			// safety if something called quit without init
+			gl = null;
+			enabled = false;
 		}
-
-		if (window != null) {
-			if (!window.getLock().isLocked()) {
-				window.lockSurface();
-			}
-
-			if (context != null) {
-				GlCleaner.clear(); // GlCleaner
-				try {
-					if (GLContext.getCurrent() == context) {
-						context.release();
-					}
-				} catch (@Pc(17) Throwable ex) {
-				}
-				try {
-					context.destroy();
-				} catch (@Pc(21) Throwable ex) {
-				}
-			}
-		}
-
-		if (drawable != null) {
-			try {
-				drawable.setRealized(false);
-			} catch (@Pc(30) Throwable ex) {
-			}
-		}
-		window = null;
-		gl = null;
-		context = null;
-		drawable = null;
-		LightingManager.method2398(); // LightingManager
-		enabled = false;
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(FFF)V")
@@ -652,79 +618,9 @@ public final class GlRenderer {
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Ljava/awt/Canvas;I)I")
 	public static int init(@OriginalArg(0) Canvas canvas, @OriginalArg(1) int numSamples) {
-		try {
-			if (!canvas.isDisplayable()) {
-				return -1;
-			}
-			GLProfile profile = GLProfile.get(GLProfile.GL3bc);
-			@Pc(8) GLCapabilities capabilities = new GLCapabilities(profile);
-			if (numSamples > 0) {
-				capabilities.setSampleBuffers(true);
-				capabilities.setNumSamples(numSamples * 4);
-			}
-			@Pc(18) GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
-			AWTGraphicsConfiguration config = AWTGraphicsConfiguration.create(canvas.getGraphicsConfiguration(), capabilities, capabilities);
-			window = NewtFactoryAWT.getNativeWindow(canvas, config);
-			if (!window.getLock().isLocked()) {
-				window.lockSurface();
-			}
-			try {
-				drawable = factory.createGLDrawable(window);
-				drawable.setRealized(true);
-			} finally {
-				window.unlockSurface();
-			}
-			@Pc(29) int swapBuffersAttempts = 0;
-			@Pc(36) int result;
-			while (true) {
-				context = drawable.createContext(null);
-				try {
-					result = context.makeCurrent();
-					if (result != 0) {
-						break;
-					}
-				} catch (@Pc(41) Exception local41) {
-				}
-				if (swapBuffersAttempts++ > 5) {
-					return -2;
-				}
-				ThreadUtils.sleep(1000L);
-			}
-			if (window.getLock().isLocked()) {
-				window.unlockSurface();
-			}
-			gl = GLContext.getCurrentGL().getGL2();
-			gl.glLineWidth((float) GameShell.canvasScale);
-			enabled = true;
-			canvasWidth = canvas.getSize().width;
-			canvasHeight = canvas.getSize().height;
-			result = checkContext();
-			if (result != 0) {
-				quit();
-				return result;
-			}
-			method4184();
-			method4156();
-			gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
-			swapBuffersAttempts = 0;
-			while (true) {
-				try {
-					drawable.swapBuffers();
-					break;
-				} catch (@Pc(86) Exception ex) {
-					if (swapBuffersAttempts++ > 5) {
-						quit();
-						return -3;
-					}
-					ThreadUtils.sleep(100L);
-				}
-			}
-			gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
-			return 0;
-		} catch (@Pc(103) Throwable ex) {
-			quit();
-			return -5;
-		}
+		// always JOGL for now
+		backend = new rt4.gl.JoglBackend();
+		return backend.init(canvas, numSamples);
 	}
 
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(II)V")
@@ -799,6 +695,12 @@ public final class GlRenderer {
 			gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_INTERPOLATE);
 		}
 		textureCombineRgbMode = mode;
+	}
+
+	/** Called by JoglBackend after context is current and checkContext passed. */
+	public static void afterContextCreated() {
+		method4184();
+		method4156();
 	}
 
 	@OriginalMember(owner = "client!tf", name = "s", descriptor = "()V")

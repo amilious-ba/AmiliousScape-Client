@@ -9,5 +9,6 @@
     "pluginsFolder": "plugins",
     "startFullscreen": true,
     "borderlessFullscreen": true,
-    "enableAmiliousDebugAtStart": false
+    "enableAmiliousDebugAtStart": false,
+    "graphicsBackend": "jogl"
 }

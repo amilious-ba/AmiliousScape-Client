@@ -21,6 +21,8 @@ public class GlobalConfig {
 	// Server IP
 	public static String DEFAULT_HOSTNAME = "amilious.xyz";
 
+	public String graphicsBackend = "jogl";
+
 	// Jagex had this at 40000+id
 	public static int DEFAULT_PORT = 43594;
 

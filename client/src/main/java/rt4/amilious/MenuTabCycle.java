@@ -1,7 +1,6 @@
 package rt4.amilious;
 
-import rt4.DisplayMode;
-import rt4.client;
+import rt4.core.client;
 
 public final class MenuTabCycle {
 

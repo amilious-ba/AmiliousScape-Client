@@ -1,6 +1,11 @@
 package rt4.amilious;
 
-import rt4.*;
+import rt4.core.DisplayMode;
+import rt4.core.client;
+import rt4.network.ClientProt;
+import rt4.ui.Component;
+import rt4.ui.InterfaceList;
+import rt4.util.JagString;
 
 public enum MenuTab {
 

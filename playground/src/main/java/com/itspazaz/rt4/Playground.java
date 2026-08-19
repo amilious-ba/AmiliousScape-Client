@@ -3,8 +3,18 @@ package com.itspazaz.rt4;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.util.GLBuffers;
-import rt4.DisplayMode;
+import rt4.core.DisplayMode;
 import rt4.*;
+import rt4.core.Preferences;
+import rt4.data.StructTypeList;
+import rt4.data.VarpTypeList;
+import rt4.model.Model;
+import rt4.network.Js5QuickChatCommandDecoder;
+import rt4.render.Rasteriser;
+import rt4.render.primitive.Sprites;
+import rt4.scene.Npc;
+import rt4.ui.TitleScreen;
+import rt4.util.JagString;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -19,30 +29,30 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-public class Playground extends GameShell {
+public class Playground extends rt4.core.GameShell {
 	public static Playground instance;
 
-	public static BufferedFile cacheMasterIndex;
-	public static BufferedFile cacheData;
-	public static BufferedFile uid;
-	public static BufferedFile[] cacheIndexes = new BufferedFile[28];
+	public static rt4.network.BufferedFile cacheMasterIndex;
+	public static rt4.network.BufferedFile cacheData;
+	public static rt4.network.BufferedFile uid;
+	public static rt4.network.BufferedFile[] cacheIndexes = new rt4.network.BufferedFile[28];
 
-	public static Cache[] cacheArchives = new Cache[28];
-	public static Cache masterCache;
+	public static rt4.network.Cache[] cacheArchives = new rt4.network.Cache[28];
+	public static rt4.network.Cache masterCache;
 
-	public static Js5MasterIndex js5MasterIndex;
-	public static Js5CachedResourceProvider[] js5Providers = new Js5CachedResourceProvider[28];
-	public static Js5[] archives = new Js5[28];
-	public static Js5NetQueue js5NetQueue;
-	public static Js5CacheQueue js5CacheQueue;
+	public static rt4.network.Js5MasterIndex js5MasterIndex;
+	public static rt4.network.Js5CachedResourceProvider[] js5Providers = new rt4.network.Js5CachedResourceProvider[28];
+	public static rt4.network.Js5[] archives = new rt4.network.Js5[28];
+	public static rt4.network.Js5NetQueue js5NetQueue;
+	public static rt4.network.Js5CacheQueue js5CacheQueue;
 	private static PrivilegedRequest js5SocketRequest;
-	private static BufferedSocket js5Socket;
+	private static rt4.network.BufferedSocket js5Socket;
 	private static long js5ConnectTime;
 
 	public static void main(String[] args) {
 		instance = new Playground();
 		instance.startApplication(32, "runescape");
-		GameShell.frame.setLocation(40, 40);
+		rt4.core.GameShell.frame.setLocation(40, 40);
 	}
 
 	@Override
@@ -53,125 +63,125 @@ public class Playground extends GameShell {
 
 	@Override
 	protected void mainInit() {
-		Keyboard.init();
-		Keyboard.start(GameShell.canvas);
-		Mouse.start(GameShell.canvas);
-		SoftwareRaster.frameBuffer.makeTarget();
+		rt4.ui.Keyboard.init();
+		rt4.ui.Keyboard.start(rt4.core.GameShell.canvas);
+		rt4.ui.Mouse.start(rt4.core.GameShell.canvas);
+		rt4.render.primitive.SoftwareRaster.frameBuffer.makeTarget();
 
 		try {
-			if (GameShell.signLink.cacheData != null) {
-				cacheData = new BufferedFile(GameShell.signLink.cacheData, 5200, 0);
+			if (rt4.core.GameShell.signLink.cacheData != null) {
+				cacheData = new rt4.network.BufferedFile(rt4.core.GameShell.signLink.cacheData, 5200, 0);
 				for (int i = 0; i < 28; i++) {
-					cacheIndexes[i] = new BufferedFile(GameShell.signLink.cacheIndexes[i], 6000, 0);
-					cacheArchives[i] = new Cache(i, cacheData, cacheIndexes[i], 1000000);
+					cacheIndexes[i] = new rt4.network.BufferedFile(rt4.core.GameShell.signLink.cacheIndexes[i], 6000, 0);
+					cacheArchives[i] = new rt4.network.Cache(i, cacheData, cacheIndexes[i], 1000000);
 				}
-				cacheMasterIndex = new BufferedFile(GameShell.signLink.cacheMasterIndex, 6000, 0);
-				masterCache = new Cache(255, cacheData, cacheMasterIndex, 500000);
-				uid = new BufferedFile(GameShell.signLink.uid, 24, 0);
-				GameShell.signLink.cacheIndexes = null;
-				GameShell.signLink.cacheMasterIndex = null;
-				GameShell.signLink.uid = null;
-				GameShell.signLink.cacheData = null;
+				cacheMasterIndex = new rt4.network.BufferedFile(rt4.core.GameShell.signLink.cacheMasterIndex, 6000, 0);
+				masterCache = new rt4.network.Cache(255, cacheData, cacheMasterIndex, 500000);
+				uid = new rt4.network.BufferedFile(rt4.core.GameShell.signLink.uid, 24, 0);
+				rt4.core.GameShell.signLink.cacheIndexes = null;
+				rt4.core.GameShell.signLink.cacheMasterIndex = null;
+				rt4.core.GameShell.signLink.uid = null;
+				rt4.core.GameShell.signLink.cacheData = null;
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.exit(1);
 		}
 
-		js5NetQueue = new Js5NetQueue();
-		js5CacheQueue = new Js5CacheQueue();
+		js5NetQueue = new rt4.network.Js5NetQueue();
+		js5CacheQueue = new rt4.network.Js5CacheQueue();
 
-		Preferences.characterShadowsOn = false;
+		rt4.core.Preferences.characterShadowsOn = false;
 		Preferences.highDetailLighting = false;
 	}
 
 	public int percentage = 0;
 	public int state = 0;
 
-	public NpcType npcType;
-	public Npc npc;
+	public rt4.data.NpcType npcType;
+	public rt4.scene.Npc npc;
 
 	public void stateLoop() {
 		if (state == 0) {
-			LoadingBarAwt.render(null, true, JagString.parse("Connecting to update server"), 1);
+			rt4.ui.LoadingBarAwt.render(null, true, rt4.util.JagString.parse("Connecting to update server"), 1);
 
 			if (js5MasterIndex == null) {
-				js5MasterIndex = new Js5MasterIndex(js5NetQueue, js5CacheQueue);
+				js5MasterIndex = new rt4.network.Js5MasterIndex(js5NetQueue, js5CacheQueue);
 			}
 
 			if (js5MasterIndex.isReady()) {
 				for (int i = 0; i < 28; i++) {
 					js5Providers[i] = js5MasterIndex.getResourceProvider(i, masterCache, cacheArchives[i]);
-					archives[i] = new Js5(js5Providers[i], false, false);
+					archives[i] = new rt4.network.Js5(js5Providers[i], false, false);
 				}
 				state++;
 			}
 		} else if (state == 1) {
-			LoadingBarAwt.render(null, true, JagString.parse("Initializing sprites"), 1);
+			rt4.ui.LoadingBarAwt.render(null, true, rt4.util.JagString.parse("Initializing sprites"), 1);
 			percentage = 0;
 			for (int i = 0; i < 28; i++) {
-				percentage += js5Providers[i].getIndexPercentageComplete() * client.JS5_ARCHIVE_WEIGHTS[i] / 100;
+				percentage += js5Providers[i].getIndexPercentageComplete() * rt4.core.client.JS5_ARCHIVE_WEIGHTS[i] / 100;
 			}
 			if (percentage == 100) {
-				Sprites.init(archives[8]);
-				TitleScreen.init(archives[8]);
-				Flames.init(archives[8]);
+				rt4.render.primitive.Sprites.init(archives[8]);
+				rt4.ui.TitleScreen.init(archives[8]);
+				rt4.ui.Flames.init(archives[8]);
 				state++;
 			}
 		} else if (state == 2) {
-			LoadingBarAwt.render(null, true, JagString.parse("Preparing fonts"), 1);
-			int ready = Fonts.getReady(archives[8], archives[13]);
-			int total = Fonts.getTotal();
+			rt4.ui.LoadingBarAwt.render(null, true, rt4.util.JagString.parse("Preparing fonts"), 1);
+			int ready = rt4.ui.Fonts.getReady(archives[8], archives[13]);
+			int total = rt4.ui.Fonts.getTotal();
 			if (ready >= total) {
 				state++;
 			}
 		} else if (state == 3) {
-			LoadingBarAwt.render(null, true, JagString.parse("Preparing title screen"), 1);
-			int ready = TitleScreen.getReady(archives[8]);
+			rt4.ui.LoadingBarAwt.render(null, true, rt4.util.JagString.parse("Preparing title screen"), 1);
+			int ready = rt4.ui.TitleScreen.getReady(archives[8]);
 			int total = TitleScreen.getTotal();
 			if (ready >= total) {
 				state++;
 			}
 		} else if (state == 4) {
-			LoadingBarAwt.render(null, true, JagString.parse("Loading fonts"), 1);
-			Fonts.load(archives[13], archives[8]);
+			rt4.ui.LoadingBarAwt.render(null, true, rt4.util.JagString.parse("Loading fonts"), 1);
+			rt4.ui.Fonts.load(archives[13], archives[8]);
 			state++;
 		} else if (state == 5) {
-			LoadingBarAwt.render(null, true, JagString.parse("Loading configs"), 1);
+			rt4.ui.LoadingBarAwt.render(null, true, rt4.util.JagString.parse("Loading configs"), 1);
 //            percentage = 0;
 //            for (int i = 0; i < 28; ++i) {
 //                archives[i].fetchAll();
 //                percentage += archives[i].getPercentageComplete();
 //            }
 //            if (percentage > 2700) {
-			ParamTypeList.init(archives[2]);
-			FloTypeList.init(archives[2]);
-			FluTypeList.init(archives[2]);
-			IdkTypeList.init(archives[7], archives[2]);
-			LocTypeList.init(archives[16], archives[7]);
-			NpcTypeList.init(archives[7], archives[18]);
-			ObjTypeList.init(archives[19], Fonts.p11FullSoftware, archives[7]);
+			rt4.data.ParamTypeList.init(archives[2]);
+			rt4.data.FloTypeList.init(archives[2]);
+			rt4.data.FluTypeList.init(archives[2]);
+			rt4.data.IdkTypeList.init(archives[7], archives[2]);
+			rt4.data.LocTypeList.init(archives[16], archives[7]);
+			rt4.data.NpcTypeList.init(archives[7], archives[18]);
+			rt4.data.ObjTypeList.init(archives[19], rt4.ui.Fonts.p11FullSoftware, archives[7]);
 			StructTypeList.init(archives[2]);
-			SeqTypeList.init(archives[1], archives[20], archives[0]);
-			BasTypeList.init(archives[2]);
-			SpotAnimTypeList.init(archives[7], archives[21]);
-			VarbitTypeList.init(archives[22]);
+			rt4.data.SeqTypeList.init(archives[1], archives[20], archives[0]);
+			rt4.data.BasTypeList.init(archives[2]);
+			rt4.data.SpotAnimTypeList.init(archives[7], archives[21]);
+			rt4.data.VarbitTypeList.init(archives[22]);
 			VarpTypeList.init(archives[2]);
-			InterfaceList.init(archives[13], archives[8], archives[3], archives[7]);
-			InvTypeList.init(archives[2]);
-			EnumTypeList.init(archives[17]);
-			QuickChatPhraseTypeList.init(archives[25], archives[24], new Js5QuickChatCommandDecoder());
-			QuickChatCatTypeList.init(archives[25], archives[24]);
-			LightTypeList.init(archives[2]);
-			CursorTypeList.init(archives[2], archives[8]);
-			MsiTypeList.init(archives[2], archives[8]);
-			Equipment.init();
+			rt4.ui.InterfaceList.init(archives[13], archives[8], archives[3], archives[7]);
+			rt4.data.InvTypeList.init(archives[2]);
+			rt4.data.EnumTypeList.init(archives[17]);
+			rt4.data.QuickChatPhraseTypeList.init(archives[25], archives[24], new Js5QuickChatCommandDecoder());
+			rt4.data.QuickChatCatTypeList.init(archives[25], archives[24]);
+			rt4.data.LightTypeList.init(archives[2]);
+			rt4.ui.CursorTypeList.init(archives[2], archives[8]);
+			rt4.data.MsiTypeList.init(archives[2], archives[8]);
+			rt4.data.Equipment.init();
 			state++;
 //            }
 		} else if (state == 6) {
-			LoadingBarAwt.render(null, true, JagString.parse("Loading sprites"), 1);
-			int ready = Sprites.getReady(archives[8]);
-			int total = Sprites.total();
+			rt4.ui.LoadingBarAwt.render(null, true, JagString.parse("Loading sprites"), 1);
+			int ready = rt4.render.primitive.Sprites.getReady(archives[8]);
+			int total = rt4.render.primitive.Sprites.total();
 			if (ready >= total) {
 				Sprites.load(archives[8]);
 				state++;
@@ -182,11 +192,11 @@ public class Playground extends GameShell {
 			}
 			state++;
 		} else if (state == 8) {
-			Js5GlTextureProvider textureProvider = new Js5GlTextureProvider(archives[9], archives[26], archives[8], 20, false);
-			Rasteriser.unpackTextures(textureProvider);
-			Rasteriser.setBrightness(0.8F);
-			Rasteriser.setBounds(GameShell.canvasWidth, GameShell.canvasHeight);
-			Rasteriser.prepare();
+			rt4.network.Js5GlTextureProvider textureProvider = new rt4.network.Js5GlTextureProvider(archives[9], archives[26], archives[8], 20, false);
+			rt4.render.Rasteriser.unpackTextures(textureProvider);
+			rt4.render.Rasteriser.setBrightness(0.8F);
+			rt4.render.Rasteriser.setBounds(rt4.core.GameShell.canvasWidth, rt4.core.GameShell.canvasHeight);
+			rt4.render.Rasteriser.prepare();
 			Rasteriser.prepareOffsets();
 			loadItem(995, 10000);
 			try {
@@ -199,10 +209,10 @@ public class Playground extends GameShell {
 		}
 	}
 
-	Sprite sprite;
+	rt4.render.primitive.Sprite sprite;
 
 	public void loadItem(int id, int count) {
-		sprite = Inv.getObjectSprite(0, id, false, count, 0);
+		sprite = rt4.data.Inv.getObjectSprite(0, id, false, count, 0);
 
 		try {
 			Files.write(
@@ -215,7 +225,7 @@ public class Playground extends GameShell {
 		;
 		for (int i = 0; i < 14657; ++i) {
 			try {
-				ObjType obj = ObjTypeList.get(i);
+				rt4.data.ObjType obj = rt4.data.ObjTypeList.get(i);
 				if (obj == null) {
 					break;
 				}
@@ -230,12 +240,12 @@ public class Playground extends GameShell {
 	}
 
 	public void loadNpc(int id) {
-		npcType = NpcTypeList.get(id);
+		npcType = rt4.data.NpcTypeList.get(id);
 		npc = new Npc();
-		BasType basType = BasTypeList.get(npcType.bastypeid);
+		rt4.data.BasType basType = rt4.data.BasTypeList.get(npcType.bastypeid);
 		npc.seqId = basType.idleAnimationId;
 		npc.setNpcType(npcType);
-		GameShell.frame.setTitle(npcType.name + " - " + id);
+		rt4.core.GameShell.frame.setTitle(npcType.name + " - " + id);
 	}
 
 	float yaw = 0.4f;
@@ -244,23 +254,23 @@ public class Playground extends GameShell {
 	int zoom3d = 471;
 
 	public void initGl() {
-		GlRenderer.init(GameShell.canvas, 0);
-		if (GlRenderer.enabled) {
-			GlRenderer.setCanvasSize(GameShell.canvasWidth, GameShell.canvasHeight);
-			GlRenderer.restoreLighting();
+		rt4.render.GlRenderer.init(rt4.core.GameShell.canvas, 0);
+		if (rt4.render.GlRenderer.enabled) {
+			rt4.render.GlRenderer.setCanvasSize(rt4.core.GameShell.canvasWidth, rt4.core.GameShell.canvasHeight);
+			rt4.render.GlRenderer.restoreLighting();
 			float yaw1 = yaw * 360.0F / 6.2831855F;
 			float pitch1 = pitch * 360.0F / 6.2831855F;
-			GlRenderer.method4171(0, 0, GameShell.canvasWidth, GameShell.canvasHeight, GameShell.canvasWidth / 2, GameShell.canvasHeight / 2, yaw1, pitch1, zoom2d, zoom3d);
-			GlRenderer.setViewportBounds(0, 0, GameShell.canvasWidth, GameShell.canvasHeight);
-			GlRenderer.setDepthTestEnabled(true);
-			GlRenderer.enableDepthMask();
-			GlRenderer.setFogEnabled(true);
-			DisplayMode.setWindowMode(false, 2, GameShell.canvasWidth, GameShell.canvasHeight);
+			rt4.render.GlRenderer.method4171(0, 0, rt4.core.GameShell.canvasWidth, rt4.core.GameShell.canvasHeight, rt4.core.GameShell.canvasWidth / 2, rt4.core.GameShell.canvasHeight / 2, yaw1, pitch1, zoom2d, zoom3d);
+			rt4.render.GlRenderer.setViewportBounds(0, 0, rt4.core.GameShell.canvasWidth, rt4.core.GameShell.canvasHeight);
+			rt4.render.GlRenderer.setDepthTestEnabled(true);
+			rt4.render.GlRenderer.enableDepthMask();
+			rt4.render.GlRenderer.setFogEnabled(true);
+			DisplayMode.setWindowMode(false, 2, rt4.core.GameShell.canvasWidth, rt4.core.GameShell.canvasHeight);
 			orientation = 292;
 			x = 100;
 			z = 218;
 			y = 236;
-			if (GameShell.canvasWidth >= 2500) {
+			if (rt4.core.GameShell.canvasWidth >= 2500) {
 				x = 56;
 				z = 176;
 				y = 120;
@@ -273,14 +283,14 @@ public class Playground extends GameShell {
 
 	private void exportGlImage(String filename) {
 		GL2 gl = GLContext.getCurrentGL().getGL2();
-		ByteBuffer buffer = GLBuffers.newDirectByteBuffer(GameShell.canvasWidth * GameShell.canvasHeight * 4);
+		ByteBuffer buffer = GLBuffers.newDirectByteBuffer(rt4.core.GameShell.canvasWidth * rt4.core.GameShell.canvasHeight * 4);
 
 		gl.glReadBuffer(GL2.GL_BACK);
-		gl.glReadPixels(0, 0, GameShell.canvasWidth, GameShell.canvasHeight, GL2.GL_BGRA, GL2.GL_UNSIGNED_BYTE, buffer);
+		gl.glReadPixels(0, 0, rt4.core.GameShell.canvasWidth, rt4.core.GameShell.canvasHeight, GL2.GL_BGRA, GL2.GL_UNSIGNED_BYTE, buffer);
 
-		int[] pixels = new int[GameShell.canvasWidth * GameShell.canvasHeight];
-		for (int y = GameShell.canvasHeight - 1; y > 0; --y) {
-			for (int x = 0; x < GameShell.canvasWidth; ++x) {
+		int[] pixels = new int[rt4.core.GameShell.canvasWidth * rt4.core.GameShell.canvasHeight];
+		for (int y = rt4.core.GameShell.canvasHeight - 1; y > 0; --y) {
+			for (int x = 0; x < rt4.core.GameShell.canvasWidth; ++x) {
 				int r = buffer.get() & 0xFF;
 				int g = buffer.get() & 0xFF;
 				int b = buffer.get() & 0xFF;
@@ -289,11 +299,11 @@ public class Playground extends GameShell {
 				if (r == 0x33 && g == 0x33 && b == 0x33) {
 					a = 0x7F;
 				}
-				pixels[x + y * GameShell.canvasWidth] = r | (g << 8) | (b << 16) | (a << 24);
+				pixels[x + y * rt4.core.GameShell.canvasWidth] = r | (g << 8) | (b << 16) | (a << 24);
 			}
 		}
 		// erase first line (black)
-		for (int x = 0; x < GameShell.canvasWidth; ++x) {
+		for (int x = 0; x < rt4.core.GameShell.canvasWidth; ++x) {
 			pixels[x] = 0x7F000000;
 		}
 
@@ -321,7 +331,7 @@ public class Playground extends GameShell {
 			int samplesPerPixel = 4;
 			int[] bandOffsets = {0, 1, 2, 3};
 			ColorModel colorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), true, false, Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE);
-			WritableRaster raster = Raster.createInterleavedRaster(buffer, GameShell.canvasWidth, GameShell.canvasHeight, samplesPerPixel * GameShell.canvasWidth, samplesPerPixel, bandOffsets, null);
+			WritableRaster raster = Raster.createInterleavedRaster(buffer, rt4.core.GameShell.canvasWidth, rt4.core.GameShell.canvasHeight, samplesPerPixel * rt4.core.GameShell.canvasWidth, samplesPerPixel, bandOffsets, null);
 			BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
 			ImageIO.write(image, "PNG", new File(filename + ".png"));
 		} catch (Exception ex) {
@@ -354,57 +364,57 @@ public class Playground extends GameShell {
 	long lastInputTime = 0;
 
 	public void inputLoop() {
-		if (Keyboard.getKey(KeyEvent.VK_W)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_W)) {
 			y += modifier;
-		} else if (Keyboard.getKey(KeyEvent.VK_S)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_S)) {
 			y -= modifier;
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_Q)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_Q)) {
 			z += modifier;
-		} else if (Keyboard.getKey(KeyEvent.VK_E)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_E)) {
 			z -= modifier;
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_SHIFT) && Keyboard.getKey(KeyEvent.VK_A)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_SHIFT) && rt4.ui.Keyboard.getKey(KeyEvent.VK_A)) {
 			orientation += modifier;
 			orientation &= 2047;
-		} else if (Keyboard.getKey(KeyEvent.VK_SHIFT) && Keyboard.getKey(KeyEvent.VK_D)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_SHIFT) && rt4.ui.Keyboard.getKey(KeyEvent.VK_D)) {
 			orientation -= modifier;
 			orientation &= 2047;
-		} else if (Keyboard.getKey(KeyEvent.VK_A)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_A)) {
 			x -= modifier;
-		} else if (Keyboard.getKey(KeyEvent.VK_D)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_D)) {
 			x += modifier;
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_UP)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_UP)) {
 			yaw -= 0.01f;
 			perspectiveChanged = true;
-		} else if (Keyboard.getKey(KeyEvent.VK_DOWN)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_DOWN)) {
 			yaw += 0.01f;
 			perspectiveChanged = true;
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_LEFT)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_LEFT)) {
 			pitch += 0.01f;
 			perspectiveChanged = true;
-		} else if (Keyboard.getKey(KeyEvent.VK_RIGHT)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_RIGHT)) {
 			pitch -= 0.01f;
 			perspectiveChanged = true;
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_F)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_F)) {
 			zoom2d -= modifier;
 			perspectiveChanged = true;
-		} else if (Keyboard.getKey(KeyEvent.VK_G)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_G)) {
 			zoom2d += modifier;
 			perspectiveChanged = true;
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_OPEN_BRACKET)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_OPEN_BRACKET)) {
 			modifier--;
-		} else if (Keyboard.getKey(KeyEvent.VK_CLOSE_BRACKET)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_CLOSE_BRACKET)) {
 			modifier++;
 		}
 
@@ -415,7 +425,7 @@ public class Playground extends GameShell {
 		}
 		lastInputTime = currentTime;
 
-		if (Keyboard.getKey(KeyEvent.VK_H)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_H)) {
 			renderHead = !renderHead;
 			if (renderHead) {
 				x = chatheadX;
@@ -440,21 +450,21 @@ public class Playground extends GameShell {
 			}
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_BACK_SLASH)) {
-			if (GlRenderer.enabled) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_BACK_SLASH)) {
+			if (rt4.render.GlRenderer.enabled) {
 				exportGlImage("dump/" + exportCounter++);
 			} else {
-				exportImage(SoftwareRaster.pixels, "dump/" + exportCounter++);
+				exportImage(rt4.render.primitive.SoftwareRaster.pixels, "dump/" + exportCounter++);
 			}
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_1)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_1)) {
 			exportCounter--;
-		} else if (Keyboard.getKey(KeyEvent.VK_2)) {
+		} else if (rt4.ui.Keyboard.getKey(KeyEvent.VK_2)) {
 			exportCounter++;
 		}
 
-		if (Keyboard.getKey(KeyEvent.VK_P)) {
+		if (rt4.ui.Keyboard.getKey(KeyEvent.VK_P)) {
 			System.out.println("cam: " + orientation + ", " + x + ", " + z + ", " + y);
 			System.out.println("per: " + yaw + ", " + pitch);
 			System.out.println("zoom: " + zoom2d + ", " + zoom3d);
@@ -466,8 +476,8 @@ public class Playground extends GameShell {
 
 	@Override
 	protected void mainLoop() {
-		Keyboard.loop();
-		Mouse.loop();
+		rt4.ui.Keyboard.loop();
+		rt4.ui.Mouse.loop();
 
 		js5NetLoop();
 		stateLoop();
@@ -497,7 +507,7 @@ public class Playground extends GameShell {
 	public void js5Connect() {
 		try {
 			if (js5ConnectState == 0) {
-				js5SocketRequest = GameShell.signLink.openSocket(GlobalConfig.DEFAULT_HOSTNAME, GlobalConfig.DEFAULT_PORT + 1);
+				js5SocketRequest = rt4.core.GameShell.signLink.openSocket(rt4.core.GlobalConfig.DEFAULT_HOSTNAME, rt4.core.GlobalConfig.DEFAULT_PORT + 1);
 				js5ConnectState++;
 			}
 			if (js5ConnectState == 1) {
@@ -510,8 +520,8 @@ public class Playground extends GameShell {
 				}
 			}
 			if (js5ConnectState == 2) {
-				js5Socket = new BufferedSocket((Socket) js5SocketRequest.result, GameShell.signLink);
-				Buffer buffer = new Buffer(5);
+				js5Socket = new rt4.network.BufferedSocket((Socket) js5SocketRequest.result, rt4.core.GameShell.signLink);
+				rt4.network.Buffer buffer = new rt4.network.Buffer(5);
 				buffer.p1(15);
 				buffer.p4(530);
 				js5Socket.write(buffer.data, 5);
@@ -526,7 +536,7 @@ public class Playground extends GameShell {
 						return;
 					}
 					js5ConnectState++;
-				} else if (MonotonicClock.currentTimeMillis() - js5ConnectTime > GlobalConfig.JS5_RESPONSE_TIMEOUT) {
+				} else if (MonotonicClock.currentTimeMillis() - js5ConnectTime > rt4.core.GlobalConfig.JS5_RESPONSE_TIMEOUT) {
 					setJs5Response(1001);
 					return;
 				}
@@ -554,21 +564,21 @@ public class Playground extends GameShell {
 	protected void mainRedraw() {
 		try {
 			if (state == 9) {
-				if (!GlRenderer.enabled) {
-					SoftwareRaster.clear(0x7F666666);
+				if (!rt4.render.GlRenderer.enabled) {
+					rt4.render.primitive.SoftwareRaster.clear(0x7F666666);
 				} else {
-					GlRenderer.clearColorAndDepthBuffers(0x333333);
+					rt4.render.GlRenderer.clearColorAndDepthBuffers(0x333333);
 				}
 
 				if (perspectiveChanged) {
 					float yaw1 = yaw * 360.0F / 6.2831855F;
 					float pitch1 = pitch * 360.0F / 6.2831855F;
-					GlRenderer.method4171(0, 0, GameShell.canvasWidth, GameShell.canvasHeight, GameShell.canvasWidth / 2, GameShell.canvasHeight / 2, yaw1, pitch1, zoom2d, zoom2d);
+					rt4.render.GlRenderer.method4171(0, 0, rt4.core.GameShell.canvasWidth, rt4.core.GameShell.canvasHeight, rt4.core.GameShell.canvasWidth / 2, rt4.core.GameShell.canvasHeight / 2, yaw1, pitch1, zoom2d, zoom2d);
 					perspectiveChanged = false;
 				}
 
 				if (npc != null) {
-					SeqType seqType = SeqTypeList.get(9804);
+					rt4.data.SeqType seqType = rt4.data.SeqTypeList.get(9804);
 					Model head = npcType.getHeadModel(seqType, 0, 0, 0);
 					if (renderHead && head != null) {
 						head.render(orientation, 25079, 60547, -44308, 48222, x, z, y, 0L, 0, null);
@@ -581,11 +591,11 @@ public class Playground extends GameShell {
 					sprite.render(canvasWidth / 2 - 144, canvasHeight / 2 - 128);
 				}
 
-				if (!GlRenderer.enabled) {
-					SoftwareRaster.frameBuffer.draw(GameShell.canvas.getGraphics());
+				if (!rt4.render.GlRenderer.enabled) {
+					rt4.render.primitive.SoftwareRaster.frameBuffer.draw(rt4.core.GameShell.canvas.getGraphics());
 				} else {
-					GlRenderer.draw();
-					GlRenderer.swapBuffers();
+					rt4.render.GlRenderer.draw();
+					rt4.render.GlRenderer.swapBuffers();
 				}
 
 				if (lastExportCounter != exportCounter) {
@@ -600,17 +610,17 @@ public class Playground extends GameShell {
 
 	@Override
 	protected void mainQuit() {
-		Keyboard.stop(GameShell.canvas);
-		Mouse.stop(GameShell.canvas);
-		Keyboard.quit();
-		Mouse.quit();
+		rt4.ui.Keyboard.stop(rt4.core.GameShell.canvas);
+		rt4.ui.Mouse.stop(rt4.core.GameShell.canvas);
+		rt4.ui.Keyboard.quit();
+		rt4.ui.Mouse.quit();
 
-		if (GlRenderer.enabled) {
-			GlRenderer.quit();
+		if (rt4.render.GlRenderer.enabled) {
+			rt4.render.GlRenderer.quit();
 		}
 
-		if (GameShell.signLink != null) {
-			GameShell.signLink.unloadGlNatives(this.getClass());
+		if (rt4.core.GameShell.signLink != null) {
+			rt4.core.GameShell.signLink.unloadGlNatives(this.getClass());
 		}
 	}
 

@@ -7,6 +7,8 @@ plugins {
 mainClassName = 'rt4.client'
 version = '1.0.0'
 
+def lwjglVersion = "3.3.4"
+
 sourceCompatibility = 11
 targetCompatibility = 11
 
@@ -47,6 +49,19 @@ dependencies {
 
     // Required at runtime for Kotlin plugins (Intrinsics, etc.)
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.23'
+
+    //LWJGL
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-glfw"   // optional for now; useful later
+    implementation "org.lwjgl:lwjgl-jawt"   // ← required for org.lwjgl.system.jawt.*
+
+    // Windows (your machine). Add other OS classifiers later if needed.
+    implementation "org.lwjgl:lwjgl::natives-windows"
+    implementation "org.lwjgl:lwjgl-opengl::natives-windows"
+    implementation "org.lwjgl:lwjgl-glfw::natives-windows"
 }
 
 jar {

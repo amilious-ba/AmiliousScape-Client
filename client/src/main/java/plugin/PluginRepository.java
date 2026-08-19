@@ -2,12 +2,15 @@ package plugin;
 
 import plugin.api.API;
 import plugin.api.MiniMenuEntry;
-import plugin.api.MiniMenuType;
-import rt4.*;
+import rt4.core.GameShell;
+import rt4.core.GlobalJsonConfig;
+import rt4.scene.Npc;
+import rt4.scene.Player;
+import rt4.ui.Component;
+import rt4.util.JagString;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelListener;
 import java.io.*;
 import java.net.URL;

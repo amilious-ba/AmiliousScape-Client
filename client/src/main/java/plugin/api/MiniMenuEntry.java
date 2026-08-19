@@ -1,7 +1,7 @@
 package plugin.api;
 
-import rt4.JagString;
-import rt4.MiniMenu;
+import rt4.util.JagString;
+import rt4.ui.MiniMenu;
 
 /**
  * Convenience wrapper for mini menu entries

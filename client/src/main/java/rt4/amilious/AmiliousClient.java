@@ -1,8 +1,9 @@
 package rt4.amilious;
 
 import plugin.PluginRepository;
-import rt4.*;
 import rt4.amilious.cheats.*;
+import rt4.core.GlobalJsonConfig;
+import rt4.util.JagString;
 
 import java.util.ArrayList;
 

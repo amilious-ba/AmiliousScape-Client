@@ -1,8 +1,8 @@
 package rt4.amilious;
 
-import rt4.ClientProt;
-import rt4.ComponentPointer;
-import rt4.InterfaceList;
+import rt4.network.ClientProt;
+import rt4.ui.ComponentPointer;
+import rt4.ui.InterfaceList;
 
 public final class ModalTools {
 

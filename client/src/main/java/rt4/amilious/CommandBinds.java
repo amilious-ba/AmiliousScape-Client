@@ -1,8 +1,8 @@
 package rt4.amilious;
 
-import rt4.Chat;
-import rt4.Cheat;
-import rt4.JagString;
+import rt4.social.Chat;
+import rt4.util.Cheat;
+import rt4.util.JagString;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

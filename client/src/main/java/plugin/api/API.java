@@ -1,15 +1,31 @@
 package plugin.api;
 
 import plugin.PluginRepository;
-import rt4.*;
-import rt4.DisplayMode;
-import rt4.Font;
+import rt4.core.*;
+import rt4.ui.*;
+import rt4.audio.MidiPlayer;
+import rt4.audio.MusicPlayer;
+import rt4.audio.SoundPlayer;
+import rt4.core.DisplayMode;
+import rt4.data.Inv;
+import rt4.data.VarcDomain;
+import rt4.data.VarpDomain;
+import rt4.network.LoginManager;
+import rt4.render.GlRenderer;
+import rt4.render.primitive.GlRaster;
+import rt4.render.primitive.SoftwareRaster;
+import rt4.render.primitive.Sprite;
+import rt4.render.primitive.SpriteLoader;
+import rt4.social.Chat;
+import rt4.ui.Font;
+import rt4.util.Cheat;
+import rt4.util.JagString;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
-import static rt4.MathUtils.clamp;
+import static rt4.util.MathUtils.clamp;
 
 /**
  * API used for writing plugins, so dozens of plugins don't break when we rename shit :)

@@ -1,6 +1,9 @@
 package rt4.amilious;
 
-import rt4.*;
+import rt4.core.GameShell;
+import rt4.core.client;
+import rt4.network.ClientProt;
+import rt4.util.JagString;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;

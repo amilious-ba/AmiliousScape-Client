@@ -1,7 +1,7 @@
 package rt4.amilious.cheats;
 
-import rt4.Chat;
-import rt4.JagString;
+import rt4.social.Chat;
+import rt4.util.JagString;
 import rt4.amilious.DebugConsole;
 
 public class DebugClear_Command implements ICommand {

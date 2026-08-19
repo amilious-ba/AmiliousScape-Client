@@ -1,7 +1,7 @@
 package rt4.amilious;
 
-import rt4.Fonts;
-import rt4.JagString;
+import rt4.ui.Fonts;
+import rt4.util.JagString;
 import rt4.amilious.cheats.DebugClear_Command;
 import rt4.amilious.cheats.DebugLog_Command;
 import rt4.amilious.cheats.DebugShowInteractions_Command;

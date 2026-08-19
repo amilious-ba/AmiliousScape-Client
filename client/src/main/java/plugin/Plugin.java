@@ -1,10 +1,9 @@
 package plugin;
 
 import plugin.api.MiniMenuEntry;
-import rt4.Component;
-import rt4.Npc;
-import rt4.Player;
-import rt4.Tile;
+import rt4.ui.Component;
+import rt4.scene.Npc;
+import rt4.scene.Player;
 
 /**
  * The base plugin class which is meant to be extended by plugins.

@@ -4,12 +4,13 @@ import com.jogamp.nativewindow.awt.AWTGraphicsConfiguration;
 import com.jogamp.nativewindow.awt.JAWTWindow;
 import com.jogamp.opengl.*;
 import jogamp.newt.awt.NewtFactoryAWT;
-import rt4.GameShell;
-import rt4.GlCleaner;
-import rt4.GlRenderer;
-import rt4.LightingManager;
-import rt4.MaterialManager;
-import rt4.ThreadUtils;
+import rt4.core.GameShell;
+import rt4.render.GlCleaner;
+import rt4.render.GlRenderer;
+import rt4.render.LightingManager;
+import rt4.render.MaterialManager;
+import rt4.core.ThreadUtils;
+import rt4.gl.jogl.JoglGlApi;
 
 import java.awt.Canvas;
 
@@ -76,6 +77,7 @@ public final class JoglBackend implements GlBackend {
             }
 
             GlRenderer.gl = GLContext.getCurrentGL().getGL2();
+            GlRenderer.api = new JoglGlApi(GlRenderer.gl);
             GlRenderer.gl.glLineWidth((float) GameShell.canvasScale);
             enabled = true;
             GlRenderer.enabled = true;
@@ -154,6 +156,7 @@ public final class JoglBackend implements GlBackend {
         enabled = false;
 
         GlRenderer.gl = null;
+        GlRenderer.api = null;
         GlRenderer.enabled = false;
         LightingManager.method2398();
     }

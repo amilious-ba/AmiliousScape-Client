@@ -4,6 +4,8 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import rt4.network.Buffer;
+import rt4.util.*;
 
 @OriginalClass("client!lk")
 public final class StructType extends SecondaryNode {

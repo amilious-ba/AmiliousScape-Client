@@ -27,11 +27,20 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
 
-      - run: mv client/build/libs/client-*.jar client/build/libs/rt4-client.jar
-      - run: sha256sum client/build/libs/rt4-client.jar | cut -d ' ' -f 1 | tr -d '\n' > client/build/libs/rt4-client.jar.sha256
+      - name: List jars
+        run: ls -la client/build/libs/
+
+      - name: Rename jar and write checksum
+        run: |
+          JAR=$(ls client/build/libs/*.jar | grep -v sources | grep -v javadoc | head -n 1)
+          echo "Using jar: $JAR"
+          cp "$JAR" client/build/libs/rt4-client.jar
+          sha256sum client/build/libs/rt4-client.jar | cut -d ' ' -f 1 | tr -d '\n' > client/build/libs/rt4-client.jar.sha256
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: rt4-client
-          path: client/build/libs/*
+          path: |
+            client/build/libs/rt4-client.jar
+            client/build/libs/rt4-client.jar.sha256

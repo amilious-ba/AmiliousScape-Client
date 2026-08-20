@@ -4,7 +4,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.23'
 }
 
-mainClassName = 'rt4.client'
+mainClassName = 'rt4.core.client'
 version = '1.0.0'
 
 def lwjglVersion = "3.3.4"

@@ -781,6 +781,11 @@ public final class client extends GameShell {
 			GameShell.method2704();
 		}
 		if (GlRenderer.enabled) {
+			// Lock GL context for this frame (LWJGL requires this, JOGL is no-op)
+			if (!GlRenderer.lockContext()) {
+				System.err.println("[Client] Failed to lock GL context - skipping frame");
+				return;
+			}
 			for (local80 = 0; local80 < 100; local80++) {
 				InterfaceList.aBooleanArray100[local80] = true;
 			}
@@ -814,6 +819,8 @@ public final class client extends GameShell {
 		}
 		if (GlRenderer.enabled && gameState != 0) {
 			GlRenderer.swapBuffers();
+			// Unlock GL context after rendering (LWJGL requires this, JOGL is no-op)
+			GlRenderer.unlockContext();
 			for (local80 = 0; local80 < InterfaceList.rectangles; local80++) {
 				InterfaceList.rectangleRedraw[local80] = false;
 			}

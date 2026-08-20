@@ -1,6 +1,5 @@
-package rt4.gl.jogl;
+package rt4.gl.lwjgl;
 
-import com.jogamp.opengl.GL2;
 import rt4.gl.GlApi;
 
 import java.nio.Buffer;
@@ -8,40 +7,42 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 /**
- * JOGL (GL2) implementation of GlApi.
+ * LWJGL implementation of GlApi.
  *
  * This facade delegates to specialized sub-implementations for each API category.
- * Each sub-implementation is a thin 1:1 wrapper around JOGL's GL2 interface.
+ * Each sub-implementation wraps LWJGL's GL11/GL12/GL13/GL14/ARB extension calls
+ * and handles buffer conversions via LwjglBufferHelper.
  *
- * This modular design makes implementing the LWJGL backend easier by allowing
- * incremental development of each API category independently.
+ * This modular design mirrors the JOGL implementation, making it easy to maintain
+ * and debug individual API categories independently.
  */
-public final class JoglGlApi implements GlApi {
+public final class LwjglGlApi implements GlApi {
 
-	private final JoglStateApi state;
-	private final JoglClearApi clear;
-	private final JoglMatrixApi matrix;
-	private final JoglTextureApi texture;
-	private final JoglBufferApi buffer;
-	private final JoglDrawApi draw;
-	private final JoglLightingApi lighting;
-	private final JoglColorApi color;
-	private final JoglRenderStateApi renderState;
-	private final JoglQueryApi query;
-	private final JoglParticleApi particle;
+	private final LwjglStateApi state;
+	private final LwjglClearApi clear;
+	private final LwjglMatrixApi matrix;
+	private final LwjglTextureApi texture;
+	private final LwjglBufferApi buffer;
+	private final LwjglDrawApi draw;
+	private final LwjglLightingApi lighting;
+	private final LwjglColorApi color;
+	private final LwjglRenderStateApi renderState;
+	private final LwjglQueryApi query;
+	private final LwjglParticleApi particle;
 
-	public JoglGlApi(GL2 gl) {
-		this.state = new JoglStateApi(gl);
-		this.clear = new JoglClearApi(gl);
-		this.matrix = new JoglMatrixApi(gl);
-		this.texture = new JoglTextureApi(gl);
-		this.buffer = new JoglBufferApi(gl);
-		this.draw = new JoglDrawApi(gl);
-		this.lighting = new JoglLightingApi(gl);
-		this.color = new JoglColorApi(gl);
-		this.renderState = new JoglRenderStateApi(gl);
-		this.query = new JoglQueryApi(gl);
-		this.particle = new JoglParticleApi(gl);
+	public LwjglGlApi() {
+		// No GL2 parameter needed - LWJGL uses static methods
+		this.state = new LwjglStateApi();
+		this.clear = new LwjglClearApi();
+		this.matrix = new LwjglMatrixApi();
+		this.texture = new LwjglTextureApi();
+		this.buffer = new LwjglBufferApi();
+		this.draw = new LwjglDrawApi();
+		this.lighting = new LwjglLightingApi();
+		this.color = new LwjglColorApi();
+		this.renderState = new LwjglRenderStateApi();
+		this.query = new LwjglQueryApi();
+		this.particle = new LwjglParticleApi();
 	}
 
 	// ============================================================

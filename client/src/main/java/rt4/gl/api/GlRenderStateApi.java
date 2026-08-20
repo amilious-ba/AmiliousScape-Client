@@ -15,4 +15,12 @@ public interface GlRenderStateApi {
 
 	void glDrawBuffer(int mode);
 	void glReadBuffer(int mode);
+
+	// ARB vertex/fragment programs (advanced features)
+	void glGenProgramsARB(int n, int[] programs, int offset);
+	void glBindProgramARB(int target, int program);
+	void glProgramStringARB(int target, int format, int len, String string);
+	void glProgramLocalParameter4fARB(int target, int index, float x, float y, float z, float w);
+	void glProgramLocalParameter4fvARB(int target, int index, float[] params, int offset);
+	void glProgramLocalParameter4fvARB(int target, int index, java.nio.FloatBuffer params);
 }

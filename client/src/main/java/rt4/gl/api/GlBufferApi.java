@@ -32,4 +32,8 @@ public interface GlBufferApi {
 
 	void glTexCoordPointer(int size, int type, int stride, Buffer pointer);
 	void glTexCoordPointer(int size, int type, int stride, long offset);
+
+	// Interleaved arrays (legacy GL)
+	void glInterleavedArrays(int format, int stride, Buffer pointer);
+	void glInterleavedArrays(int format, int stride, long offset);
 }

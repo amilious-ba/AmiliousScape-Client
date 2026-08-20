@@ -158,7 +158,6 @@ public final class UnderwaterMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!wg", name = "b", descriptor = "()V")
 	@Override
 	public final void bind() {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
 		GlRenderer.api.glCallList(this.anInt5806);
 	}
 
@@ -171,14 +170,12 @@ public final class UnderwaterMaterialRenderer implements MaterialRenderer {
 	@OriginalMember(owner = "client!wg", name = "a", descriptor = "()V")
 	@Override
 	public final void unbind() {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
 		GlRenderer.api.glCallList(this.anInt5806 + 1);
 	}
 
 	@OriginalMember(owner = "client!wg", name = "a", descriptor = "(I)V")
 	@Override
 	public final void setArgument(@OriginalArg(0) int arg0) {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
 		GlRenderer.api.glActiveTexture(GL2.GL_TEXTURE1);
 		if (aBoolean308 || arg0 >= 0) {
 			GlRenderer.api.glPushMatrix();
@@ -205,7 +202,7 @@ public final class UnderwaterMaterialRenderer implements MaterialRenderer {
 				GlRenderer.api.glTexGenfv(GL2.GL_R, GL2.GL_EYE_PLANE, this.aFloatArray29, 0);
 				GlRenderer.api.glActiveTexture(GL2.GL_TEXTURE2);
 			}
-			local1.glTexEnvfv(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, WaterMaterialRenderer.method2422(), 0);
+			GlRenderer.api.glTexEnvfv(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_COLOR, WaterMaterialRenderer.method2422(), 0);
 			if (arg0 >= 0) {
 				this.aFloatArray29[0] = 0.0F;
 				this.aFloatArray29[1] = 1.0F / (float) anInt3241;

@@ -189,22 +189,21 @@ public final class Light_Class45 {
 
 	@OriginalMember(owner = "client!fj", name = "c", descriptor = "()V")
 	public final void method1556() {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
 		if (GlRenderer.arbVboSupported) {
 			this.aClass155_1.bindArray();
-			local1.glInterleavedArrays(GL2.GL_C4UB_V3F, 16, 0L);
+			GlRenderer.api.glInterleavedArrays(GL2.GL_C4UB_V3F, 16, 0L);
 			GlRenderer.normalArrayEnabled = false;
 			this.aClass155_2.bindElementArray();
-			local1.glDrawElements(GL2.GL_TRIANGLES, this.anInt2018, GL2.GL_UNSIGNED_INT, 0L);
+			GlRenderer.api.glDrawElements(GL2.GL_TRIANGLES, this.anInt2018, GL2.GL_UNSIGNED_INT, 0L);
 			return;
 		}
 		if (GlRenderer.arbVboSupported) {
-			local1.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
-			local1.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, 0);
+			GlRenderer.api.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+			GlRenderer.api.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
-		local1.glInterleavedArrays(GL2.GL_C4UB_V3F, 16, this.aByteBuffer1);
+		GlRenderer.api.glInterleavedArrays(GL2.GL_C4UB_V3F, 16, this.aByteBuffer1);
 		GlRenderer.normalArrayEnabled = false;
-		local1.glDrawElements(GL2.GL_TRIANGLES, this.anInt2018, GL2.GL_UNSIGNED_INT, this.aByteBuffer2);
+		GlRenderer.api.glDrawElements(GL2.GL_TRIANGLES, this.anInt2018, GL2.GL_UNSIGNED_INT, this.aByteBuffer2);
 	}
 
 	@OriginalMember(owner = "client!fj", name = "a", descriptor = "([I)V")

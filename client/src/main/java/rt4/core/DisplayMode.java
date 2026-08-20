@@ -216,6 +216,11 @@ public final class DisplayMode {
 			}
 			if (aBoolean73) {
 				GlRenderer.init(GameShell.canvas, Preferences.antiAliasingMode * 2);
+				// Lock context immediately after init for LWJGL (JOGL is no-op)
+				// This ensures context is valid for font loading during mainLoad()
+				if (GlRenderer.enabled) {
+					GlRenderer.lockContext();
+				}
 			}
 		}
 		if (!GlRenderer.enabled && arg1 > 0) {

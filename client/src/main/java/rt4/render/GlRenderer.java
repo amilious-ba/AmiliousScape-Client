@@ -207,6 +207,23 @@ public final class GlRenderer {
 		if (backend != null) backend.swapBuffers();
 	}
 
+	/**
+	 * Lock the rendering context before drawing.
+	 * LWJGL requires this per-frame, JOGL is no-op.
+	 * @return true if lock succeeded
+	 */
+	public static boolean lockContext() {
+		return backend != null && backend.lockContext();
+	}
+
+	/**
+	 * Unlock the rendering context after drawing.
+	 * LWJGL requires this per-frame, JOGL is no-op.
+	 */
+	public static void unlockContext() {
+		if (backend != null) backend.unlockContext();
+	}
+
 	@OriginalMember(owner = "client!tf", name = "a", descriptor = "(Z)V")
 	public static void setFogEnabled(@OriginalArg(0) boolean enabled) {
 		if (enabled == fogEnabled) {

@@ -175,4 +175,15 @@ public final class JoglBackend implements GlBackend {
     public boolean isEnabled() {
         return enabled;
     }
+
+    @Override
+    public boolean lockContext() {
+        // No-op: JOGL handles context locking internally
+        return true;
+    }
+
+    @Override
+    public void unlockContext() {
+        // No-op: JOGL handles context unlocking internally
+    }
 }

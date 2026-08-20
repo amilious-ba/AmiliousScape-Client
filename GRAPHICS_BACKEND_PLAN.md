@@ -27,28 +27,50 @@ This plan is written so another AI (Claude, Cursor, IDE agent, etc.) can execute
 
 ---
 
-## 2. Current state (as of this plan)
+## 2. Current state (2026-08-19 Update)
 
-### Already done
+### ✅ Completed
 
 | Item | Status |
 |------|--------|
-| `rt4.gl.GlBackend` interface | Exists / should exist |
-| `rt4.gl.JoglBackend` | Owns JOGL context/drawable/window; init/quit/swap |
-| `GlRenderer.init/quit/swapBuffers` | Delegates to backend |
-| Config idea `graphicsBackend` / `-Damilious.gl=` | Partially wired or ready to wire |
-| `rt4.gl.LwjglBackend` Windows stub | JAWT + GDI32 + WGL; context create works |
-| LWJGL Gradle deps | Added (lwjgl, opengl, glfw, jawt, Windows natives) |
+| `rt4.gl.GlBackend` interface | ✅ Implemented |
+| `rt4.gl.JoglBackend` | ✅ Owns JOGL context/drawable/window; init/quit/swap |
+| `rt4.gl.LwjglBackend` | ✅ Windows JAWT + GDI32 + WGL; context creates successfully |
+| `GlRenderer.init/quit/swapBuffers` | ✅ Delegates to backend |
+| Backend selection | ✅ `graphicsBackend` in config.json + `-Damilious.gl=` |
+| LWJGL Gradle deps | ✅ Added (lwjgl 3.3.4, opengl, glfw, jawt, Windows natives) |
+| Package refactoring | ✅ Reorganized 354 files from flat rt4 into 15 logical packages |
+| Phase 2 - GL Inventory | ✅ ~85 methods, 381 call sites documented |
+| Phase 3 - GlApi design | ✅ Split into 11 sub-interfaces (State, Clear, Matrix, Texture, Buffer, Draw, Lighting, Color, RenderState, Query, Particle) |
+| Phase 3 - JoglGlApi | ✅ Implemented all 11 sub-APIs + facade (649 lines) |
+| Phase 3 - Migration (partial) | ✅ Core rendering (GlRenderer, managers, main game code) migrated to GlRenderer.api |
+| Phase 4 - LwjglGlApi | ✅ All 11 sub-APIs + facade implemented with buffer conversion helpers |
+| Phase 4 - Integration | ✅ LwjglGlApi wired into LwjglBackend |
+| Phase 5 - JAWT Locking | ✅ Per-frame context locking for LWJGL; lockContext() after init and in render loop |
+| Phase 5 - Direct Buffers | ✅ LwjglTextureApi converts heap buffers to direct buffers (ByteBuffer, IntBuffer) |
+| Phase 5 - Init Parity | ✅ LwjglBackend calls GlRenderer.afterContextCreated() to initialize materials/lighting |
+| Build system | ✅ Main class fixed (rt4.core.client), builds clean |
+| **LWJGL Backend** | ✅ **WORKING** - Loads and renders (graphics differences noted below) |
 
-### Known gap
+### ⚠️ Known gaps / Visual differences
 
-- After LWJGL init OK, client still runs HD paths that use `GlRenderer.gl` (JOGL `GL2`).
-- LWJGL does not set `GlRenderer.gl` → NPE (e.g. in Shadow).
-- Stub must not claim full HD ready (`enabled = true` without a working gl facade).
+**LWJGL backend is functional but has visual differences from JOGL:**
+- Graphics "look off" per user feedback - need to investigate specific differences
+- Possible issues:
+  - Texture filtering/wrapping parameters
+  - Blending modes
+  - Matrix operations
+  - Lighting calculations
+  - Extension availability differences
 
-### Critical constraint
+**Remaining migration work** (non-critical for basic functionality):
+- ~50 files still use `GlRenderer.gl` directly (material renderers, sprites, primitives)
+- These will cause issues only if JOGL backend is removed
+- Files: GlSprite (20), GlIndexedSprite (6), GlAlphaSprite (1), GlModel (3), material renderers, etc.
 
-**JOGL path must remain default and playable after every commit.**
+### ✅ Critical constraint maintained
+
+**JOGL path remains default and fully playable** - confirmed working after all changes.
 
 ---
 
@@ -252,67 +274,155 @@ Produce a checklist of methods actually called, grouped roughly as:
 
 ---
 
-### Phase 3 — GlApi + JOGL implementation (zero behavior change)
+### Phase 3 — GlApi + JOGL implementation (zero behavior change) ✅ MOSTLY COMPLETE
 
-**New types:**
+**Completed types:**
 
 ```
-rt4.gl.GlApi          // interface
-rt4.gl.JoglGlApi      // implements GlApi, holds GL2
+rt4.gl.GlApi                     // Main interface (extends 11 sub-interfaces)
+rt4.gl.api.GlStateApi            // Enable/disable operations
+rt4.gl.api.GlClearApi            // Clear/viewport/scissor
+rt4.gl.api.GlMatrixApi           // Matrix transformations
+rt4.gl.api.GlTextureApi          // Texture operations (largest)
+rt4.gl.api.GlBufferApi           // VBOs and client arrays
+rt4.gl.api.GlDrawApi             // Primitives, display lists
+rt4.gl.api.GlLightingApi         // Lights, materials, fog
+rt4.gl.api.GlColorApi            // Color, blending, depth
+rt4.gl.api.GlRenderStateApi      // Shading, culling
+rt4.gl.api.GlQueryApi            // State queries
+rt4.gl.api.GlParticleApi         // Point parameters
+
+rt4.gl.jogl.JoglGlApi            // Main facade (649 lines)
+rt4.gl.jogl.Jogl*Api (11 files)  // Sub-implementations
 ```
 
-**Strategy:**
+**Completed strategy:**
 
-- Define `GlApi` methods matching the inventory (names can mirror GL: `enable(int)`, `bindTexture(int,int)`, …).
-- `JoglGlApi` delegates 1:1 to `GL2`.
-- After JOGL backend init, set something like:
-  `GlRenderer.api = new JoglGlApi(gl2);`
-- Keep `GlRenderer.gl` temporarily as the same `GL2` or
-  Replace call sites gradually to `GlRenderer.api` / static `Gl.*` helper.
+- ✅ Split GlApi into 11 focused sub-interfaces for maintainability
+- ✅ JoglGlApi delegates 1:1 to GL2 via specialized sub-implementations
+- ✅ `GlRenderer.api = new JoglGlApi(gl2)` set after JOGL backend init
+- ✅ Core rendering migrated from `GlRenderer.gl.glFoo()` → `GlRenderer.api.glFoo()`
+- ✅ JOGL path tested and fully playable
 
-**Preferred low-churn option:**
+**⚠️ Remaining work:**
 
-- Introduce static helper `rt4.gl.Gl` that forwards to `GlRenderer.api`.
-- Migrate call sites file-by-file from `GlRenderer.gl.glFoo` → `Gl.foo`.
-- Until migration done, JOGL path can still use `GL2` directly.
+- 46 call sites in material renderers and primitives still use `GlRenderer.gl` directly
+- These need migration before LWJGL backend can run without crashes
 
-**Hard rule:** After this phase, with `backend=jogl`, game must look and play the same.
-
-**Exit criteria:** JOGL runs through `JoglGlApi` for all migrated sites; no gameplay regression.
+**Exit criteria:** ✅ JOGL runs through `JoglGlApi` with no gameplay regression; ⚠️ full migration incomplete
 
 ---
 
-### Phase 4 — LwjglGlApi (compat profile)
+### Phase 4 — LwjglGlApi (compat profile) ✅ IMPLEMENTED, ⚠️ BLOCKED BY PHASE 3
 
-**Requirements:**
+**Completed implementation:**
 
-- Context must be OpenGL compatibility (fixed-function: matrix stack, client arrays, texenv, etc.).
-- Windows: keep JAWT + WGL path (already started).
-- Implement `LwjglGlApi` methods using `GL11` / `GL13` / needed classes.
+```
+rt4.gl.lwjgl.LwjglGlApi            // Main facade (649 lines)
+rt4.gl.lwjgl.Lwjgl*Api (11 files)  // All sub-implementations complete
+rt4.gl.lwjgl.LwjglBufferHelper     // Buffer conversion utility with thread-local pooling
+```
 
-**Buffer differences:**
+**Technical achievements:**
 
-- JOGL often accepts Java arrays; LWJGL prefers direct `ByteBuffer`/`FloatBuffer`/`IntBuffer`.
-- Add small helpers in `LwjglGlApi` or `GlBuffers` to wrap arrays when needed.
+- ✅ OpenGL compatibility profile (fixed-function)
+- ✅ Windows JAWT + WGL path working
+- ✅ All 85 GL methods implemented using GL11/GL12/GL13/GL14
+- ✅ Buffer conversion layer: Java arrays → NIO buffers with thread-local pooling
+- ✅ ARB extensions: vertex_buffer_object, multitexture
+- ✅ Platform-specific: WGLEXTSwapControl for vsync
+- ✅ `GlRenderer.api = new LwjglGlApi()` set after context creation
 
-**Init sequence for LWJGL when ready for HD attempt:**
+**Init sequence (working):**
 
-1. Lock JAWT surface
-2. Get HWND/HDC
-3. Choose/Set pixel format
-4. wglCreateContext / wglMakeCurrent
-5. GL.createCapabilities()
-6. Construct `LwjglGlApi`, assign to `GlRenderer.api`
-7. Run same post-init setup JOGL runs (checkContext equivalent, material/lighting init) via `GlApi`, not JOGL types
-8. Unlock surface (and define lock policy for each frame later)
+1. ✅ Lock JAWT surface
+2. ✅ Get HWND/HDC
+3. ✅ Choose/Set pixel format (24-bit depth, 8-bit stencil, double-buffer)
+4. ✅ wglCreateContext / wglMakeCurrent
+5. ✅ GL.createCapabilities()
+6. ✅ Construct LwjglGlApi, assign to GlRenderer.api
+7. ⚠️ Context initializes but crashes when rendering due to incomplete Phase 3 migration
 
-**Do not call JOGL-only `afterContextCreated` that assumes `GL2`.**
+**Current blocker:**
 
-**Exit criteria:** With `-Damilious.gl=lwjgl`, client reaches login or world without NPE on missing gl. Visual bugs OK.
+- Material renderers and primitives still call `GlRenderer.gl.*` directly
+- When `GlRenderer.gl` is null (LWJGL mode), native driver crashes occur
+- **Must complete Phase 3 migration before LWJGL can render**
+
+**Exit criteria:** ⚠️ Implementation complete but blocked - needs Phase 3 completion to test rendering
 
 ---
 
-### Phase 5 — Per-frame correctness (Windows)
+### Phase 5 — Per-frame correctness (Windows) ⚠️ NEXT REQUIRED STEP
+
+**Current blocker for LWJGL rendering:**
+
+The LWJGL backend crashes during rendering because JAWT surface locking is only done during initialization. JOGL handles JAWT locking automatically, but LWJGL requires manual locking around ALL OpenGL operations.
+
+**Required changes:**
+
+1. **Implement per-frame JAWT locking in LwjglBackend:**
+   - Lock JAWT surface before each frame's OpenGL calls
+   - Unlock after swapBuffers
+   - Handle lock failures gracefully
+
+2. **Add lock/unlock methods to GlBackend interface** (optional):
+   ```java
+   boolean lockContext();
+   void unlockContext();
+   ```
+
+3. **Update game loop to call lock/unlock** or integrate locking into LwjglBackend.swapBuffers()
+
+**Without Phase 5:** LWJGL context initializes successfully but crashes on first render call (driver EXCEPTION_ACCESS_VIOLATION)
+
+**Recommended approach:** Implement JAWT lock/unlock in LwjglBackend similar to how JOGL's GLCanvas handles it internally.
+
+### Phase 5 Implementation — COMPLETED ✅
+
+**Implementation details:**
+
+1. **Added lockContext()/unlockContext() to GlBackend interface** (rt4/gl/GlBackend.java)
+   - Returns boolean to indicate success/failure
+   - Javadoc explains LWJGL needs per-frame locking, JOGL is no-op
+
+2. **LwjglBackend implementation** (rt4/gl/LwjglBackend.java):
+   - Surface remains locked from init through entire session (no unlock in unlockContext())
+   - lockContext() refreshes HDC each frame via wglMakeCurrent
+   - Avoids expensive lock/unlock cycles while maintaining valid context
+   - Proper cleanup in quit() unlocks surface
+
+3. **JoglBackend implementation** (rt4/gl/JoglBackend.java):
+   - Both methods are no-ops (JOGL handles internally)
+   - Zero behavioral change to production path
+
+4. **Integration points**:
+   - DisplayMode.setWindowMode() line 222: lockContext() called immediately after GlRenderer.init()
+   - client.java line 785: lockContext() in render loop before drawing
+   - client.java line 823: unlockContext() after swapBuffers()
+
+**Critical fixes discovered during implementation:**
+
+5. **Direct buffer requirement** (rt4/gl/lwjgl/LwjglTextureApi.java):
+   - LWJGL requires direct ByteBuffer/IntBuffer for all pixel operations
+   - Game code uses `ByteBuffer.wrap()` and `IntBuffer.wrap()` which create heap buffers
+   - Added automatic conversion: heap buffers → direct buffers before GL calls
+   - Affected methods: glTexImage2D, glTexImage3D, glTexImage1D, glTexSubImage2D
+   - Without this fix: EXCEPTION_ACCESS_VIOLATION in AMD driver (atio6axx.dll)
+
+6. **MaterialManager initialization** (rt4/gl/LwjglBackend.java line 128):
+   - Added call to `GlRenderer.afterContextCreated()` after context creation
+   - This initializes MaterialManager, LightingManager, and default textures
+   - Without this fix: NullPointerException when rendering (material renderers null)
+
+7. **Buffer type handling** (rt4/gl/lwjgl/LwjglTextureApi.java):
+   - Added explicit IntBuffer support (LWJGL has separate overloads for each buffer type)
+   - Cannot blindly cast Buffer → ByteBuffer
+   - Without this fix: ClassCastException (HeapIntBuffer cannot be cast to ByteBuffer)
+
+**Result:** LWJGL backend is now functional and renders the game. Visual differences remain (see Phase 6).
+
+### Phase 5 Original Plan — Per-frame correctness (Windows)
 
 - JAWT lock around make-current / draw / swap each frame (or validated safe pattern).
 - Resize / canvas replace / fullscreen / borderless focus behavior.

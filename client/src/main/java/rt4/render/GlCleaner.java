@@ -81,13 +81,12 @@ public final class GlCleaner {
 
 	@OriginalMember(owner = "client!fa", name = "c", descriptor = "()V")
 	public static synchronized void process() {
-		@Pc(1) GL2 local1 = GlRenderer.gl;
 		@Pc(3) int local3 = 0;
 		while (true) {
 			@Pc(8) IntNode local8 = (IntNode) aClass69_48.removeHead();
 			if (local8 == null) {
 				if (local3 > 0) {
-					local1.glDeleteBuffers(local3, anIntArray151, 0);
+					GlRenderer.api.glDeleteBuffers(local3, anIntArray151, 0);
 					local3 = 0;
 				}
 				while (true) {
@@ -97,7 +96,7 @@ public final class GlCleaner {
 							local8 = (IntNode) aClass69_50.removeHead();
 							if (local8 == null) {
 								if (local3 > 0) {
-									local1.glDeleteTextures(local3, anIntArray151, 0);
+									GlRenderer.api.glDeleteTextures(local3, anIntArray151, 0);
 								}
 								while (true) {
 									local8 = (IntNode) aClass69_51.removeHead();
@@ -109,13 +108,13 @@ public final class GlCleaner {
 										return;
 									}
 									@Pc(126) int local126 = (int) local8.key;
-									local1.glDeleteLists(local126, 1);
+									GlRenderer.api.glDeleteLists(local126, 1);
 								}
 							}
 							anIntArray151[local3++] = (int) local8.key;
 							onCardTexture -= local8.value;
 							if (local3 == 1000) {
-								local1.glDeleteTextures(local3, anIntArray151, 0);
+								GlRenderer.api.glDeleteTextures(local3, anIntArray151, 0);
 								local3 = 0;
 							}
 						}
@@ -123,7 +122,7 @@ public final class GlCleaner {
 					anIntArray151[local3++] = (int) local8.key;
 					onCard2d -= local8.value;
 					if (local3 == 1000) {
-						local1.glDeleteTextures(local3, anIntArray151, 0);
+						GlRenderer.api.glDeleteTextures(local3, anIntArray151, 0);
 						local3 = 0;
 					}
 				}
@@ -131,7 +130,7 @@ public final class GlCleaner {
 			anIntArray151[local3++] = (int) local8.key;
 			onCardGeometry -= local8.value;
 			if (local3 == 1000) {
-				local1.glDeleteBuffers(local3, anIntArray151, 0);
+				GlRenderer.api.glDeleteBuffers(local3, anIntArray151, 0);
 				local3 = 0;
 			}
 		}

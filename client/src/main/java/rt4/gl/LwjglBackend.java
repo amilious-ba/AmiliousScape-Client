@@ -9,6 +9,7 @@ import org.lwjgl.system.jawt.JAWTDrawingSurfaceInfo;
 import org.lwjgl.system.jawt.JAWTWin32DrawingSurfaceInfo;
 import org.lwjgl.system.windows.GDI32;                 // pixel format + swap
 import org.lwjgl.system.windows.PIXELFORMATDESCRIPTOR;
+import rt4.gl.lwjgl.LwjglGlApi;
 import rt4.render.GlRenderer;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -17,17 +18,19 @@ import java.awt.Canvas;
 import static org.lwjgl.system.jawt.JAWTFunctions.*;
 
 /**
- * Experimental LWJGL path. Stub: context + clear + swap only.
- * Not feature-parity with JOGL yet.
+ * LWJGL OpenGL backend using JAWT for AWT Canvas integration.
+ * Requires per-frame locking via lockContext()/unlockContext().
  */
 public final class LwjglBackend implements GlBackend {
 
     private JAWT jawt;
     private JAWTDrawingSurface surface;
+    private JAWTDrawingSurfaceInfo surfaceInfo;
     private long hwnd;
     private long hdc;
     private long hglrc;
     private boolean enabled;
+    private boolean locked;
 
     @Override
     public int init(Canvas canvas, int samples) {
@@ -113,10 +116,20 @@ public final class LwjglBackend implements GlBackend {
 
                     GL.createCapabilities();
 
+                    // Initialize LWJGL GlApi implementation
+                    GlRenderer.api = new LwjglGlApi();
+
                     enabled = true;
                     GlRenderer.enabled = true;
                     GlRenderer.canvasWidth = canvas.getSize().width;
                     GlRenderer.canvasHeight = canvas.getSize().height;
+
+                    // Initialize materials, lighting, etc (same as JoglBackend)
+                    GlRenderer.afterContextCreated();
+
+                    // Debug: verify alpha test and blend are enabled
+                    System.out.println("[LwjglBackend] GL_ALPHA_TEST enabled: " + GL11.glIsEnabled(GL11.GL_ALPHA_TEST));
+                    System.out.println("[LwjglBackend] GL_BLEND enabled: " + GL11.glIsEnabled(GL11.GL_BLEND));
 
                     // Stub only: clear + swap (still under lock)
                     GL11.glViewport(0, 0, GlRenderer.canvasWidth, GlRenderer.canvasHeight);
@@ -124,13 +137,25 @@ public final class LwjglBackend implements GlBackend {
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     GDI32.SwapBuffers(hdc);
 
-                    System.out.println("[LwjglBackend] init OK (stub — dark clear only, no full HD yet)");
+                    System.out.println("[LwjglBackend] init OK with LwjglGlApi - ready for per-frame rendering");
+
+                    // Keep surface info for per-frame locking
+                    this.surfaceInfo = dsi;
+                    this.locked = true;
+
                     return 0;
-                } finally {
-                    JAWT_DrawingSurface_FreeDrawingSurfaceInfo(dsi, surface.FreeDrawingSurfaceInfo());
+                } catch (Exception e) {
+                    // If we fail after getting surface info, clean it up
+                    if (surfaceInfo != null) {
+                        JAWT_DrawingSurface_FreeDrawingSurfaceInfo(surfaceInfo, surface.FreeDrawingSurfaceInfo());
+                        surfaceInfo = null;
+                    }
+                    throw e;
                 }
-            } finally {
+            } catch (Exception e) {
+                // If we fail after locking, unlock
                 JAWT_DrawingSurface_Unlock(surface, surface.Unlock());
+                throw e;
             }
         } catch (Throwable t) {
             t.printStackTrace();
@@ -152,6 +177,24 @@ public final class LwjglBackend implements GlBackend {
         hdc = NULL;
         hwnd = NULL;
 
+        // Clean up JAWT surface info if still held
+        if (surfaceInfo != null && surface != null) {
+            try {
+                JAWT_DrawingSurface_FreeDrawingSurfaceInfo(surfaceInfo, surface.FreeDrawingSurfaceInfo());
+            } catch (Throwable ignored) {
+            }
+            surfaceInfo = null;
+        }
+
+        // Unlock surface if locked
+        if (locked && surface != null) {
+            try {
+                JAWT_DrawingSurface_Unlock(surface, surface.Unlock());
+            } catch (Throwable ignored) {
+            }
+            locked = false;
+        }
+
         if (surface != null && jawt != null) {
             try {
                 JAWT_FreeDrawingSurface(surface, jawt.FreeDrawingSurface());
@@ -166,7 +209,8 @@ public final class LwjglBackend implements GlBackend {
 
         enabled = false;
         GlRenderer.enabled = false;
-        GlRenderer.gl = null; // LWJGL stub does not set JOGL GL2
+        GlRenderer.gl = null; // LWJGL does not use JOGL GL2
+        GlRenderer.api = null;
     }
 
     @Override
@@ -179,5 +223,85 @@ public final class LwjglBackend implements GlBackend {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public boolean lockContext() {
+        if (!enabled || surface == null) {
+            return false;
+        }
+
+        // If already locked from init, just update HDC
+        if (locked && surfaceInfo != null) {
+            JAWTWin32DrawingSurfaceInfo dsiWin = JAWTWin32DrawingSurfaceInfo.create(surfaceInfo.platformInfo());
+            hdc = dsiWin.hdc();
+            if (hdc == NULL) {
+                System.err.println("[LwjglBackend] lockContext: HDC became null");
+                return false;
+            }
+            // Make context current with fresh HDC
+            if (!WGL.wglMakeCurrent(hdc, hglrc)) {
+                System.err.println("[LwjglBackend] lockContext: wglMakeCurrent failed");
+                return false;
+            }
+            return true;
+        }
+
+        // Lock surface for this frame
+        int lock = JAWT_DrawingSurface_Lock(surface, surface.Lock());
+        if ((lock & JAWT_LOCK_ERROR) != 0) {
+            System.err.println("[LwjglBackend] lockContext: surface lock failed");
+            return false;
+        }
+
+        // Get surface info
+        surfaceInfo = JAWT_DrawingSurface_GetDrawingSurfaceInfo(surface, surface.GetDrawingSurfaceInfo());
+        if (surfaceInfo == null) {
+            JAWT_DrawingSurface_Unlock(surface, surface.Unlock());
+            System.err.println("[LwjglBackend] lockContext: GetDrawingSurfaceInfo failed");
+            return false;
+        }
+
+        // Get HDC
+        JAWTWin32DrawingSurfaceInfo dsiWin = JAWTWin32DrawingSurfaceInfo.create(surfaceInfo.platformInfo());
+        hdc = dsiWin.hdc();
+        if (hdc == NULL) {
+            JAWT_DrawingSurface_FreeDrawingSurfaceInfo(surfaceInfo, surface.FreeDrawingSurfaceInfo());
+            JAWT_DrawingSurface_Unlock(surface, surface.Unlock());
+            surfaceInfo = null;
+            System.err.println("[LwjglBackend] lockContext: HDC is null");
+            return false;
+        }
+
+        // Make context current
+        if (!WGL.wglMakeCurrent(hdc, hglrc)) {
+            JAWT_DrawingSurface_FreeDrawingSurfaceInfo(surfaceInfo, surface.FreeDrawingSurfaceInfo());
+            JAWT_DrawingSurface_Unlock(surface, surface.Unlock());
+            surfaceInfo = null;
+            System.err.println("[LwjglBackend] lockContext: wglMakeCurrent failed");
+            return false;
+        }
+
+        locked = true;
+        return true;
+    }
+
+    @Override
+    public void unlockContext() {
+        if (!locked || surface == null) {
+            return;
+        }
+
+        // Note: We keep surface locked across frames to avoid constant lock/unlock overhead
+        // The HDC is refreshed in lockContext() each frame
+        // Uncomment below to unlock per-frame (may reduce performance):
+        /*
+        if (surfaceInfo != null) {
+            JAWT_DrawingSurface_FreeDrawingSurfaceInfo(surfaceInfo, surface.FreeDrawingSurfaceInfo());
+            surfaceInfo = null;
+        }
+        JAWT_DrawingSurface_Unlock(surface, surface.Unlock());
+        locked = false;
+        */
     }
 }

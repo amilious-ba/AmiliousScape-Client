@@ -95,4 +95,14 @@ public final class JoglBufferApi implements GlBufferApi {
 	public void glTexCoordPointer(int size, int type, int stride, long offset) {
 		gl.glTexCoordPointer(size, type, stride, offset);
 	}
+
+	@Override
+	public void glInterleavedArrays(int format, int stride, Buffer pointer) {
+		gl.glInterleavedArrays(format, stride, pointer);
+	}
+
+	@Override
+	public void glInterleavedArrays(int format, int stride, long offset) {
+		gl.glInterleavedArrays(format, stride, offset);
+	}
 }

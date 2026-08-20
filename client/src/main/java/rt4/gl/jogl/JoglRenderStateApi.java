@@ -53,4 +53,34 @@ public final class JoglRenderStateApi implements GlRenderStateApi {
 	public void glReadBuffer(int mode) {
 		gl.glReadBuffer(mode);
 	}
+
+	@Override
+	public void glGenProgramsARB(int n, int[] programs, int offset) {
+		gl.glGenProgramsARB(n, programs, offset);
+	}
+
+	@Override
+	public void glBindProgramARB(int target, int program) {
+		gl.glBindProgramARB(target, program);
+	}
+
+	@Override
+	public void glProgramStringARB(int target, int format, int len, String string) {
+		gl.glProgramStringARB(target, format, len, string);
+	}
+
+	@Override
+	public void glProgramLocalParameter4fARB(int target, int index, float x, float y, float z, float w) {
+		gl.glProgramLocalParameter4fARB(target, index, x, y, z, w);
+	}
+
+	@Override
+	public void glProgramLocalParameter4fvARB(int target, int index, float[] params, int offset) {
+		gl.glProgramLocalParameter4fvARB(target, index, params, offset);
+	}
+
+	@Override
+	public void glProgramLocalParameter4fvARB(int target, int index, java.nio.FloatBuffer params) {
+		gl.glProgramLocalParameter4fvARB(target, index, params);
+	}
 }

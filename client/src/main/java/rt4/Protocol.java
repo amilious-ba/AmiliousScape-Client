@@ -2772,10 +2772,36 @@ public class Protocol {
 		InterfaceList.aClass13_22 = null;
 		@Pc(1508) Component local1508 = aClass13_11;
 		aClass13_11 = null;
-		while (Keyboard.nextKey() && InterfaceList.keyQueueSize < 128) {
-			InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
-			InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
-			InterfaceList.keyQueueSize++;
+		// Update chat focus state (only in-game)
+		if (client.gameState == 30) {
+			ChatController.update();
+		}
+
+		// Only process keyboard input for chat if chat is focused (or not in-game) OR just submitted
+		boolean justSubmitted = ChatController.justSubmitted();
+		if (client.gameState != 30 || ChatController.isFocused() || justSubmitted) {
+			while (Keyboard.nextKey() && InterfaceList.keyQueueSize < 128) {
+				int keyCode = Keyboard.keyCode;
+
+				// Block Enter key in specific cases when ChatController is enabled
+				if (ChatController.isEnabled() && keyCode == Keyboard.KEY_ENTER) {
+					// Block Enter when:
+					// 1. Focusing chat (shouldConsumeEnter = true)
+					// 2. Just submitted a message (prevents quick chat from opening)
+					if (ChatController.shouldConsumeEnter() || ChatController.shouldBlockQuickChat()) {
+						continue; // Skip this Enter key
+					}
+				}
+
+				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = keyCode;
+				InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
+				InterfaceList.keyQueueSize++;
+			}
+		} else {
+			// Chat is not focused - consume all keyboard input
+			while (Keyboard.nextKey()) {
+				// Consume keys to prevent them from queuing up
+			}
 		}
 		WorldMap.component = null;
 		if (InterfaceList.topLevelInterface != -1) {

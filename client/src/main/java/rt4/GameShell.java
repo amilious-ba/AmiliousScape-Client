@@ -564,18 +564,25 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	}
 
 	public void mainInputLoop() {
-		if (Keyboard.pressedKeys[Keyboard.KEY_UP] || Keyboard.pressedKeys[Keyboard.KEY_DOWN] || Keyboard.pressedKeys[Keyboard.KEY_LEFT] || Keyboard.pressedKeys[Keyboard.KEY_RIGHT]) {
+		// Check if arrow keys OR WASD are pressed (when ChatController enabled and chat not focused)
+		boolean wasdEnabled = ChatController.isEnabled() && !ChatController.isFocused();
+		boolean upPressed = Keyboard.pressedKeys[Keyboard.KEY_UP] || (wasdEnabled && Keyboard.pressedKeys[33]); // W
+		boolean downPressed = Keyboard.pressedKeys[Keyboard.KEY_DOWN] || (wasdEnabled && Keyboard.pressedKeys[49]); // S
+		boolean leftPressed = Keyboard.pressedKeys[Keyboard.KEY_LEFT] || (wasdEnabled && Keyboard.pressedKeys[48]); // A
+		boolean rightPressed = Keyboard.pressedKeys[Keyboard.KEY_RIGHT] || (wasdEnabled && Keyboard.pressedKeys[50]); // D
+
+		if (upPressed || downPressed || leftPressed || rightPressed) {
 			double vertical = calcRenderDelta(18.0d);
-			if (Keyboard.pressedKeys[Keyboard.KEY_UP]) {
+			if (upPressed) {
 				Camera.pitchTarget += vertical;
-			} else if (Keyboard.pressedKeys[Keyboard.KEY_DOWN]) {
+			} else if (downPressed) {
 				Camera.pitchTarget -= vertical;
 			}
 
 			double horizontal = calcRenderDelta(24.0d);
-			if (Keyboard.pressedKeys[Keyboard.KEY_LEFT]) {
+			if (leftPressed) {
 				Camera.yawTarget -= horizontal;
-			} else if (Keyboard.pressedKeys[Keyboard.KEY_RIGHT]) {
+			} else if (rightPressed) {
 				Camera.yawTarget += horizontal;
 			}
 

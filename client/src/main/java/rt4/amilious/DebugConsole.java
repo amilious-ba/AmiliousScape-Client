@@ -5,6 +5,7 @@ import rt4.JagString;
 import rt4.amilious.cheats.DebugClear_Command;
 import rt4.amilious.cheats.DebugLog_Command;
 import rt4.amilious.cheats.DebugShowInteractions_Command;
+import rt4.amilious.cheats.DebugShowTextId_Command;
 import rt4.amilious.cheats.Debug_Command;
 
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ public final class DebugConsole {
         AmiliousClient.AddCommand(new Debug_Command());
         AmiliousClient.AddCommand(new DebugLog_Command());
         AmiliousClient.AddCommand(new DebugShowInteractions_Command());
+        AmiliousClient.AddCommand(new DebugShowTextId_Command());
     }
 
     private static final class Entry {

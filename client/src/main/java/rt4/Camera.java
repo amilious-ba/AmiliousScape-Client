@@ -3,6 +3,7 @@ package rt4;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
+import rt4.amilious.ChatController;
 
 public class Camera {
 	@OriginalMember(owner = "client!id", name = "d", descriptor = "[[[I")

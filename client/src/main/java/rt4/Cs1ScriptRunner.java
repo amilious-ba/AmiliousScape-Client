@@ -777,7 +777,13 @@ public class Cs1ScriptRunner {
 											if (!component.if3) {
 												local1934 = interpolate(component, local1934);
 											}
-											local1921.drawInterfaceText(local1934, local123, local114, component.width, component.height, local276, component.shadowed ? 0 : -1, component.halign, component.valign, component.vpadding);
+
+											// Draw chat focus indicator when not focused (component 8978483)
+											if (component.id == 8978483) {
+												rt4.amilious.ChatController.drawChatFocusIndicator(local123, local114, component.width, component.height, GlRenderer.enabled);
+											}
+											int finalColor = local276;
+											local1921.drawInterfaceText(local1934, local123, local114, component.width, component.height, finalColor, component.shadowed ? 0 : -1, component.halign, component.valign, component.vpadding);
 											PluginRepository.ComponentDraw(i, component, local123, local114);
 										} else if (Component.aBoolean72) {
 											InterfaceList.redraw(component);

@@ -1,6 +1,7 @@
-package rt4;
+package rt4.amilious;
 
 import org.openrs2.deob.annotation.OriginalMember;
+import rt4.Keyboard;
 
 /**
  * Controls chat input focus and keyboard event routing.
@@ -46,6 +47,12 @@ public final class ChatController {
 	private static boolean justSubmitted = false;
 
 	/**
+	 * Debug flag to enable component ID logging when clicking
+	 */
+	@OriginalMember(owner = "client!ChatController", name = "debugShowTextId", descriptor = "Z")
+	public static boolean debugShowTextId = false;
+
+	/**
 	 * Updates the chat focus state. Should be called each game tick.
 	 * Toggles focus when Enter is pressed (not held).
 	 */
@@ -60,35 +67,17 @@ public final class ChatController {
 			return;
 		}
 
-		// Clear justSubmitted flag from previous frame
-		justSubmitted = false;
-
-		// Decrement submit timer
-		if (framesSinceSubmit > 0) {
-			framesSinceSubmit--;
-		}
-
 		boolean enterPressed = Keyboard.pressedKeys[Keyboard.KEY_ENTER];
 
 		// Toggle focus on Enter key press (rising edge detection)
 		if (enterPressed && !prevEnterPressed) {
 			if (focused) {
-				// Chat is focused - unfocus and mark that we just submitted
+				// Chat is focused - unfocus (Enter will submit the message)
 				focused = false;
-				shouldConsumeEnter = false; // Let this Enter through
-				framesSinceSubmit = 0; // Will be set to 5 on release
-				justSubmitted = true; // Mark that we're submitting THIS frame
 			} else {
-				// Focus chat - consume this Enter to prevent quick chat
+				// Chat not focused - focus it
 				focused = true;
-				shouldConsumeEnter = true; // Consume this Enter
 			}
-		} else if (!enterPressed && prevEnterPressed) {
-			// Enter was just released - now block quick chat
-			if (framesSinceSubmit == 0 && !focused) {
-				framesSinceSubmit = 5; // Block quick chat after submit
-			}
-			shouldConsumeEnter = false;
 		}
 
 		prevEnterPressed = enterPressed;
@@ -123,7 +112,7 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "shouldBlockQuickChat", descriptor = "()Z")
 	public static boolean shouldBlockQuickChat() {
-		return enabled && framesSinceSubmit > 0;
+		return enabled && framesSinceSubmit > 0; // -1 doesn't block, only positive values
 	}
 
 	/**
@@ -226,5 +215,34 @@ public final class ChatController {
 		}
 		// Reduce alpha to 40% when not focused
 		return (originalAlpha * 40) / 100;
+	}
+
+	/**
+	 * Draws the chat focus indicator rectangle when chat is not focused.
+	 * Should be called before drawing the chat text component.
+	 *
+	 * @param x X position of the component
+	 * @param y Y position of the component
+	 * @param width Width of the component
+	 * @param height Height of the component
+	 * @param glEnabled Whether OpenGL rendering is enabled
+	 */
+	@OriginalMember(owner = "client!ChatController", name = "drawChatFocusIndicator", descriptor = "(IIIIZ)V")
+	public static void drawChatFocusIndicator(int x, int y, int width, int height, boolean glEnabled) {
+		if (!enabled || focused) {
+			return; // Don't draw when disabled or focused
+		}
+
+		int padding = 2;
+		int rectX = x - padding;
+		int rectY = y;
+		int rectWidth = width + (padding * 2);
+		int rectHeight = height;
+
+		if (glEnabled) {
+			rt4.GlRaster.fillRectAlpha(rectX, rectY, rectWidth, rectHeight, 0x000000, 128);
+		} else {
+			rt4.SoftwareRaster.fillRectAlpha(rectX, rectY, rectWidth, rectHeight, 0x000000, 128);
+		}
 	}
 }

@@ -5,6 +5,7 @@ import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import rt4.amilious.AmiliousClient;
+import rt4.amilious.ChatController;
 
 //noinspection removal
 import java.applet.Applet;
@@ -709,7 +710,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			topMargin = 0;
 			instance = this;
 			frame = new Frame();
-			frame.setTitle("Jagex");
+			frame.setTitle("AmiliousScape");
 			frame.setResizable(true);
 			frame.addWindowListener(this);
 			frame.setBackground(Color.black);

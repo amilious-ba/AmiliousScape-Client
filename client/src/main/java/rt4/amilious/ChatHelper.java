@@ -1,6 +1,7 @@
-package rt4;
+package rt4.amilious;
 
 import org.openrs2.deob.annotation.OriginalMember;
+import rt4.*;
 
 /**
  * Helper class for chat operations
@@ -10,7 +11,7 @@ public final class ChatHelper {
 	/**
 	 * Sends a public chat message with the given text.
 	 * This is the same logic as opcode 5008 in ScriptRunner.
-	 * 
+	 *
 	 * @param message the message to send
 	 */
 	@OriginalMember(owner = "client!ChatHelper", name = "sendPublicMessage", descriptor = "(Lclient!na;)V")

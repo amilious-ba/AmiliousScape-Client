@@ -779,6 +779,10 @@ public class InterfaceList {
 							}
 							if (!component.aBoolean24 && local221) {
 								component.aBoolean24 = true;
+								// Debug: Log component ID and text when clicked
+								if (rt4.amilious.ChatController.debugShowTextId) {
+									System.out.println("[Amilious] Component clicked - Type: " + component.type + " ID: " + component.id + " Text: " + (component.text != null ? component.text : "null"));
+								}
 								if (component.onClickRepeat != null) {
 									request = new HookRequest();
 									request.aBoolean158 = true;

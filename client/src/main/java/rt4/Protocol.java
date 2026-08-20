@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import rt4.amilious.ChatController;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -2772,36 +2773,30 @@ public class Protocol {
 		InterfaceList.aClass13_22 = null;
 		@Pc(1508) Component local1508 = aClass13_11;
 		aClass13_11 = null;
-		// Update chat focus state (only in-game)
-		if (client.gameState == 30) {
-			ChatController.update();
-		}
-
-		// Only process keyboard input for chat if chat is focused (or not in-game) OR just submitted
-		boolean justSubmitted = ChatController.justSubmitted();
-		if (client.gameState != 30 || ChatController.isFocused() || justSubmitted) {
+		// Only process keyboard input for chat if chat is focused (or not in-game)
+		if (client.gameState != 30 || ChatController.isFocused()) {
 			while (Keyboard.nextKey() && InterfaceList.keyQueueSize < 128) {
-				int keyCode = Keyboard.keyCode;
-
-				// Block Enter key in specific cases when ChatController is enabled
-				if (ChatController.isEnabled() && keyCode == Keyboard.KEY_ENTER) {
-					// Block Enter when:
-					// 1. Focusing chat (shouldConsumeEnter = true)
-					// 2. Just submitted a message (prevents quick chat from opening)
-					if (ChatController.shouldConsumeEnter() || ChatController.shouldBlockQuickChat()) {
-						continue; // Skip this Enter key
-					}
-				}
-
-				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = keyCode;
+				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
 				InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
 				InterfaceList.keyQueueSize++;
 			}
 		} else {
-			// Chat is not focused - consume all keyboard input
+			// Chat is not focused - check for colon or slash to enable chat
 			while (Keyboard.nextKey()) {
-				// Consume keys to prevent them from queuing up
+				// If colon or slash is pressed, enable chat and let this key through
+				if (ChatController.isEnabled() && (Keyboard.keyChar == ':' || Keyboard.keyChar == '/')) {
+					ChatController.focus();
+					InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
+					InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
+					InterfaceList.keyQueueSize++;
+				}
+				// Otherwise consume all keyboard input
 			}
+		}
+
+		// Update chat focus state AFTER keyboard processing (only in-game)
+		if (client.gameState == 30) {
+			ChatController.update();
 		}
 		WorldMap.component = null;
 		if (InterfaceList.topLevelInterface != -1) {

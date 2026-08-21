@@ -9,5 +9,6 @@
     "pluginsFolder": "plugins",
     "startFullscreen": true,
     "borderlessFullscreen": false,
-    "enableAmiliousDebugAtStart": false
+    "enableAmiliousDebugAtStart": false,
+    "swapInterval": 1
 }

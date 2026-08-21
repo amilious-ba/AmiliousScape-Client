@@ -30,4 +30,7 @@ public class GlobalJsonConfig {
 	public boolean startFullscreen = false;
 	public boolean borderlessFullscreen = true;
 	public boolean enableAmiliousDebugAtStart = false;
+	/** VSync: 0 = off, 1 = on (default), -1 = adaptive if supported */
+	public int swapInterval = 1;
+
 }

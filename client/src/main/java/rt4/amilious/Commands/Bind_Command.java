@@ -1,4 +1,4 @@
-package rt4.amilious.cheats;
+package rt4.amilious.Commands;
 
 import rt4.amilious.CommandBinds;
 import rt4.amilious.DebugConsole;

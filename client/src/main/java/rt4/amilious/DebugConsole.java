@@ -2,11 +2,11 @@ package rt4.amilious;
 
 import rt4.Fonts;
 import rt4.JagString;
-import rt4.amilious.cheats.DebugClear_Command;
-import rt4.amilious.cheats.DebugLog_Command;
-import rt4.amilious.cheats.DebugShowInteractions_Command;
-import rt4.amilious.cheats.DebugShowTextId_Command;
-import rt4.amilious.cheats.Debug_Command;
+import rt4.amilious.Commands.DebugClear_Command;
+import rt4.amilious.Commands.DebugLog_Command;
+import rt4.amilious.Commands.DebugShowInteractions_Command;
+import rt4.amilious.Commands.DebugShowTextId_Command;
+import rt4.amilious.Commands.Debug_Command;
 
 import java.util.ArrayList;
 import java.util.Iterator;

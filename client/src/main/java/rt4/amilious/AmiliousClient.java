@@ -2,7 +2,10 @@ package rt4.amilious;
 
 import plugin.PluginRepository;
 import rt4.*;
-import rt4.amilious.cheats.*;
+import rt4.amilious.Commands.Bind_Command;
+import rt4.amilious.Commands.ICommand;
+import rt4.amilious.Commands.*;
+import rt4.amilious.input.InputManager;
 
 import java.util.ArrayList;
 
@@ -28,6 +31,12 @@ public final class AmiliousClient {
         //initialize components
         CommandBinds.load();
         AmiliousClient.AddCommand(new Bind_Command());
+
+        //set up input
+        InputManager.init();
+        InputManager.setPollDevices(true);
+        // leave setProcessModeKeys(false) — mode stays WORLD, no chat reactions
+
         DebugConsole.Init();
         DebugConsole.log("AmiliousScape client initialized!");
     }
@@ -68,6 +77,7 @@ public final class AmiliousClient {
     public static void update() {
         ModalTools.update();
         MapController.tickInput();
+        InputManager.tick();
     }
 
 
@@ -87,6 +97,7 @@ public final class AmiliousClient {
     private static void onLogin() {
         MenuTab.onLogin(); //let the menu tab know we just logged in
         PluginRepository.OnLogin();
+        InputManager.onLogin();
     }
 
 

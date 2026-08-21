@@ -15,6 +15,8 @@ public final class InputController {
 
             // if (shouldIgnoreHotkeys()) return;
 
+            var chatFocused = ChatController.isFocused();
+
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_PAGE_UP:
                     if (MapController.isOpen()) MapController.zoomOut();
@@ -24,14 +26,35 @@ public final class InputController {
                     if (MapController.isOpen()) MapController.zoomIn();
                     else MenuTabCycle.next();
                     break;
-                case KeyEvent.VK_F9:
-                    CommandBinds.run(0);
+                case KeyEvent.VK_0:
+                    if(!chatFocused) CommandBinds.run(0);
                     break;
-                case KeyEvent.VK_F10:
-                    CommandBinds.run(1);
+                case KeyEvent.VK_1:
+                    if(!chatFocused) CommandBinds.run(1);
                     break;
-                case KeyEvent.VK_F11:
-                    CommandBinds.run(2);
+                case KeyEvent.VK_2:
+                    if(!chatFocused) CommandBinds.run(2);
+                    break;
+                case KeyEvent.VK_3:
+                    if(!chatFocused) CommandBinds.run(3);
+                    break;
+                case KeyEvent.VK_4:
+                    if(!chatFocused) CommandBinds.run(4);
+                    break;
+                case KeyEvent.VK_5:
+                    if(!chatFocused) CommandBinds.run(5);
+                    break;
+                case KeyEvent.VK_6:
+                    if(!chatFocused) CommandBinds.run(6);
+                    break;
+                case KeyEvent.VK_7:
+                    if(!chatFocused) CommandBinds.run(7);
+                    break;
+                case KeyEvent.VK_8:
+                    if(!chatFocused) CommandBinds.run(8);
+                    break;
+                case KeyEvent.VK_9:
+                    if(!chatFocused) CommandBinds.run(9);
                     break;
                 case KeyEvent.VK_F12:
                     MenuTab current = MenuTabCycle.lastSelected();

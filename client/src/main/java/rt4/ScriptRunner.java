@@ -3047,6 +3047,7 @@ public final class ScriptRunner {
 										}
 										Protocol.outboundBuffer.p1isaac(ClientProt.RESUME_P_COUNTDIALOG);
 										Protocol.outboundBuffer.p4(int3);
+										rt4.amilious.AmiliousClient.onIntegerInputSubmitted();
 										continue;
 									}
 									if (opcode == Cs2Opcodes.sendNameInput) {
@@ -4139,6 +4140,7 @@ public final class ScriptRunner {
 														Protocol.outboundBuffer.p1(local5943);
 														WordPack.encode(Protocol.outboundBuffer, string);
 														Protocol.outboundBuffer.psize1(Protocol.outboundBuffer.offset - c);
+														rt4.amilious.input.InputManager.notifyChatSubmit();
 														continue;
 													}
 													Cheat.execute(string);
@@ -4155,6 +4157,9 @@ public final class ScriptRunner {
 														Protocol.outboundBuffer.p8(string.encode37());
 														WordPack.encode(Protocol.outboundBuffer, str1);
 														Protocol.outboundBuffer.psize1(Protocol.outboundBuffer.offset - int2);
+
+														// message actually sent
+														rt4.amilious.input.InputManager.notifyChatSubmit();
 													}
 													continue;
 												}

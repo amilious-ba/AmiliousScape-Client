@@ -153,6 +153,7 @@ public class ClientProt {
 			InterfaceList.redraw(Cs1ScriptRunner.aClass13_10);
 			Cs1ScriptRunner.aClass13_10 = null;
 		}
+		rt4.amilious.AmiliousClient.onWidgetClosed();
 	}
 
 	@OriginalMember(owner = "client!wh", name = "a", descriptor = "(IILclient!na;)V")

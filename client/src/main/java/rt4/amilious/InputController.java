@@ -1,6 +1,7 @@
 package rt4.amilious;
 
 import rt4.*;
+import rt4.amilious.input.InputManager;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -15,7 +16,7 @@ public final class InputController {
 
             // if (shouldIgnoreHotkeys()) return;
 
-            var chatFocused = ChatController.isFocused();
+            var skip = ChatController.isFocused() || InputManager.isSpecialModalMode();
 
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_PAGE_UP:
@@ -27,34 +28,34 @@ public final class InputController {
                     else MenuTabCycle.next();
                     break;
                 case KeyEvent.VK_0:
-                    if(!chatFocused) CommandBinds.run(0);
+                    if(!skip) CommandBinds.run(0);
                     break;
                 case KeyEvent.VK_1:
-                    if(!chatFocused) CommandBinds.run(1);
+                    if(!skip) CommandBinds.run(1);
                     break;
                 case KeyEvent.VK_2:
-                    if(!chatFocused) CommandBinds.run(2);
+                    if(!skip) CommandBinds.run(2);
                     break;
                 case KeyEvent.VK_3:
-                    if(!chatFocused) CommandBinds.run(3);
+                    if(!skip) CommandBinds.run(3);
                     break;
                 case KeyEvent.VK_4:
-                    if(!chatFocused) CommandBinds.run(4);
+                    if(!skip) CommandBinds.run(4);
                     break;
                 case KeyEvent.VK_5:
-                    if(!chatFocused) CommandBinds.run(5);
+                    if(!skip) CommandBinds.run(5);
                     break;
                 case KeyEvent.VK_6:
-                    if(!chatFocused) CommandBinds.run(6);
+                    if(!skip) CommandBinds.run(6);
                     break;
                 case KeyEvent.VK_7:
-                    if(!chatFocused) CommandBinds.run(7);
+                    if(!skip) CommandBinds.run(7);
                     break;
                 case KeyEvent.VK_8:
-                    if(!chatFocused) CommandBinds.run(8);
+                    if(!skip) CommandBinds.run(8);
                     break;
                 case KeyEvent.VK_9:
-                    if(!chatFocused) CommandBinds.run(9);
+                    if(!skip) CommandBinds.run(9);
                     break;
                 case KeyEvent.VK_F12:
                     MenuTab current = MenuTabCycle.lastSelected();

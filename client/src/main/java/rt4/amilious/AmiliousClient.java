@@ -6,6 +6,7 @@ import rt4.amilious.Commands.Bind_Command;
 import rt4.amilious.Commands.ICommand;
 import rt4.amilious.Commands.*;
 import rt4.amilious.input.InputManager;
+import rt4.amilious.input.SpecialModalRegistry;
 
 import java.util.ArrayList;
 
@@ -24,24 +25,23 @@ public final class AmiliousClient {
         DebugConsole.log("AmiliousScape client initializing...");
         initialized = true;
 
-        //set up input
-        InputManager.init();
-        InputManager.setPollDevices(true);
-        InputManager.setProcessModeKeys(true); // Enter/Esc arm chat → CHAT mode
         InputController.register(); // canvas may already exist
 
         if (GlobalJsonConfig.instance != null && GlobalJsonConfig.instance.enableAmiliousDebugAtStart) {
             DebugConsole.enabled = true;
             DebugConsole.log("debug enabled at start");
         }
-        //initialize components
+
         CommandBinds.load();
         AmiliousClient.AddCommand(new Bind_Command());
 
-        //set up input
+        // Input system
         InputManager.init();
         InputManager.setPollDevices(true);
         InputManager.setProcessModeKeys(true); // Enter/Esc arm chat → CHAT mode
+
+        // Special text modals (amount dialog iface 752, etc.)
+        ModalController.init();
 
         DebugConsole.Init();
         DebugConsole.log("AmiliousScape client initialized!");
@@ -75,7 +75,9 @@ public final class AmiliousClient {
     /** Call at start of ClientProt.method4512. */
     public static void onInterfaceButton(JagString option, int child, int button, int componentId) {
         MenuTab.onComponent(componentId);
+        ModalController.onComponent(componentId);
         MapController.onComponent(componentId);
+        rt4.amilious.input.ChatboxState.onChatTabClicked(componentId);
         if(DebugConsole.showInteractions)DebugConsole.log(option.toString() + " " + child + " " + button + " " + componentId);
     }
 
@@ -104,6 +106,31 @@ public final class AmiliousClient {
         MenuTab.onLogin(); //let the menu tab know we just logged in
         PluginRepository.OnLogin();
         InputManager.onLogin();
+    }
+
+    public static void onInterfaceOpen(int interfaceId) {
+        ModalController.onInterfaceOpen(interfaceId);
+    }
+
+    public static void onIntegerInputSubmitted() {
+        ModalController.onIntegerInputSubmitted();
+    }
+
+    public static void onNameInputSubmitted() {
+        ModalController.onNameInputSubmitted();
+    }
+
+    public static void onStringInputSubmitted() {
+        ModalController.onStringInputSubmitted();
+    }
+
+    public static void onWidgetClosed() {
+        ModalController.onWidgetClosed();
+    }
+
+    public static void onMiniMenuAction(int index, int actionCode, JagString op, JagString opBase,
+                                        int arg1, int arg2) {
+        ModalController.onMiniMenuAction(index, actionCode, op, opBase);
     }
 
 

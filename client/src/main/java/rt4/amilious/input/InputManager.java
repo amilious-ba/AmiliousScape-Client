@@ -42,6 +42,12 @@ public final class InputManager {
 
     /** User wants chat armed (Enter). Cleared on Esc, map, special modal, login, submit. */
     private static boolean chatArmed = false;
+    /**
+     * Enter was pressed while already in CHAT.
+     * If no notifyChatSubmit() happens this frame, leave CHAT on the next tick.
+     */
+    private static boolean disarmChatIfNoSubmit;
+    private static boolean submittedSinceArmEnter;
 
     private static final List<InputDevice> devices = new ArrayList<InputDevice>();
     private static final KeyboardDevice keyboardDevice = new KeyboardDevice();
@@ -101,6 +107,14 @@ public final class InputManager {
     public static void tick() {
         if (!initialized) {
             init();
+        }
+
+        if (disarmChatIfNoSubmit) {
+            disarmChatIfNoSubmit = false;
+            if (!submittedSinceArmEnter) {
+                chatArmed = false;
+            }
+            submittedSinceArmEnter = false;
         }
 
         consumeEnterThisFrame = false;
@@ -294,6 +308,8 @@ public final class InputManager {
                 || MapController.isOpen()
                 || SpecialModalRegistry.isActive()) {
             chatArmed = false;
+            disarmChatIfNoSubmit = false;
+            submittedSinceArmEnter = false;
             prevEnter = enterDown;
             prevEscape = escapeDown;
             return;
@@ -301,14 +317,20 @@ public final class InputManager {
 
         if (escapePressed && cfg.escapeClosesChat && chatArmed) {
             chatArmed = false;
+            disarmChatIfNoSubmit = false;
+            submittedSinceArmEnter = false;
         } else if (enterPressed && cfg.enterOpensChat) {
             if (!chatArmed) {
+                // WORLD → CHAT
                 if (ChatboxState.isVisible() || !cfg.forceWorldWhenChatHidden) {
                     chatArmed = true;
                     consumeEnterThisFrame = true;
                 }
+            } else {
+                // Already CHAT: Enter may submit this frame; if not, leave CHAT next tick
+                disarmChatIfNoSubmit = true;
+                submittedSinceArmEnter = false;
             }
-            // Enter while already armed = submit path (when chat is hooked later)
         }
 
         prevEnter = enterDown;
@@ -406,8 +428,8 @@ public final class InputManager {
             return true;
         }
         InputMode m = getMode();
-        return m == InputMode.WORLD || m == InputMode.MAP || m == InputMode.MAIN_MENU
-                || m == InputMode.SPECIAL_MODAL;
+
+        return m == InputMode.WORLD || m == InputMode.MAP;
     }
 
     public static boolean shouldBlockQuickChat() {
@@ -458,6 +480,8 @@ public final class InputManager {
 
     public static void notifyChatSubmit() {
         submittedThisFrame = true;
+        submittedSinceArmEnter = true;
+        disarmChatIfNoSubmit = false;
         if (InputConfig.INSTANCE.autoWorldAfterSend) {
             chatArmed = false;
         }

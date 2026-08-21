@@ -447,6 +447,17 @@ public class MiniMenu {
 		if (arg0 < 0) {
 			return;
 		}
+
+		// Amilious: menu option chosen
+		rt4.amilious.AmiliousClient.onMiniMenuAction(
+				arg0,
+				actions[arg0],
+				ops[arg0],
+				opBases[arg0],
+				intArgs1[arg0],
+				intArgs2[arg0]
+		);
+
 		@Pc(15) int local15 = intArgs1[arg0];
 		@Pc(19) int local19 = intArgs2[arg0];
 		@Pc(23) int actionCode = actions[arg0];

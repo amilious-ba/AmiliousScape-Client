@@ -353,6 +353,10 @@ public class InterfaceList {
 		if (arg0 == -1 || !load(arg0)) {
 			return;
 		}
+
+		// Amilious: interface group is now loaded
+		rt4.amilious.AmiliousClient.onInterfaceOpen(arg0);
+
 		@Pc(31) Component[] local31 = components[arg0];
 		for (@Pc(33) int local33 = 0; local33 < local31.length; local33++) {
 			@Pc(41) Component local41 = local31[local33];
@@ -1011,6 +1015,11 @@ public class InterfaceList {
 							component.lastTransmitTimer = transmitTimer;
 							if (component.onKey != null) {
 								for (i = 0; i < keyQueueSize; i++) {
+									// Blocks WORLD Enter and the same-frame Enter that opens CHAT (stops QC)
+									if (keyCodes[i] == Keyboard.KEY_ENTER
+											&& rt4.amilious.input.InputManager.shouldConsumeEnter()) {
+										continue;
+									}
 									@Pc(1430) HookRequest local1430 = new HookRequest();
 									local1430.source = component;
 									local1430.keyCode = keyCodes[i];

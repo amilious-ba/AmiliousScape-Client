@@ -1,5 +1,6 @@
 package rt4.amilious.input;
 
+import rt4.amilious.MapController;
 import rt4.amilious.input.action.Action;
 import rt4.amilious.input.action.ActionMapper;
 import rt4.amilious.input.device.GamepadDevice;
@@ -7,6 +8,7 @@ import rt4.amilious.input.device.InputDevice;
 import rt4.amilious.input.device.KeyboardDevice;
 import rt4.amilious.input.state.InputButtons;
 import rt4.amilious.input.state.InputFrame;
+import rt4.client;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,18 +16,32 @@ import java.util.List;
 /**
  * Facade for the input system.
  *
- * Background mode (current):
- *   init() / tick() / onLogin() may be called from AmiliousClient.
- *   Devices do not read hardware yet — tick uses empty poll + optional
- *   beginFrame(false, false) so nothing changes gameplay.
+ * Lifecycle (from AmiliousClient):
+ *   init() / tick() / onLogin()
  *
- * Later:
- *   KeyboardDevice.poll fills the frame from rt4.Keyboard;
- *   Keyboard.java gates chat with shouldSendKeyToChat() etc.
+ * Current stage:
+ *   - KeyboardDevice can poll rt4.Keyboard when pollDevices is true
+ *   - Mode is derived each tick from game state, map, special modals, chat arming
+ *   - processModeKeys controls whether Enter/Esc arm/disarm chat
+ *   - Keyboard.java is NOT gated yet (vanilla chat/binds still own behavior)
+ *
+ * Mode priority (highest first):
+ *   MAIN_MENU → MAP → SPECIAL_MODAL → CHAT → WORLD
  */
 public final class InputManager {
 
+    /**
+     * Called when derived mode changes (once per transition, not every tick).
+     */
+    public interface ModeListener {
+        void onModeChanged(InputMode from, InputMode to);
+    }
+
     private static InputMode mode = InputMode.WORLD;
+    private static InputMode previousMode = InputMode.WORLD;
+
+    /** User wants chat armed (Enter). Cleared on Esc, map, special modal, login, submit. */
+    private static boolean chatArmed = false;
 
     private static final List<InputDevice> devices = new ArrayList<InputDevice>();
     private static final KeyboardDevice keyboardDevice = new KeyboardDevice();
@@ -38,17 +54,22 @@ public final class InputManager {
 
     private static final ActionMapper mapper = new ActionMapper();
 
+    private static final List<ModeListener> modeListeners = new ArrayList<ModeListener>();
+
     /** True this frame: Enter opened CHAT — do not treat as submit/QC. */
     private static boolean consumeEnterThisFrame;
 
     /** True this frame: user submitted chat. */
     private static boolean submittedThisFrame;
 
-    /** When false, tick does not call device.poll (fully inert). */
+    /** When false, tick does not call device.poll. */
     private static boolean pollDevices = false;
 
-    /** When false, mode machine ignores real enter/escape even if passed in. */
+    /** When false, Enter/Esc do not arm/disarm chat. */
     private static boolean processModeKeys = false;
+
+    /** Log mode enter/exit to stdout when true. */
+    private static boolean logModeChanges = true;
 
     private static boolean prevEnter;
     private static boolean prevEscape;
@@ -75,8 +96,7 @@ public final class InputManager {
     }
 
     /**
-     * Background tick — safe to call every frame from AmiliousClient.update().
-     * Does not read Keyboard/Mouse until pollDevices is enabled.
+     * Call every frame from AmiliousClient.update().
      */
     public static void tick() {
         if (!initialized) {
@@ -100,22 +120,23 @@ public final class InputManager {
 
         currentFrame.computeEdges(previousFrame);
 
-        // Mode machine: by default no real keys (processModeKeys=false)
-        boolean enterDown = false;
-        boolean escapeDown = false;
         if (processModeKeys) {
-            enterDown = currentFrame.buttonDown[InputButtons.ENTER];
-            escapeDown = currentFrame.buttonDown[InputButtons.ESCAPE];
+            boolean enterDown = currentFrame.buttonDown[InputButtons.ENTER];
+            boolean escapeDown = currentFrame.buttonDown[InputButtons.ESCAPE];
+            processChatArming(enterDown, escapeDown);
+        } else {
+            prevEnter = false;
+            prevEscape = false;
         }
-        updateMode(enterDown, escapeDown);
 
+        InputMode next = deriveMode();
+        applyMode(next);
         mapper.update(currentFrame, mode);
-
     }
 
     /**
      * Optional alternate entry if you want to feed key state without devices yet.
-     * Still safe: pass false,false for background.
+     * Prefer tick().
      */
     public static void beginFrame(boolean enterDown, boolean escapeDown) {
         if (!initialized) {
@@ -123,8 +144,10 @@ public final class InputManager {
         }
         consumeEnterThisFrame = false;
         submittedThisFrame = false;
-        updateMode(enterDown, escapeDown);
-        // No mapper update here unless you also poll — prefer tick()
+        if (processModeKeys) {
+            processChatArming(enterDown, escapeDown);
+        }
+        applyMode(deriveMode());
     }
 
     public static void endFrame() {
@@ -137,7 +160,10 @@ public final class InputManager {
     }
 
     public static void reset() {
+        InputMode old = mode;
         mode = InputMode.WORLD;
+        previousMode = InputMode.WORLD;
+        chatArmed = false;
         prevEnter = false;
         prevEscape = false;
         consumeEnterThisFrame = false;
@@ -145,20 +171,27 @@ public final class InputManager {
         currentFrame.clear();
         previousFrame.clear();
         ChatboxState.resetToLoginDefaults();
+        SpecialModalRegistry.reset();
+        // Do not fire listeners on reset/login spam unless mode actually differed
+        if (old != mode && initialized) {
+            fireModeChanged(old, mode);
+        }
     }
 
     // -------------------------------------------------------------------------
-    // Feature flags (turn on when ready to read / react)
+    // Feature flags
     // -------------------------------------------------------------------------
 
-    /** Enable KeyboardDevice/GamepadDevice.poll (still empty until devices are filled). */
     public static void setPollDevices(boolean value) {
         pollDevices = value;
     }
 
-    /** Enable WORLD/CHAT transitions from Enter/Esc in the frame. */
     public static void setProcessModeKeys(boolean value) {
         processModeKeys = value;
+    }
+
+    public static void setLogModeChanges(boolean value) {
+        logModeChanges = value;
     }
 
     public static boolean isPollDevices() {
@@ -169,21 +202,85 @@ public final class InputManager {
         return processModeKeys;
     }
 
+    public static boolean isLogModeChanges() {
+        return logModeChanges;
+    }
+
+    // -------------------------------------------------------------------------
+    // Mode listeners
+    // -------------------------------------------------------------------------
+
+    public static void addModeListener(ModeListener listener) {
+        if (listener != null && !modeListeners.contains(listener)) {
+            modeListeners.add(listener);
+        }
+    }
+
+    public static void removeModeListener(ModeListener listener) {
+        modeListeners.remove(listener);
+    }
+
+    /**
+     * Apply derived mode; fire enter/exit only when it changes.
+     */
+    private static void applyMode(InputMode next) {
+        if (next == null) {
+            next = InputMode.WORLD;
+        }
+        if (next == mode) {
+            return;
+        }
+        previousMode = mode;
+        mode = next;
+        fireModeChanged(previousMode, mode);
+    }
+
+    private static void fireModeChanged(InputMode from, InputMode to) {
+        if (logModeChanges) {
+            logModeTransition(from, to);
+        }
+        for (int i = 0; i < modeListeners.size(); i++) {
+            try {
+                modeListeners.get(i).onModeChanged(from, to);
+            } catch (Exception e) {
+                System.err.println("[input] ModeListener error: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void logModeTransition(InputMode from, InputMode to) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[input] mode ").append(from).append(" -> ").append(to);
+        if (to == InputMode.SPECIAL_MODAL) {
+            String name = SpecialModalRegistry.getActiveName();
+            if (name != null) {
+                sb.append(" (").append(name).append(")");
+            } else {
+                sb.append(" (unnamed)");
+            }
+        } else if (from == InputMode.SPECIAL_MODAL) {
+            // leaving special — name may already be cleared; still note exit
+            sb.append(" (left special modal)");
+        }
+        if (to == InputMode.CHAT || from == InputMode.CHAT) {
+            sb.append(" chatArmed=").append(chatArmed);
+        }
+        if (to == InputMode.MAP || from == InputMode.MAP) {
+            sb.append(" mapOpen=").append(MapController.isOpen());
+        }
+        System.out.println(sb.toString());
+    }
+
     // -------------------------------------------------------------------------
     // Mode machine
     // -------------------------------------------------------------------------
 
-    private static void updateMode(boolean enterDown, boolean escapeDown) {
+    /**
+     * Enter/Esc only arm/disarm chat. Final mode always comes from deriveMode().
+     */
+    private static void processChatArming(boolean enterDown, boolean escapeDown) {
         InputConfig cfg = InputConfig.INSTANCE;
         if (!cfg.enabled) {
-            mode = InputMode.CHAT;
-            prevEnter = enterDown;
-            prevEscape = escapeDown;
-            return;
-        }
-
-        if (cfg.forceWorldWhenChatHidden && ChatboxState.isCollapsed()) {
-            mode = InputMode.WORLD;
             prevEnter = enterDown;
             prevEscape = escapeDown;
             return;
@@ -192,19 +289,64 @@ public final class InputManager {
         boolean enterPressed = enterDown && !prevEnter;
         boolean escapePressed = escapeDown && !prevEscape;
 
-        if (mode == InputMode.WORLD) {
-            if (enterPressed && cfg.enterOpensChat && ChatboxState.isVisible()) {
-                mode = InputMode.CHAT;
-                consumeEnterThisFrame = true;
+        // Cannot arm chat on map / main menu / special modal
+        if (client.gameState != 30
+                || MapController.isOpen()
+                || SpecialModalRegistry.isActive()) {
+            chatArmed = false;
+            prevEnter = enterDown;
+            prevEscape = escapeDown;
+            return;
+        }
+
+        if (escapePressed && cfg.escapeClosesChat && chatArmed) {
+            chatArmed = false;
+        } else if (enterPressed && cfg.enterOpensChat) {
+            if (!chatArmed) {
+                if (ChatboxState.isVisible() || !cfg.forceWorldWhenChatHidden) {
+                    chatArmed = true;
+                    consumeEnterThisFrame = true;
+                }
             }
-        } else {
-            if (escapePressed && cfg.escapeClosesChat) {
-                mode = InputMode.WORLD;
-            }
+            // Enter while already armed = submit path (when chat is hooked later)
         }
 
         prevEnter = enterDown;
         prevEscape = escapeDown;
+    }
+
+    /**
+     * Priority: MAIN_MENU → MAP → SPECIAL_MODAL → CHAT → WORLD
+     */
+    public static InputMode deriveMode() {
+        InputConfig cfg = InputConfig.INSTANCE;
+        if (!cfg.enabled) {
+            return InputMode.CHAT; // vanilla-like
+        }
+
+        if (client.gameState != 30) {
+            return InputMode.MAIN_MENU;
+        }
+
+        if (MapController.isOpen()) {
+            chatArmed = false; // map hides chat
+            return InputMode.MAP;
+        }
+
+        if (SpecialModalRegistry.isActive()) {
+            chatArmed = false;
+            return InputMode.SPECIAL_MODAL;
+        }
+
+        if (chatArmed && ChatboxState.isVisible()) {
+            return InputMode.CHAT;
+        }
+
+        if (chatArmed && cfg.forceWorldWhenChatHidden && ChatboxState.isCollapsed()) {
+            chatArmed = false;
+        }
+
+        return InputMode.WORLD;
     }
 
     // -------------------------------------------------------------------------
@@ -215,29 +357,45 @@ public final class InputManager {
         return mode;
     }
 
+    public static InputMode getPreviousMode() {
+        return previousMode;
+    }
+
+    /** True only on the frame the mode changed (after applyMode in tick). */
+    public static boolean didModeChangeThisFrame() {
+        return mode != previousMode;
+    }
+
     public static boolean isWorldMode() {
-        if (!InputConfig.INSTANCE.enabled) {
-            return false;
-        }
-        return mode == InputMode.WORLD;
+        return getMode() == InputMode.WORLD;
     }
 
     public static boolean isChatMode() {
-        if (!InputConfig.INSTANCE.enabled) {
-            return true;
-        }
-        return mode == InputMode.CHAT;
+        return getMode() == InputMode.CHAT;
+    }
+
+    public static boolean isMapMode() {
+        return getMode() == InputMode.MAP;
+    }
+
+    public static boolean isMainMenuMode() {
+        return getMode() == InputMode.MAIN_MENU;
+    }
+
+    public static boolean isSpecialModalMode() {
+        return getMode() == InputMode.SPECIAL_MODAL;
+    }
+
+    public static boolean isChatArmed() {
+        return chatArmed;
     }
 
     public static boolean shouldSendKeyToChat() {
-        return isChatMode() && ChatboxState.isVisible();
+        return getMode() == InputMode.CHAT && ChatboxState.isVisible();
     }
 
     public static boolean shouldAllowWorldBinds() {
-        if (!InputConfig.INSTANCE.enabled) {
-            return false;
-        }
-        return mode == InputMode.WORLD;
+        return getMode() == InputMode.WORLD;
     }
 
     public static boolean shouldConsumeEnter() {
@@ -247,7 +405,9 @@ public final class InputManager {
         if (consumeEnterThisFrame) {
             return true;
         }
-        return mode == InputMode.WORLD;
+        InputMode m = getMode();
+        return m == InputMode.WORLD || m == InputMode.MAP || m == InputMode.MAIN_MENU
+                || m == InputMode.SPECIAL_MODAL;
     }
 
     public static boolean shouldBlockQuickChat() {
@@ -257,7 +417,7 @@ public final class InputManager {
         if (!InputConfig.INSTANCE.allowQuickChatOnEmptyEnter) {
             return true;
         }
-        return mode != InputMode.CHAT;
+        return getMode() != InputMode.CHAT;
     }
 
     public static boolean didSubmitThisFrame() {
@@ -293,45 +453,62 @@ public final class InputManager {
     }
 
     // -------------------------------------------------------------------------
-    // Events (call from future chat hooks)
+    // Events (call from future chat / UI hooks)
     // -------------------------------------------------------------------------
 
     public static void notifyChatSubmit() {
         submittedThisFrame = true;
         if (InputConfig.INSTANCE.autoWorldAfterSend) {
-            mode = InputMode.WORLD;
+            chatArmed = false;
         }
+        applyMode(deriveMode());
     }
 
     public static boolean notifyEmptyEnter() {
         if (!InputConfig.INSTANCE.allowQuickChatOnEmptyEnter) {
-            mode = InputMode.WORLD;
+            chatArmed = false;
+            applyMode(deriveMode());
             return false;
         }
-        return mode == InputMode.CHAT;
+        return getMode() == InputMode.CHAT;
     }
 
     public static void enterChatMode() {
+        if (client.gameState != 30) {
+            return;
+        }
+        if (MapController.isOpen()) {
+            return;
+        }
+        if (SpecialModalRegistry.isActive()) {
+            return;
+        }
         if (InputConfig.INSTANCE.forceWorldWhenChatHidden && ChatboxState.isCollapsed()) {
             return;
         }
-        mode = InputMode.CHAT;
+        chatArmed = true;
+        applyMode(deriveMode());
     }
 
     public static void enterWorldMode() {
-        mode = InputMode.WORLD;
+        chatArmed = false;
+        applyMode(deriveMode());
     }
 
     public static void setMode(InputMode newMode) {
         if (newMode == null) {
             return;
         }
-        if (newMode == InputMode.CHAT
-                && InputConfig.INSTANCE.forceWorldWhenChatHidden
-                && ChatboxState.isCollapsed()) {
-            mode = InputMode.WORLD;
-            return;
+        if (newMode == InputMode.CHAT) {
+            enterChatMode();
+        } else if (newMode == InputMode.WORLD) {
+            enterWorldMode();
+        } else {
+            if (newMode == InputMode.MAP || newMode == InputMode.SPECIAL_MODAL
+                    || newMode == InputMode.MAIN_MENU) {
+                chatArmed = false;
+            }
+            applyMode(newMode);
         }
-        mode = newMode;
     }
 }

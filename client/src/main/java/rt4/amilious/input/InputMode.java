@@ -1,15 +1,22 @@
 package rt4.amilious.input;
 
 /**
- * High-level input modes for the client.
- * WORLD = movement / binds; CHAT = typing into chat.
+ * High-level input modes.
+ * Priority (highest first): MAIN_MENU → MAP → SPECIAL_MODAL → CHAT → WORLD
  */
 public enum InputMode {
-    /** Default: hotkeys, camera, movement. Keys do not go to chat. */
-    WORLD,
+    /** Not in game world (gameState != 30). */
+    MAIN_MENU,
 
-    /** Chat armed: keys go to the chat buffer. */
-    CHAT
+    /** World map open (chat is hidden). Nav keys pan/zoom. */
+    MAP,
 
-    // Future: UI (bank, dialogs) if you want a third mode
+    /** Text-hungry interface (report, quantity type-in, etc.). Above chat. */
+    SPECIAL_MODAL,
+
+    /** Chat armed and visible. Keys go to chat buffer. */
+    CHAT,
+
+    /** Default in-game: hotkeys, optional key-camera. Bank/normal overlays stay here. */
+    WORLD
 }

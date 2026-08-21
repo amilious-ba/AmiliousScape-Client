@@ -7,8 +7,9 @@
     "js5_port": 43595,
     "mouseWheelZoom": true,
     "pluginsFolder": "plugins",
-    "startFullscreen": true,
+    "startFullscreen": false,
     "borderlessFullscreen": true,
     "enableAmiliousDebugAtStart": false,
-    "graphicsBackend": "jogl"
+    "graphicsBackend": "jogl",
+    "swapInterval": 1
 }

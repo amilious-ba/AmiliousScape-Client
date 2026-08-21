@@ -24,6 +24,7 @@ import rt4.ui.*;
 import rt4.util.*;
 import rt4.world.MapMarker;
 import rt4.world.PathFinder;
+import rt4.amilious.ChatController;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -2792,10 +2793,30 @@ public class Protocol {
 		InterfaceList.aClass13_22 = null;
 		@Pc(1508) Component local1508 = aClass13_11;
 		aClass13_11 = null;
-		while (Keyboard.nextKey() && InterfaceList.keyQueueSize < 128) {
-			InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
-			InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
-			InterfaceList.keyQueueSize++;
+		// Only process keyboard input for chat if chat is focused (or not in-game)
+		if (client.gameState != 30 || ChatController.isFocused()) {
+			while (Keyboard.nextKey() && InterfaceList.keyQueueSize < 128) {
+				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
+				InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
+				InterfaceList.keyQueueSize++;
+			}
+		} else {
+			// Chat is not focused - check for colon or slash to enable chat
+			while (Keyboard.nextKey()) {
+				// If colon or slash is pressed, enable chat and let this key through
+				if (ChatController.isEnabled() && (Keyboard.keyChar == ':' || Keyboard.keyChar == '/')) {
+					ChatController.focus();
+					InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
+					InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
+					InterfaceList.keyQueueSize++;
+				}
+				// Otherwise consume all keyboard input
+			}
+		}
+
+		// Update chat focus state AFTER keyboard processing (only in-game)
+		if (client.gameState == 30) {
+			ChatController.update();
 		}
 		WorldMap.component = null;
 		if (InterfaceList.topLevelInterface != -1) {

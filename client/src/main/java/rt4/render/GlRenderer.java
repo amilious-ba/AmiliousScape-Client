@@ -271,7 +271,16 @@ public final class GlRenderer {
 		api.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_RGB, GL2.GL_MODULATE);
 		api.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_COMBINE_ALPHA, GL2.GL_MODULATE);
 		api.glActiveTexture(GL2.GL_TEXTURE0);
-		api.setSwapInterval(0);
+
+        int interval = 1;
+        if (GlobalJsonConfig.instance != null) {
+            interval = GlobalJsonConfig.instance.swapInterval;
+        }
+        // Clamp to sane values
+        if (interval < -1) interval = -1;
+        if (interval > 1) interval = 1;
+        api.setSwapInterval(interval);
+
 		api.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
 		api.glShadeModel(GL2.GL_SMOOTH);
 		api.glClearDepth(1.0D);

@@ -13,6 +13,7 @@ import rt4.ui.InterfaceList;
 import rt4.ui.Keyboard;
 import rt4.util.Timer;
 import rt4.util.TracingException;
+import rt4.amilious.ChatController;
 
 //noinspection removal
 import java.applet.Applet;
@@ -59,6 +60,11 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 	@OriginalMember(owner = "client!dl", name = "d", descriptor = "I")
 	public static int canvasWidth;
+
+	/** True when we are in single-window borderless fullscreen (no second Frame). */
+	public static boolean borderlessFullscreenActive = false;
+	/** True when exclusive FS is active on the main frame (setFullScreenWindow). */
+	public static boolean exclusiveFullscreenActive = false;
 
 	@OriginalMember(owner = "client!uj", name = "B", descriptor = "I")
 	public static int canvasHeight;
@@ -343,9 +349,12 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	public final synchronized void addCanvas() {
 		if (canvas != null) {
 			canvas.removeFocusListener(this);
-			canvas.getParent().remove(canvas);
+			if (canvas.getParent() != null) {
+				canvas.getParent().remove(canvas);
+			}
 		}
-		@Pc(19) Container container;
+
+		Container container;
 		if (fullScreenFrame != null) {
 			container = fullScreenFrame;
 		} else if (frame == null) {
@@ -353,27 +362,36 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		} else {
 			container = frame;
 		}
+
 		container.setLayout(null);
 		canvas = new GameCanvas(this);
 		container.add(canvas);
 		canvas.setSize(canvasWidth, canvasHeight);
 		canvas.setVisible(true);
+
 		if (container == frame) {
-			// Hide frame during resize/reposition to prevent flickering
-			frame.setVisible(false);
+			if (borderlessFullscreenActive || exclusiveFullscreenActive) {
+				// FS on main frame – already sized/positioned; only place canvas
+				canvas.setLocation(0, 0);
+			} else {
+				// Normal windowed path
+				frame.setVisible(false);
 
-			@Pc(66) Insets insets = frame.getInsets();
-			canvas.setLocation(leftMargin + insets.left, insets.top + topMargin);
-			// Resize and reposition frame to match the restored window size and position (fixes size/position after fullscreen exit)
-			frame.setSize(insets.left + frameWidth + insets.right, insets.top + frameHeight + insets.bottom);
-			if (windowedFrameX > 0 && windowedFrameY > 0) {
-				frame.setLocation(windowedFrameX, windowedFrameY);
+				Insets insets = frame.getInsets();
+				canvas.setLocation(leftMargin + insets.left, insets.top + topMargin);
+
+				frame.setSize(insets.left + frameWidth + insets.right,
+						insets.top + frameHeight + insets.bottom);
+				if (windowedFrameX > 0 && windowedFrameY > 0) {
+					frame.setLocation(windowedFrameX, windowedFrameY);
+				}
+
+				frame.setVisible(true);
 			}
-
-			frame.setVisible(true);
 		} else {
 			canvas.setLocation(leftMargin, topMargin);
 		}
+
 		canvas.addFocusListener(this);
 		canvas.requestFocus();
 		focusIn = true;
@@ -572,18 +590,25 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	}
 
 	public void mainInputLoop() {
-		if (Keyboard.pressedKeys[Keyboard.KEY_UP] || Keyboard.pressedKeys[Keyboard.KEY_DOWN] || Keyboard.pressedKeys[Keyboard.KEY_LEFT] || Keyboard.pressedKeys[Keyboard.KEY_RIGHT]) {
+		// Check if arrow keys OR WASD are pressed (when ChatController enabled and chat not focused)
+		boolean wasdEnabled = ChatController.isEnabled() && !ChatController.isFocused();
+		boolean upPressed = Keyboard.pressedKeys[Keyboard.KEY_UP] || (wasdEnabled && Keyboard.pressedKeys[33]); // W
+		boolean downPressed = Keyboard.pressedKeys[Keyboard.KEY_DOWN] || (wasdEnabled && Keyboard.pressedKeys[49]); // S
+		boolean leftPressed = Keyboard.pressedKeys[Keyboard.KEY_LEFT] || (wasdEnabled && Keyboard.pressedKeys[48]); // A
+		boolean rightPressed = Keyboard.pressedKeys[Keyboard.KEY_RIGHT] || (wasdEnabled && Keyboard.pressedKeys[50]); // D
+
+		if (upPressed || downPressed || leftPressed || rightPressed) {
 			double vertical = calcRenderDelta(18.0d);
-			if (Keyboard.pressedKeys[Keyboard.KEY_UP]) {
+			if (upPressed) {
 				Camera.pitchTarget += vertical;
-			} else if (Keyboard.pressedKeys[Keyboard.KEY_DOWN]) {
+			} else if (downPressed) {
 				Camera.pitchTarget -= vertical;
 			}
 
 			double horizontal = calcRenderDelta(24.0d);
-			if (Keyboard.pressedKeys[Keyboard.KEY_LEFT]) {
+			if (leftPressed) {
 				Camera.yawTarget -= horizontal;
-			} else if (Keyboard.pressedKeys[Keyboard.KEY_RIGHT]) {
+			} else if (rightPressed) {
 				Camera.yawTarget += horizontal;
 			}
 
@@ -710,7 +735,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			topMargin = 0;
 			instance = this;
 			frame = new Frame();
-			frame.setTitle("Jagex");
+			frame.setTitle("AmiliousScape");
 			frame.setResizable(true);
 			frame.addWindowListener(this);
 			frame.setBackground(Color.black);

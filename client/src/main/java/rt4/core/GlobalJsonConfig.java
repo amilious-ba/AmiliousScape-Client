@@ -19,11 +19,11 @@ public class GlobalJsonConfig {
 
 	// ----
 
-	public String ip_management = "amilious.xyz";
+	public String ip_management = "amilious.xyz";//was private may need getter
 	String ip_address = "amilious.xyz";
 	int world = 1;
-	public int server_port = 43594;
-	public int wl_port = 43595;
+	public int server_port = 43594; //was private may need getter
+	public int wl_port = 43595;//was private may need getter
 	int js5_port = 43595;
 	boolean mouseWheelZoom = GlobalConfig.MOUSEWHEEL_ZOOM;
 	public String pluginsFolder = "plugins";
@@ -31,4 +31,7 @@ public class GlobalJsonConfig {
 	public boolean borderlessFullscreen = true;
 	public boolean enableAmiliousDebugAtStart = false;
 	public String graphicsBackend = "jogl"; // "jogl" | "lwjgl"
+	/** VSync: 0 = off, 1 = on (default), -1 = adaptive if supported */
+	public int swapInterval = 1;
+
 }

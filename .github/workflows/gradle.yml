@@ -36,6 +36,8 @@ jobs:
           echo "Using jar: $JAR"
           cp "$JAR" client/build/libs/rt4-client.jar
           sha256sum client/build/libs/rt4-client.jar | cut -d ' ' -f 1 | tr -d '\n' > client/build/libs/rt4-client.jar.sha256
+      - run: mv client/build/libs/AmiliousScape.jar client/build/libs/rt4-client.jar
+      - run: sha256sum client/build/libs/rt4-client.jar | cut -d ' ' -f 1 | tr -d '\n' > client/build/libs/rt4-client.jar.sha256
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4

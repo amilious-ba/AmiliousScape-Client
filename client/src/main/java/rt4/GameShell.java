@@ -582,12 +582,23 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	}
 
 	public void mainInputLoop() {
-		// Check if arrow keys OR WASD are pressed (when ChatController enabled and chat not focused)
-		boolean wasdEnabled = ChatController.isEnabled() && !ChatController.isFocused();
-		boolean upPressed = Keyboard.pressedKeys[Keyboard.KEY_UP] || (wasdEnabled && Keyboard.pressedKeys[33]); // W
-		boolean downPressed = Keyboard.pressedKeys[Keyboard.KEY_DOWN] || (wasdEnabled && Keyboard.pressedKeys[49]); // S
-		boolean leftPressed = Keyboard.pressedKeys[Keyboard.KEY_LEFT] || (wasdEnabled && Keyboard.pressedKeys[48]); // A
-		boolean rightPressed = Keyboard.pressedKeys[Keyboard.KEY_RIGHT] || (wasdEnabled && Keyboard.pressedKeys[50]); // D
+		// Map owns arrows while open — skip world camera
+		if (rt4.amilious.input.InputManager.isMapMode()) {
+			return;
+		}
+
+		// Arrows: camera in WORLD and CHAT
+		// WASD: camera only in WORLD (not while typing)
+		boolean wasdEnabled = rt4.amilious.input.InputManager.shouldAllowWorldBinds();
+
+		boolean upPressed = Keyboard.pressedKeys[Keyboard.KEY_UP]
+				|| (wasdEnabled && Keyboard.pressedKeys[33]); // W
+		boolean downPressed = Keyboard.pressedKeys[Keyboard.KEY_DOWN]
+				|| (wasdEnabled && Keyboard.pressedKeys[49]); // S
+		boolean leftPressed = Keyboard.pressedKeys[Keyboard.KEY_LEFT]
+				|| (wasdEnabled && Keyboard.pressedKeys[48]); // A
+		boolean rightPressed = Keyboard.pressedKeys[Keyboard.KEY_RIGHT]
+				|| (wasdEnabled && Keyboard.pressedKeys[50]); // D
 
 		if (upPressed || downPressed || leftPressed || rightPressed) {
 			double vertical = calcRenderDelta(18.0d);

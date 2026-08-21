@@ -23,7 +23,13 @@ public final class AmiliousClient {
         if (initialized) return;
         DebugConsole.log("AmiliousScape client initializing...");
         initialized = true;
+
+        //set up input
+        InputManager.init();
+        InputManager.setPollDevices(true);
+        InputManager.setProcessModeKeys(true); // Enter/Esc arm chat → CHAT mode
         InputController.register(); // canvas may already exist
+
         if (GlobalJsonConfig.instance != null && GlobalJsonConfig.instance.enableAmiliousDebugAtStart) {
             DebugConsole.enabled = true;
             DebugConsole.log("debug enabled at start");
@@ -35,7 +41,7 @@ public final class AmiliousClient {
         //set up input
         InputManager.init();
         InputManager.setPollDevices(true);
-        // leave setProcessModeKeys(false) — mode stays WORLD, no chat reactions
+        InputManager.setProcessModeKeys(true); // Enter/Esc arm chat → CHAT mode
 
         DebugConsole.Init();
         DebugConsole.log("AmiliousScape client initialized!");

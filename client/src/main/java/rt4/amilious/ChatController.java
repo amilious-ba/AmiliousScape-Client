@@ -2,6 +2,7 @@ package rt4.amilious;
 
 import org.openrs2.deob.annotation.OriginalMember;
 import rt4.Keyboard;
+import rt4.amilious.input.InputManager;
 
 /**
  * Controls chat input focus and keyboard event routing.
@@ -59,28 +60,18 @@ public final class ChatController {
 	@OriginalMember(owner = "client!ChatController", name = "update", descriptor = "()V")
 	public static void update() {
 		if (!enabled) {
-			focused = true; // Always focused when disabled
-			shouldConsumeEnter = false;
 			prevEnterPressed = false;
-			framesSinceSubmit = 10; // Prevent quick chat
+			shouldConsumeEnter = false;
+			framesSinceSubmit = 10;
 			justSubmitted = false;
 			return;
 		}
-
-		boolean enterPressed = Keyboard.pressedKeys[Keyboard.KEY_ENTER];
-
-		// Toggle focus on Enter key press (rising edge detection)
-		if (enterPressed && !prevEnterPressed) {
-			if (focused) {
-				// Chat is focused - unfocus (Enter will submit the message)
-				focused = false;
-			} else {
-				// Chat not focused - focus it
-				focused = true;
-			}
+		// Focus/mode owned by InputManager (processModeKeys).
+		// Keep any framesSinceSubmit decay you still use for QC:
+		if (framesSinceSubmit > 0) {
+			framesSinceSubmit--;
 		}
-
-		prevEnterPressed = enterPressed;
+		justSubmitted = false;
 	}
 
 	/**
@@ -93,7 +84,7 @@ public final class ChatController {
 		if (!enabled) {
 			return true;
 		}
-		return focused;
+		return InputManager.isChatMode();
 	}
 
 	/**
@@ -103,7 +94,7 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "shouldConsumeEnter", descriptor = "()Z")
 	public static boolean shouldConsumeEnter() {
-		return enabled && shouldConsumeEnter;
+		return enabled && InputManager.shouldConsumeEnter();
 	}
 
 	/**
@@ -130,7 +121,11 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "setFocused", descriptor = "(Z)V")
 	public static void setFocused(boolean newFocused) {
-		focused = newFocused;
+		if (newFocused) {
+			InputManager.enterChatMode();
+		} else {
+			InputManager.enterWorldMode();
+		}
 	}
 
 	/**
@@ -138,7 +133,7 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "unfocus", descriptor = "()V")
 	public static void unfocus() {
-		focused = false;
+		InputManager.enterWorldMode();
 	}
 
 	/**
@@ -146,7 +141,7 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "focus", descriptor = "()V")
 	public static void focus() {
-		focused = true;
+		InputManager.enterChatMode();
 	}
 
 	/**
@@ -184,7 +179,7 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "getChatColor", descriptor = "(I)I")
 	public static int getChatColor(int originalColor) {
-		if (!enabled || focused) {
+		if (!enabled || isFocused()){
 			return originalColor;
 		}
 		// Gray out the color by reducing saturation and brightness
@@ -210,7 +205,7 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "getChatAlpha", descriptor = "(I)I")
 	public static int getChatAlpha(int originalAlpha) {
-		if (!enabled || focused) {
+		if (!enabled || isFocused()){
 			return originalAlpha;
 		}
 		// Reduce alpha to 40% when not focused
@@ -229,7 +224,7 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "drawChatFocusIndicator", descriptor = "(IIIIZ)V")
 	public static void drawChatFocusIndicator(int x, int y, int width, int height, boolean glEnabled) {
-		if (!enabled || focused) {
+		if (!enabled ||  isFocused()){
 			return; // Don't draw when disabled or focused
 		}
 

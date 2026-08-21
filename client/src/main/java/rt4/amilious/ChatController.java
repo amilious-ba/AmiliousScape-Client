@@ -1,7 +1,9 @@
 package rt4.amilious;
 
 import org.openrs2.deob.annotation.OriginalMember;
-import rt4.Keyboard;
+import rt4.render.primitive.GlRaster;
+import rt4.render.primitive.SoftwareRaster;
+import rt4.ui.Keyboard;
 
 /**
  * Controls chat input focus and keyboard event routing.
@@ -240,9 +242,9 @@ public final class ChatController {
 		int rectHeight = height;
 
 		if (glEnabled) {
-			rt4.GlRaster.fillRectAlpha(rectX, rectY, rectWidth, rectHeight, 0x000000, 128);
+			GlRaster.fillRectAlpha(rectX, rectY, rectWidth, rectHeight, 0x000000, 128);
 		} else {
-			rt4.SoftwareRaster.fillRectAlpha(rectX, rectY, rectWidth, rectHeight, 0x000000, 128);
+			SoftwareRaster.fillRectAlpha(rectX, rectY, rectWidth, rectHeight, 0x000000, 128);
 		}
 	}
 }

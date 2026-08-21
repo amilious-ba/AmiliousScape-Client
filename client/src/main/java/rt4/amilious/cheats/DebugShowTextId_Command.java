@@ -1,8 +1,8 @@
 package rt4.amilious.cheats;
 
-import rt4.Chat;
-import rt4.JagString;
 import rt4.amilious.ChatController;
+import rt4.social.Chat;
+import rt4.util.JagString;
 
 public class DebugShowTextId_Command implements ICommand {
 

@@ -2,6 +2,12 @@ package rt4.amilious;
 
 import org.openrs2.deob.annotation.OriginalMember;
 import rt4.*;
+import rt4.core.Protocol;
+import rt4.network.LoginManager;
+import rt4.social.LocalizedText;
+import rt4.util.Cheat;
+import rt4.util.JagString;
+import rt4.util.WordPack;
 
 /**
  * Helper class for chat operations

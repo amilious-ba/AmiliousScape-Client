@@ -7,7 +7,7 @@
     "js5_port": 43595,
     "mouseWheelZoom": true,
     "pluginsFolder": "plugins",
-    "startFullscreen": true,
+    "startFullscreen": false,
     "borderlessFullscreen": false,
     "enableAmiliousDebugAtStart": false,
     "swapInterval": 1

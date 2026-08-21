@@ -53,6 +53,9 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	@OriginalMember(owner = "client!dl", name = "d", descriptor = "I")
 	public static int canvasWidth;
 
+	/** True when we are in single-window borderless fullscreen (no second Frame). */
+	public static boolean borderlessFullscreenActive = false;
+
 	@OriginalMember(owner = "client!uj", name = "B", descriptor = "I")
 	public static int canvasHeight;
 
@@ -336,7 +339,9 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	public final synchronized void addCanvas() {
 		if (canvas != null) {
 			canvas.removeFocusListener(this);
-			canvas.getParent().remove(canvas);
+			if (canvas.getParent() != null) {
+				canvas.getParent().remove(canvas);
+			}
 		}
 		@Pc(19) Container container;
 		if (fullScreenFrame != null) {
@@ -352,18 +357,24 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		canvas.setSize(canvasWidth, canvasHeight);
 		canvas.setVisible(true);
 		if (container == frame) {
-			// Hide frame during resize/reposition to prevent flickering
-			frame.setVisible(false);
+			if (borderlessFullscreenActive) {
+				// Borderless: frame already sized/positioned to the monitor – only place the canvas
+				canvas.setLocation(0, 0);
+			} else {
+				// Normal windowed path
+				frame.setVisible(false);
 
-			@Pc(66) Insets insets = frame.getInsets();
-			canvas.setLocation(leftMargin + insets.left, insets.top + topMargin);
-			// Resize and reposition frame to match the restored window size and position (fixes size/position after fullscreen exit)
-			frame.setSize(insets.left + frameWidth + insets.right, insets.top + frameHeight + insets.bottom);
-			if (windowedFrameX > 0 && windowedFrameY > 0) {
-				frame.setLocation(windowedFrameX, windowedFrameY);
+				Insets insets = frame.getInsets();
+				canvas.setLocation(leftMargin + insets.left, insets.top + topMargin);
+
+				frame.setSize(insets.left + frameWidth + insets.right,
+						insets.top + frameHeight + insets.bottom);
+				if (windowedFrameX > 0 && windowedFrameY > 0) {
+					frame.setLocation(windowedFrameX, windowedFrameY);
+				}
+
+				frame.setVisible(true);
 			}
-
-			frame.setVisible(true);
 		} else {
 			canvas.setLocation(leftMargin, topMargin);
 		}

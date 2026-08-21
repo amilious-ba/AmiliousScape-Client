@@ -8,6 +8,6 @@
     "mouseWheelZoom": true,
     "pluginsFolder": "plugins",
     "startFullscreen": true,
-    "borderlessFullscreen": true,
+    "borderlessFullscreen": false,
     "enableAmiliousDebugAtStart": false
 }

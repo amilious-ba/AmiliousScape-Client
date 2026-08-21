@@ -63,20 +63,23 @@ public final class DisplayMode {
 		setWindowMode(arg0, arg1, useHd, mode, arg2, arg3);
 	}
 
+
+
+
 	@OriginalMember(owner = "client!le", name = "a", descriptor = "(I)I")
 	public static int getWindowMode() {
-		if (GameShell.fullScreenFrame != null || GameShell.borderlessFullscreenActive) {
+		if (GameShell.fullScreenFrame != null
+				|| GameShell.borderlessFullscreenActive
+				|| GameShell.exclusiveFullscreenActive) {
 			return 3;
 		} else if (GlRenderer.enabled && aBoolean156) {
 			return 2;
-		} else if (GlRenderer.enabled && !aBoolean156) {
+		} else if (GlRenderer.enabled) {
 			return 1;
 		} else {
 			return 0;
 		}
 	}
-
-
 
 	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ZIZIZII)V")
 	public static void setWindowMode(boolean arg0, int arg1, boolean arg2, int mode, int arg4, int arg5) {
@@ -84,15 +87,19 @@ public final class DisplayMode {
 			GlRenderer.quit();
 		}
 
-		// ----- EXIT fullscreen if leaving mode 3 or changing resolution -----
-		boolean leavingFullscreen = (GameShell.fullScreenFrame != null || GameShell.borderlessFullscreenActive)
+		// ----- EXIT fullscreen -----
+		boolean leavingFullscreen = (GameShell.fullScreenFrame != null
+				|| GameShell.borderlessFullscreenActive
+				|| GameShell.exclusiveFullscreenActive)
 				&& (arg1 != 3 || arg4 != Preferences.fullScreenWidth || arg5 != Preferences.fullScreenHeight);
 
 		if (leavingFullscreen) {
 			if (GameShell.borderlessFullscreenActive) {
-				exitBorderlessFullscreen();   // clears flag + fullScreenFrame = null
-			} else if (GameShell.fullScreenFrame != null) {
-				// exclusive only – real second window
+				exitBorderlessFullscreen();
+			} else if (GameShell.exclusiveFullscreenActive) {
+				exitExclusiveFullscreen();
+			} else if (GameShell.fullScreenFrame != null && GameShell.fullScreenFrame != GameShell.frame) {
+				// legacy second-frame exclusive only
 				if (GameShell.frame != null) {
 					GameShell.frame.setVisible(false);
 				}
@@ -102,8 +109,10 @@ public final class DisplayMode {
 		}
 
 		// ----- ENTER fullscreen (mode 3) -----
-		if (arg1 == 3 && GameShell.fullScreenFrame == null && !GameShell.borderlessFullscreenActive) {
-			// Save windowed size/position once
+		if (arg1 == 3 && GameShell.fullScreenFrame == null
+				&& !GameShell.borderlessFullscreenActive
+				&& !GameShell.exclusiveFullscreenActive) {
+
 			if (GameShell.frame != null && mode != 3 && GameShell.windowedFrameWidth == 0) {
 				java.awt.Dimension currentSize = GameShell.frame.getSize();
 				java.awt.Insets insets = GameShell.frame.getInsets();
@@ -116,32 +125,39 @@ public final class DisplayMode {
 						+ " at " + GameShell.windowedFrameX + "," + GameShell.windowedFrameY);
 			}
 
-			boolean useBorderless = GlobalJsonConfig.instance == null || GlobalJsonConfig.instance.borderlessFullscreen;
+			boolean useBorderless = GlobalJsonConfig.instance == null
+					|| GlobalJsonConfig.instance.borderlessFullscreen;
 
 			if (useBorderless) {
 				enterBorderlessFullscreen(arg4, arg5);
 			} else {
-				GameShell.fullScreenFrame = method3176(0, arg5, arg4, GameShell.signLink);
-				if (GameShell.fullScreenFrame != null) {
-					Preferences.fullScreenHeight = arg5;
-					Preferences.fullScreenWidth = arg4;
-					Preferences.write(GameShell.signLink);
+				enterExclusiveFullscreen(arg4, arg5);
+				// Fallback: legacy second-frame exclusive
+				if (!GameShell.exclusiveFullscreenActive) {
+					GameShell.fullScreenFrame = method3176(0, arg5, arg4, GameShell.signLink);
+					if (GameShell.fullScreenFrame != null) {
+						Preferences.fullScreenHeight = arg5;
+						Preferences.fullScreenWidth = arg4;
+						Preferences.write(GameShell.signLink);
+					}
 				}
 			}
 		}
 
-		// Fallback if exclusive failed
-		if (arg1 == 3 && GameShell.fullScreenFrame == null && !GameShell.borderlessFullscreenActive) {
+		// Fallback if enter failed entirely
+		if (arg1 == 3
+				&& GameShell.fullScreenFrame == null
+				&& !GameShell.borderlessFullscreenActive
+				&& !GameShell.exclusiveFullscreenActive) {
 			setWindowMode(true, Preferences.favoriteWorlds, true, mode, -1, -1);
 			return;
 		}
 
-		// After borderless toggle the old canvas/GL context is dead – force rebuild
 		if (GameShell.replaceCanvas) {
 			arg0 = true;
 		}
 
-		// ----- Choose the active container -----
+		// ----- Active container -----
 		Container local85;
 		if (GameShell.fullScreenFrame != null) {
 			local85 = GameShell.fullScreenFrame;
@@ -151,8 +167,10 @@ public final class DisplayMode {
 			local85 = GameShell.frame;
 		}
 
-		// Restore windowed size when exiting fullscreen, otherwise use current container size
-		if (GameShell.fullScreenFrame == null && !GameShell.borderlessFullscreenActive
+		// Restore windowed size when exiting, else use container size
+		if (GameShell.fullScreenFrame == null
+				&& !GameShell.borderlessFullscreenActive
+				&& !GameShell.exclusiveFullscreenActive
 				&& GameShell.windowedFrameWidth > 0 && mode == 3) {
 			GameShell.frameWidth = GameShell.windowedFrameWidth;
 			GameShell.frameHeight = GameShell.windowedFrameHeight;
@@ -163,7 +181,9 @@ public final class DisplayMode {
 		}
 
 		Insets local109 = null;
-		if (GameShell.frame == local85 && !GameShell.borderlessFullscreenActive) {
+		if (GameShell.frame == local85
+				&& !GameShell.borderlessFullscreenActive
+				&& !GameShell.exclusiveFullscreenActive) {
 			local109 = GameShell.frame.getInsets();
 			GameShell.frameWidth -= local109.right + local109.left;
 			GameShell.frameHeight -= local109.bottom + local109.top;
@@ -194,8 +214,6 @@ public final class DisplayMode {
 				client.mouseWheel.start(GameShell.canvas);
 			}
 
-
-			// Wait until AWT has created a native peer for the new canvas
 			long deadline = System.currentTimeMillis() + 2000;
 			while (GameShell.canvas != null
 					&& !GameShell.canvas.isDisplayable()
@@ -241,7 +259,9 @@ public final class DisplayMode {
 				GlRenderer.setCanvasSize(GameShell.canvasWidth, GameShell.canvasHeight);
 			}
 			GameShell.canvas.setSize(GameShell.canvasWidth, GameShell.canvasHeight);
-			if (GameShell.frame == local85 && !GameShell.borderlessFullscreenActive) {
+			if (GameShell.frame == local85
+					&& !GameShell.borderlessFullscreenActive
+					&& !GameShell.exclusiveFullscreenActive) {
 				local109 = GameShell.frame.getInsets();
 				GameShell.canvas.setLocation(local109.left + GameShell.leftMargin, local109.top + GameShell.topMargin);
 			} else {
@@ -449,6 +469,125 @@ public final class DisplayMode {
 			GameShell.borderlessFullscreenActive = false;
 		}
 	}
+
+	private static void enterExclusiveFullscreen(int width, int height) {
+		if (GameShell.frame == null) {
+			return;
+		}
+
+		try {
+			if (GameShell.canvas != null) {
+				try {
+					Keyboard.stop(GameShell.canvas);
+					Mouse.stop(GameShell.canvas);
+					if (client.mouseWheel != null) {
+						client.mouseWheel.stop(GameShell.canvas);
+					}
+					if (GameShell.canvas.getParent() != null) {
+						GameShell.canvas.getParent().remove(GameShell.canvas);
+					}
+				} catch (Exception ignored) {
+				}
+			}
+
+			GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
+			if (!device.isFullScreenSupported()) {
+				System.out.println("[FS] Exclusive not supported on this device");
+				return;
+			}
+
+			if (width > 0 && height > 0) {
+				java.awt.DisplayMode[] modes = device.getDisplayModes();
+				java.awt.DisplayMode best = null;
+				for (java.awt.DisplayMode dm : modes) {
+					if (dm.getWidth() == width && dm.getHeight() == height
+							&& (best == null || dm.getBitDepth() > best.getBitDepth())) {
+						best = dm;
+					}
+				}
+				if (best != null) {
+					try {
+						device.setDisplayMode(best);
+						System.out.println("[FS] Exclusive display mode: " + best.getWidth() + "x" + best.getHeight());
+					} catch (Exception e) {
+						System.out.println("[FS] Could not set display mode, using current");
+					}
+				}
+			}
+
+			device.setFullScreenWindow(GameShell.frame);
+			GameShell.frame.validate();
+
+			GameShell.exclusiveFullscreenActive = true;
+			GameShell.borderlessFullscreenActive = false;
+			GameShell.fullScreenFrame = GameShell.frame;
+			GameShell.replaceCanvas = true;
+
+			Rectangle bounds = GameShell.frame.getBounds();
+			Preferences.fullScreenWidth = bounds.width;
+			Preferences.fullScreenHeight = bounds.height;
+			Preferences.write(GameShell.signLink);
+
+			System.out.println("[FS] Entered exclusive fullscreen: " + bounds.width + "x" + bounds.height);
+		} catch (Exception e) {
+			e.printStackTrace();
+			GameShell.exclusiveFullscreenActive = false;
+			GameShell.fullScreenFrame = null;
+		}
+	}
+
+	private static void exitExclusiveFullscreen() {
+		if (GameShell.frame == null) {
+			GameShell.exclusiveFullscreenActive = false;
+			GameShell.fullScreenFrame = null;
+			return;
+		}
+
+		try {
+			if (GameShell.canvas != null) {
+				try {
+					Keyboard.stop(GameShell.canvas);
+					Mouse.stop(GameShell.canvas);
+					if (client.mouseWheel != null) {
+						client.mouseWheel.stop(GameShell.canvas);
+					}
+					if (GameShell.canvas.getParent() != null) {
+						GameShell.canvas.getParent().remove(GameShell.canvas);
+					}
+				} catch (Exception ignored) {
+				}
+			}
+
+			GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
+			device.setFullScreenWindow(null);
+
+			int w = GameShell.windowedFrameWidth > 0 ? GameShell.windowedFrameWidth : 1024;
+			int h = GameShell.windowedFrameHeight > 0 ? GameShell.windowedFrameHeight : 768;
+
+			GameShell.frame.setSize(w + 16, h + 39);
+			if (GameShell.windowedFrameX > 0 || GameShell.windowedFrameY > 0) {
+				GameShell.frame.setLocation(GameShell.windowedFrameX, GameShell.windowedFrameY);
+			} else {
+				GameShell.frame.setLocationRelativeTo(null);
+			}
+			GameShell.frame.setVisible(true);
+			GameShell.frame.validate();
+
+			Insets insets = GameShell.frame.getInsets();
+			GameShell.frame.setSize(insets.left + w + insets.right, insets.top + h + insets.bottom);
+
+			GameShell.exclusiveFullscreenActive = false;
+			GameShell.fullScreenFrame = null;
+			GameShell.replaceCanvas = true;
+
+			System.out.println("[FS] Exited exclusive fullscreen, restored " + w + "x" + h);
+		} catch (Exception e) {
+			e.printStackTrace();
+			GameShell.exclusiveFullscreenActive = false;
+			GameShell.fullScreenFrame = null;
+		}
+	}
+
 
 
 

@@ -55,6 +55,8 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 	/** True when we are in single-window borderless fullscreen (no second Frame). */
 	public static boolean borderlessFullscreenActive = false;
+	/** True when exclusive FS is active on the main frame (setFullScreenWindow). */
+	public static boolean exclusiveFullscreenActive = false;
 
 	@OriginalMember(owner = "client!uj", name = "B", descriptor = "I")
 	public static int canvasHeight;
@@ -343,7 +345,8 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 				canvas.getParent().remove(canvas);
 			}
 		}
-		@Pc(19) Container container;
+
+		Container container;
 		if (fullScreenFrame != null) {
 			container = fullScreenFrame;
 		} else if (frame == null) {
@@ -351,14 +354,16 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		} else {
 			container = frame;
 		}
+
 		container.setLayout(null);
 		canvas = new GameCanvas(this);
 		container.add(canvas);
 		canvas.setSize(canvasWidth, canvasHeight);
 		canvas.setVisible(true);
+
 		if (container == frame) {
-			if (borderlessFullscreenActive) {
-				// Borderless: frame already sized/positioned to the monitor – only place the canvas
+			if (borderlessFullscreenActive || exclusiveFullscreenActive) {
+				// FS on main frame – already sized/positioned; only place canvas
 				canvas.setLocation(0, 0);
 			} else {
 				// Normal windowed path
@@ -378,6 +383,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		} else {
 			canvas.setLocation(leftMargin, topMargin);
 		}
+
 		canvas.addFocusListener(this);
 		canvas.requestFocus();
 		focusIn = true;

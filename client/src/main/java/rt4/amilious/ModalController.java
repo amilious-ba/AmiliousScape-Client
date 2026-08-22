@@ -22,6 +22,9 @@ import java.util.HashMap;
  */
 public final class ModalController {
 
+
+    //#region Fields ///////////////////////////////////////////////////////////////////////////////////////////////////
+
     public static final int AMOUNT_CS2 = 109;
     public static final int REPORT_ABUSE_CS2 = 508;
     public static final int REPORT_ABUSE_IFACE = 553;
@@ -29,7 +32,6 @@ public final class ModalController {
     public static final int QC_ROOT = 8978432;
     public static final int QC_TITLE = 8978433;
     public static final int QC_OPEN_CS2 = 1049;
-    public static final int QC_CLOSE_CS2 = 1053;
     public static final int QC_CLOSE_BUTTON_CS2 = 1053;
     public static final int QC_CLOSE_ESC_CS2 = 1303;
 
@@ -37,6 +39,8 @@ public final class ModalController {
 
     /** null = no chatbox modal (amount / quickchat) */
     private static String lastKind = null;
+
+    //#endregion ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private ModalController() {
     }
@@ -58,8 +62,6 @@ public final class ModalController {
     public static void onInterfaceOpen(int interfaceId) {
         if (interfaceId == REPORT_ABUSE_IFACE) {
             SpecialModalRegistry.setActiveInterface(REPORT_ABUSE_IFACE);
-            /*System.out.println("[special-modal] open " + SpecialModalRegistry.getActiveName()
-                    + " (iface " + REPORT_ABUSE_IFACE + ")");*/
             InputManager.refreshMode();
         }
     }    
@@ -113,15 +115,12 @@ public final class ModalController {
         if (stillAmount()) {
             return;
         }
-        System.out.println("[chatbox-modal] quickchat shown");
         lastKind = "quickchat";
         ChatBoxModalRegistry.setActive("quickchat");
         InputManager.refreshMode();
     }
 
     public static void onQuickChatHidden() {
-        System.out.println("[chatbox-modal] quickchat hidden");
-
         // Force closed this frame — avoid live-title false positive
         hiddenById.put(QC_ROOT, Boolean.TRUE);
         hiddenById.put(QC_TITLE, Boolean.TRUE);
@@ -165,14 +164,6 @@ public final class ModalController {
         }
     }
 
-    private static String detectKind() {
-        if (stillAmount()) {
-            return "amount";
-        }
-        // QC is not driven by setHidden anymore
-        return null;
-    }
-
     /** Amount chrome both visible, or CS2 amount not finished closing. */
     private static boolean stillAmount() {
         if (isShown(ChatBoxModalRegistry.CHROME_A) && isShown(ChatBoxModalRegistry.CHROME_B)) {
@@ -197,28 +188,6 @@ public final class ModalController {
 
     private static boolean interfacesReady() {
         return rt4.client.gameState == 30 && InterfaceList.components != null;
-    }
-
-    private static boolean isQuickChatTitleLive() {
-        try {
-            if (!interfacesReady()) {
-                return false;
-            }
-            int iface = QC_TITLE >>> 16;
-            if (iface < 0 || iface >= InterfaceList.components.length) {
-                return false;
-            }
-            if (InterfaceList.components[iface] == null) {
-                return false;
-            }
-            rt4.Component c = InterfaceList.method1418(QC_TITLE, -1);
-            if (c == null || c.hidden || c.text == null) {
-                return false;
-            }
-            return c.text.toString().toLowerCase().contains("quick chat");
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     public static void onIntegerInputSubmitted() {

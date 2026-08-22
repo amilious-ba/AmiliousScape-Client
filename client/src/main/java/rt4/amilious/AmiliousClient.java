@@ -83,9 +83,13 @@ public final class AmiliousClient {
 
     /** call after PluginRepository.Update(); in client.mainLoop */
     public static void update() {
+
+        if (rt4.client.gameState == 30) {
+            ModalController.tick();
+        }
+        InputManager.tick();
         ModalTools.update();
         MapController.tickInput();
-        InputManager.tick();
     }
 
 
@@ -130,8 +134,36 @@ public final class AmiliousClient {
 
     public static void onMiniMenuAction(int index, int actionCode, JagString op, JagString opBase,
                                         int arg1, int arg2) {
-        ModalController.onMiniMenuAction(index, actionCode, op, opBase);
     }
 
+    public static void onComponentHiddenChanged(int componentId, boolean hidden) {
+        ModalController.onComponentHiddenChanged(componentId, hidden);
+        /*if (componentId == 8978432 && !hidden) {
+            System.out.println("[QC] root shown");
+            new Exception("QC open stack").printStackTrace(System.out);
+        }*/
+    }
 
+    public static void onQuickChatShown() {
+        ModalController.onQuickChatShown();
+    }
+
+    public static void onQuickChatHidden() {
+        ModalController.onQuickChatHidden();
+    }
+
+    public static void onRun_CS2(int scriptId, JagString argTypes, Object[] scriptArgs) {
+        System.out.println("[RUN_CS2] scriptId=" + scriptId
+                + " types=" + argTypes
+                + " argc=" + scriptArgs.length);
+        ModalController.onRun_CS2(scriptId, argTypes, scriptArgs);
+    }
+
+    /**
+     * Client-side interface option CS2 (ClientProt.method4512 / onOptionClick).
+     * scriptId = arguments[0] when present; otherwise -1.
+     */
+    public static void onClientOptionScript(int scriptId, int componentId, JagString opBase, int op,Object[] scriptArgs) {
+        ModalController.onClientOptionScript(scriptId, componentId, opBase, op, scriptArgs);
+    }
 }

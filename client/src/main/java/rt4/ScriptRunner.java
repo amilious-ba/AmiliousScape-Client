@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import rt4.amilious.AmiliousClient;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
@@ -5891,6 +5892,14 @@ public final class ScriptRunner {
 								if (local1552 != component.hidden) {
 									component.hidden = local1552;
 									InterfaceList.redraw(component);
+
+									// Amilious: only on real transitions
+									/*StackTraceElement[] st = Thread.currentThread().getStackTrace();
+									for (int i = 0; i < st.length && i < 25; i++) {
+										System.out.println("  at " + st[i]);
+									}*/
+
+									AmiliousClient.onComponentHiddenChanged(component.id, component.hidden);
 								}
 								if (component.createdComponentId == -1) {
 									DelayedStateChange.method1906(component.id);

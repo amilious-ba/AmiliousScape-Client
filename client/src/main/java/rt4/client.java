@@ -1057,6 +1057,7 @@ public final class client extends GameShell {
 			InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
 			InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
 		}
+
 		Protocol.sceneDelta++;
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method1320(0, 0, 0, GameShell.canvasWidth, InterfaceList.topLevelInterface, 0, GameShell.canvasHeight);

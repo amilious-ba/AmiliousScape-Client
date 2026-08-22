@@ -46,8 +46,26 @@ public class ClientProt {
 			local19.source = local8;
 			local19.opBase = arg0;
 			local19.op = arg2;
+
+			int scriptId = -1;
+			if (local19.arguments != null && local19.arguments.length > 0
+					&& local19.arguments[0] instanceof Integer) {
+				scriptId = ((Integer) local19.arguments[0]).intValue();
+			}
+
+			// Generic: any component option-click CS2
+			rt4.amilious.AmiliousClient.onClientOptionScript(scriptId,local8.id,arg0,arg2,local19.arguments);
 			ScriptRunner.run(local19);
 		}
+		/*if (local8.onOptionClick != null) {
+			@Pc(19) HookRequest local19 = new HookRequest();
+			local19.arguments = local8.onOptionClick;
+			local19.source = local8;
+			local19.opBase = arg0;
+			local19.op = arg2;
+			ScriptRunner.run(local19);
+			System.out.println("[ClientProt] " + local19.opBase + " " + local19.op + " " + local19.arguments);
+		}*/
 		@Pc(37) boolean local37 = true;
 		if (local8.clientCode > 0) {
 			local37 = MiniMenu.method4265(local8);

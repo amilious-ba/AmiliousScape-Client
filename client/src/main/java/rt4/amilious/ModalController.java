@@ -1,76 +1,288 @@
 package rt4.amilious;
 
+import rt4.InterfaceList;
 import rt4.JagString;
+import rt4.amilious.input.ChatBoxModalRegistry;
+import rt4.amilious.input.InputManager;
 import rt4.amilious.input.SpecialModalRegistry;
+import rt4.client;
+
+import java.util.HashMap;
 
 /**
- * Special text modals (amount / name / string).
- * Open: mini-menu X options (temporary until real iface open is found).
- * Close: integer submit / closeWidget.
+ * Over-chat modals (amount, quick chat) and special text modals.
+ *
+ * Amount open:  RUN_CS2 109 → ChatBoxModalRegistry
+ * Amount close: chrome / submit → evaluate()
+ * QC open/close: setHidden on QC_ROOT 8978432 → ChatBoxModalRegistry
+ * Report Abuse: RUN_CS2 508 + iface 553 → SpecialModalRegistry
+ *
+ * Always call InputManager.refreshMode() after registry changes so mode
+ * updates this frame (not only on the next tick).
  */
 public final class ModalController {
 
-    public static final int AMOUNT_INPUT_COMPONENT = 49283077;
+    public static final int AMOUNT_CS2 = 109;
+    public static final int REPORT_ABUSE_CS2 = 508;
+    public static final int REPORT_ABUSE_IFACE = 553;
+
+    public static final int QC_ROOT = 8978432;
+    public static final int QC_TITLE = 8978433;
+    public static final int QC_OPEN_CS2 = 1049;
+    public static final int QC_CLOSE_CS2 = 1053;
+    public static final int QC_CLOSE_BUTTON_CS2 = 1053;
+    public static final int QC_CLOSE_ESC_CS2 = 1303;
+
+    private static final HashMap<Integer, Boolean> hiddenById = new HashMap<Integer, Boolean>();
+
+    /** null = no chatbox modal (amount / quickchat) */
+    private static String lastKind = null;
 
     private ModalController() {
     }
 
     public static void init() {
-        SpecialModalRegistry.registerComponent(AMOUNT_INPUT_COMPONENT, "amount");
+        SpecialModalRegistry.registerComponent(ChatBoxModalRegistry.INPUT, "amount");
+        SpecialModalRegistry.registerInterface(REPORT_ABUSE_IFACE, "report-abuse");
+        resetChromeState();
     }
 
-    /** Called from AmiliousClient.update() — no amount open/clear here for now. */
+    /** Call from AmiliousClient.update() before InputManager.tick() when in-game. */
     public static void tick() {
-        // Intentionally empty until we have a reliable visibility/openInterfaces check.
+        if (!interfacesReady()) {
+            return;
+        }
+        evaluate();
     }
 
     public static void onInterfaceOpen(int interfaceId) {
-        // Don't arm on load — 752/gameframe false positives.
-    }
+        if (interfaceId == REPORT_ABUSE_IFACE) {
+            SpecialModalRegistry.setActiveInterface(REPORT_ABUSE_IFACE);
+            /*System.out.println("[special-modal] open " + SpecialModalRegistry.getActiveName()
+                    + " (iface " + REPORT_ABUSE_IFACE + ")");*/
+            InputManager.refreshMode();
+        }
+    }    
 
-    public static void onMiniMenuAction(int index, int actionCode, JagString op, JagString opBase) {
-        if (op == null) {
+    /**
+     * Protocol RUN_CS2 after scriptArgs built.
+     */
+    public static void onRun_CS2(int scriptId, JagString argTypes, Object[] scriptArgs) {
+        if (rt4.client.gameState != 30) {
             return;
         }
-        String s = op.toString().toLowerCase();
-        if (isAmountOption(s)) {
-            System.out.println("[modal] amount option chosen: " + s + " action=" + actionCode);
-            SpecialModalRegistry.setActiveComponent(AMOUNT_INPUT_COMPONENT);
+
+        if (scriptId == AMOUNT_CS2) {
+            String arg = "";
+            if (scriptArgs != null && scriptArgs.length > 1 && scriptArgs[1] instanceof JagString) {
+                arg = ((JagString) scriptArgs[1]).toString();
+            }
+            System.out.println("[chatbox-modal] amount via RUN_CS2 109 arg=" + arg);
+            lastKind = "amount";
+            ChatBoxModalRegistry.setActive("amount");
+            InputManager.refreshMode();
+            return;
+        }
+
+        if (scriptId == REPORT_ABUSE_CS2) {
+            SpecialModalRegistry.setActiveInterface(REPORT_ABUSE_IFACE);
+            System.out.println("[special-modal] report-abuse via RUN_CS2 508 name="
+                    + SpecialModalRegistry.getActiveName());
+            InputManager.refreshMode();
+            return;
         }
     }
 
-    private static boolean isAmountOption(String s) {
-        return s.contains("withdraw-x")
-                || s.contains("withdraw x")
-                || s.contains("cook x")
-                || s.contains("make x")
-                || s.endsWith("-x")
-                || s.endsWith(" x");
+    public static void onComponentHiddenChanged(int componentId, boolean hidden) {
+        hiddenById.put(componentId, Boolean.valueOf(hidden));
+        if (rt4.client.gameState != 30) {
+            return;
+        }
+        if (componentId == ChatBoxModalRegistry.CHROME_A
+                || componentId == ChatBoxModalRegistry.CHROME_B) {
+            evaluate();
+            InputManager.refreshMode();
+        }
     }
 
-    public static void onComponent(int packedComponentId) {
-        if (packedComponentId == AMOUNT_INPUT_COMPONENT) {
-            SpecialModalRegistry.setActiveComponent(AMOUNT_INPUT_COMPONENT);
+    public static void onQuickChatShown() {
+        if (rt4.client.gameState != 30) {
+            return;
+        }
+        // Amount on top of QC still wins
+        if (stillAmount()) {
+            return;
+        }
+        System.out.println("[chatbox-modal] quickchat shown");
+        lastKind = "quickchat";
+        ChatBoxModalRegistry.setActive("quickchat");
+        InputManager.refreshMode();
+    }
+
+    public static void onQuickChatHidden() {
+        System.out.println("[chatbox-modal] quickchat hidden");
+
+        // Force closed this frame — avoid live-title false positive
+        hiddenById.put(QC_ROOT, Boolean.TRUE);
+        hiddenById.put(QC_TITLE, Boolean.TRUE);
+
+        if ("quickchat".equals(lastKind)) {
+            lastKind = null;
+        }
+
+        if (stillAmount()) {
+            lastKind = "amount";
+            ChatBoxModalRegistry.setActive("amount");
+        } else {
+            ChatBoxModalRegistry.clearActive();
+        }
+
+        InputManager.refreshMode();
+    }
+
+    private static void evaluate() {
+        if (!interfacesReady()) {
+            return;
+        }
+
+        if (stillAmount()) {
+            if (!"amount".equals(lastKind) || !ChatBoxModalRegistry.isActive()) {
+                lastKind = "amount";
+                ChatBoxModalRegistry.setActive("amount");
+            }
+            return;
+        }
+
+        // Amount chrome closed — clear only if we were in amount
+        if ("amount".equals(lastKind)) {
+            System.out.println("[chatbox-modal] CLOSED (was amount)");
+            lastKind = null;
+            if (ChatBoxModalRegistry.isActive()
+                    && "amount".equals(ChatBoxModalRegistry.getActiveName())) {
+                ChatBoxModalRegistry.clearActive();
+            }
+            // QC is owned by 1049/1053/1303 — do not clear quickchat here
+        }
+    }
+
+    private static String detectKind() {
+        if (stillAmount()) {
+            return "amount";
+        }
+        // QC is not driven by setHidden anymore
+        return null;
+    }
+
+    /** Amount chrome both visible, or CS2 amount not finished closing. */
+    private static boolean stillAmount() {
+        if (isShown(ChatBoxModalRegistry.CHROME_A) && isShown(ChatBoxModalRegistry.CHROME_B)) {
+            return true;
+        }
+        if ("amount".equals(lastKind) && ChatBoxModalRegistry.isActive()) {
+            Boolean a = hiddenById.get(ChatBoxModalRegistry.CHROME_A);
+            Boolean b = hiddenById.get(ChatBoxModalRegistry.CHROME_B);
+            boolean chromeSeen = a != null || b != null;
+            boolean chromeClosed = chromeSeen
+                    && (a == null || a.booleanValue())
+                    && (b == null || b.booleanValue());
+            return !chromeClosed;
+        }
+        return false;
+    }
+
+    private static boolean isShown(int id) {
+        Boolean h = hiddenById.get(id);
+        return h != null && !h.booleanValue();
+    }
+
+    private static boolean interfacesReady() {
+        return rt4.client.gameState == 30 && InterfaceList.components != null;
+    }
+
+    private static boolean isQuickChatTitleLive() {
+        try {
+            if (!interfacesReady()) {
+                return false;
+            }
+            int iface = QC_TITLE >>> 16;
+            if (iface < 0 || iface >= InterfaceList.components.length) {
+                return false;
+            }
+            if (InterfaceList.components[iface] == null) {
+                return false;
+            }
+            rt4.Component c = InterfaceList.method1418(QC_TITLE, -1);
+            if (c == null || c.hidden || c.text == null) {
+                return false;
+            }
+            return c.text.toString().toLowerCase().contains("quick chat");
+        } catch (Exception e) {
+            return false;
         }
     }
 
     public static void onIntegerInputSubmitted() {
-        SpecialModalRegistry.clearActive();
+        lastKind = null;
+        evaluate(); // may restore QC underneath
+        InputManager.refreshMode();
     }
 
     public static void onNameInputSubmitted() {
         SpecialModalRegistry.clearActive();
+        InputManager.refreshMode();
     }
 
     public static void onStringInputSubmitted() {
         SpecialModalRegistry.clearActive();
+        InputManager.refreshMode();
     }
 
     public static void onWidgetClosed() {
         SpecialModalRegistry.clearActive();
+        lastKind = null;
+        evaluate();
+        InputManager.refreshMode();
+    }
+
+    public static void resetChromeState() {
+        hiddenById.clear();
+        lastKind = null;
+        ChatBoxModalRegistry.clearActive();
+        SpecialModalRegistry.clearActive();
+    }
+
+    public static boolean isChatBoxModalOpen() {
+        return ChatBoxModalRegistry.isActive();
     }
 
     public static boolean isSpecialTextModalOpen() {
         return SpecialModalRegistry.isActive();
+    }
+
+    /**
+     * Generic client option-click CS2 (from ClientProt.method4512).
+     */
+    public static void onClientOptionScript(int scriptId, int componentId, JagString opBase, int op,
+                                            Object[] scriptArgs) {
+        if (client.gameState != 30) {
+            return;
+        }
+        if (scriptId == QC_OPEN_CS2) {
+            onQuickChatShown();
+            return;
+        }
+        if (scriptId == QC_CLOSE_BUTTON_CS2) {
+            onQuickChatHidden();
+            return;
+        }
+        if (scriptId == QC_CLOSE_ESC_CS2) {
+            if (ChatBoxModalRegistry.isActive()
+                    && "quickchat".equals(ChatBoxModalRegistry.getActiveName())) {
+                onQuickChatHidden();
+            }
+        }
+    }
+
+    public static void onComponent(int componentId) {
     }
 }

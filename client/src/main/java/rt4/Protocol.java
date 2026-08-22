@@ -4,6 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import rt4.amilious.AmiliousClient;
 import rt4.amilious.ChatController;
 
 import java.io.IOException;
@@ -961,6 +962,9 @@ public class Protocol {
 			}
 			scriptArgs[0] = inboundBuffer.g4();
 			setVerifyId(tracknum);
+
+			int scriptId = ((Integer) scriptArgs[0]).intValue();
+			AmiliousClient.onRun_CS2(scriptId, argTypes, scriptArgs);
 			@Pc(226) HookRequest request = new HookRequest();
 			request.arguments = scriptArgs;
 			ScriptRunner.run(request);
@@ -2773,26 +2777,31 @@ public class Protocol {
 		InterfaceList.aClass13_22 = null;
 		@Pc(1508) Component local1508 = aClass13_11;
 		aClass13_11 = null;
+
+
 		// Only process keyboard input for chat if chat is focused (or not in-game)
-		if (client.gameState != 30 || ChatController.isFocused()) {
+		boolean acceptKeys = client.gameState != 30
+				|| rt4.amilious.input.InputManager.shouldAcceptTextInput();
+
+		//Amilious Key Block
+		if (acceptKeys) {
 			while (Keyboard.nextKey() && InterfaceList.keyQueueSize < 128) {
 				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
 				InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
 				InterfaceList.keyQueueSize++;
 			}
 		} else {
-			// Chat is not focused - check for colon or slash to enable chat
 			while (Keyboard.nextKey()) {
-				// If colon or slash is pressed, enable chat and let this key through
-				if (ChatController.isEnabled() && (Keyboard.keyChar == ':' || Keyboard.keyChar == '/')) {
-					ChatController.focus();
+				if (ChatController.isEnabled()
+						&& (Keyboard.keyChar == ':' || Keyboard.keyChar == '/')) {
+					ChatController.focus(); // or InputManager.enterChatMode()
 					InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.keyCode;
 					InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
 					InterfaceList.keyQueueSize++;
 				}
-				// Otherwise consume all keyboard input
 			}
 		}
+
 
 		// Update chat focus state AFTER keyboard processing (only in-game)
 		if (client.gameState == 30) {
@@ -3535,6 +3544,9 @@ public class Protocol {
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.runScripts(1, InterfaceList.topLevelInterface);
 		}
+		// Amilious: sub-interface opened (IF_OPENTOP) — arg0 = interface id
+		rt4.amilious.AmiliousClient.onInterfaceOpen(arg0);
+
 		return local9;
 	}
 

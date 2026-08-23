@@ -180,4 +180,7 @@ public final class AmiliousClient {
     public static void onInterfaceClose(int interfaceId) {
         Voiceover.onInterfaceClose(interfaceId);
     }
+
+    public static void OnMiniMenuCreate() {
+    }
 }

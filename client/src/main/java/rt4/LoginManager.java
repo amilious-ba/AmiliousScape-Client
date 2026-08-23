@@ -4,6 +4,8 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import rt4.amilious.AmiliousClient;
+import rt4.amilious.MiniMenuDrawer;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -1447,18 +1449,30 @@ public class LoginManager {
 		}
 		if (!Cs1ScriptRunner.aBoolean108) {
 			PluginRepository.OnMiniMenuCreate();
+			//MiniMenuDrawer.draw();
 		}
 		MiniMenu.sort();
 		if (Cs1ScriptRunner.aBoolean108) {
+			// right-click menu open — same gate as vanilla drawA/drawB
+			rt4.amilious.MiniMenuDrawer.onOpenFrame();
+			if (rt4.amilious.MiniMenuDrawer.enabled) {
+				rt4.amilious.MiniMenuDrawer.draw();
+			}
+			//draw new and old to see both
 			if (InterfaceList.aBoolean298) {
 				MiniMenu.drawB();
 			} else {
 				MiniMenu.drawA();
 			}
-		} else if (aClass13_13 != null) {
-			MiniMenu.method1207(aClass13_13, Cs1ScriptRunner.anInt3484, Cs1ScriptRunner.anInt3260);
-		} else if (Cs1ScriptRunner.anInt2503 != -1) {
-			MiniMenu.method1207(null, InterfaceList.anInt5574, Cs1ScriptRunner.anInt2503);
+		} else {
+			// menu not open (hover rebuild + tooltips)
+			rt4.amilious.MiniMenuDrawer.onClosed();
+
+			if (aClass13_13 != null) {
+				MiniMenu.method1207(aClass13_13, Cs1ScriptRunner.anInt3484, Cs1ScriptRunner.anInt3260);
+			} else if (Cs1ScriptRunner.anInt2503 != -1) {
+				MiniMenu.method1207(null, InterfaceList.anInt5574, Cs1ScriptRunner.anInt2503);
+			}
 		}
 		local60 = Cs1ScriptRunner.aBoolean108 ? -1 : method4044();
 		if (local60 == -1) {

@@ -3,6 +3,7 @@ package rt4.amilious.voice;
 import rt4.GlobalJsonConfig;
 import rt4.PlayerList;
 import rt4.amilious.Gender;
+import rt4.amilious.ModalController;
 import rt4.amilious.npc.NpcGenderCatalog;
 import rt4.amilious.voice.speakers.*;
 
@@ -14,8 +15,21 @@ public final class Voiceover {
 
     private static boolean enabled;
     private static ITextSpeaker backend = new DisabledSpeaker();
+    private static boolean initialized;
+    private static volatile boolean speaking;
+    private static Runnable pendingComplete;
 
     private Voiceover() {
+    }
+
+    public static void TryAssignPlayerSpeaker() {
+        if(initialized) return;
+        if (PlayerList.self != null && PlayerList.self.username != null) {
+            var playerName = PlayerList.self.username.toString();
+            VoiceAssignment.setPlayerSpeaker(playerName);
+            VoiceAssignment.resolve(playerName, resolveGender(playerName));
+            initialized = true;
+        }
     }
 
     /**
@@ -60,6 +74,19 @@ public final class Voiceover {
                         cfg.elevenLabsFemale
                 );
             }
+        } else if (type.equals("openai") || type.equals("gpt") || type.equals("gpt-tts")) {
+            String key = cfg.openaiKey;
+            if (key == null || key.trim().isEmpty()) {
+                System.err.println("[voiceover] openai needs openaiKey — falling back to OS TTS");
+                chosen = createOsDefault();
+            } else {
+                chosen = new OpenAiSpeaker(
+                        key.trim(),
+                        cfg.openaiModel,
+                        cfg.openaiVoiceMale,
+                        cfg.openaiVoiceFemale
+                );
+            }
         } else {
             System.err.println("[voiceover] unknown voiceoverSpeaker=\"" + type + "\" — falling back to OS TTS");
             chosen = createOsDefault();
@@ -78,6 +105,39 @@ public final class Voiceover {
         backend = chosen != null ? chosen : new DisabledSpeaker();
         enabled = !(backend instanceof DisabledSpeaker);
         System.out.println("[voiceover] speaker=" + type + " enabled=" + enabled);
+    }
+
+    public static void tick(){
+        ChatHeadReader.tick();
+        NarratorReader.tick();
+        TutorialGuideReader.tick();
+    }
+
+    public static void onLogin() {
+        TryAssignPlayerSpeaker();
+    }
+
+    public static void onLogout() {
+        ChatHeadReader.reset();
+        NarratorReader.reset();
+        TutorialGuideReader.reset();
+        VoiceAssignment.clearPlayerSpeaker();
+        initialized = false;
+    }
+
+    public static void onTutorialGuideText(int packetId, int iFaceId, int childId, String text) {
+        TutorialGuideReader.onSetText(packetId,iFaceId, childId, text);
+    }
+
+    public static void onInterfaceOpen(int interfaceId) {
+        ChatHeadReader.onInterfaceOpen(interfaceId);
+        NarratorReader.onInterfaceOpen(interfaceId);
+        TutorialGuideReader.onInterfaceOpen(interfaceId);
+    }
+
+    public static void onInterfaceClose(int interfaceId) {
+        ChatHeadReader.onInterfaceClose(interfaceId);
+        NarratorReader.onInterfaceClose(interfaceId);
     }
 
     public static void setBackend(ITextSpeaker speaker) {
@@ -111,16 +171,40 @@ public final class Voiceover {
 
     public static void speak(String speaker, String text, Runnable onComplete) {
         if (!enabled || backend == null || text == null || text.isEmpty()) {
+            if (onComplete != null) {
+                onComplete.run();
+            }
             return;
         }
+
+        // Cancel previous line if any
+        stop();
+
+        TryAssignPlayerSpeaker();
         Gender gender = resolveGender(speaker);
-        backend.speak(speaker, text, gender, onComplete);
+
+        speaking = true;
+        pendingComplete = onComplete;
+
+        backend.speak(speaker, text, gender, new Runnable() {
+            @Override
+            public void run() {
+                speaking = false;
+                Runnable cb = pendingComplete;
+                pendingComplete = null;
+                if (cb != null) {
+                    cb.run();
+                }
+            }
+        });
     }
 
     public static void stop() {
         if (backend != null) {
-            backend.stop();
+            backend.stop(); // if your backend has this
         }
+        speaking = false;
+        pendingComplete = null;
     }
 
     /**
@@ -174,5 +258,10 @@ public final class Voiceover {
             return new MacSaySpeaker();
         }
         return new LinuxEspeakSpeaker();
+    }
+
+
+    public static boolean isSpeaking() {
+        return speaking;
     }
 }

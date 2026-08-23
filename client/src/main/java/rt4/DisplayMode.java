@@ -355,6 +355,10 @@ public final class DisplayMode {
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method3712(true);
 		}
+
+		// Amilious: keep 371 on the right parent + pin above chat
+		rt4.amilious.TutorialPatch.onWindowModeChanged();
+
 		if (Protocol.socket != null && (client.gameState == 30 || client.gameState == 25)) {
 			ClientProt.sendWindowDetails();
 		}

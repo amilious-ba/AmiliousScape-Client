@@ -2,8 +2,6 @@ package rt4.amilious.voice.speakers;
 
 import rt4.amilious.Gender;
 import rt4.amilious.voice.TtsCache;
-import rt4.amilious.voice.VoiceAssignment;
-import rt4.amilious.voice.speakers.ITextSpeaker;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -12,35 +10,32 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * ElevenLabs text-to-speech.
- * Male/female voice ids from config; gender is passed in (resolved by Voiceover).
- *
- * Docs: POST https://api.elevenlabs.io/v1/text-to-speech/{voice_id}
+ * OpenAI Audio Speech API.
+ * POST https://api.openai.com/v1/audio/speech
  */
-public final class ElevenLabsSpeaker implements ITextSpeaker {
+public final class OpenAiSpeaker implements ITextSpeaker {
 
-    private static final String DEFAULT_MALE = "pNInz6obpgDQGcFmaJgB";
-    private static final String DEFAULT_FEMALE = "21m00Tcm4TlvDq8ikWAM";
-    private static final String API = "https://api.elevenlabs.io/v1/text-to-speech/";
+    private static final String API = "https://api.openai.com/v1/audio/speech";
 
     private final String apiKey;
-    private final String maleVoiceId;
-    private final String femaleVoiceId;
+    private final String model;
+    private final String maleVoice;
+    private final String femaleVoice;
 
     private final AtomicInteger gen = new AtomicInteger();
     private Process playProcess;
     private volatile boolean disabled;
     private boolean missingLogged;
 
-    public ElevenLabsSpeaker(String apiKey, String maleVoiceId, String femaleVoiceId) {
+    public OpenAiSpeaker(String apiKey, String model, String maleVoice, String femaleVoice) {
         this.apiKey = apiKey != null ? apiKey.trim() : "";
-        this.maleVoiceId = (maleVoiceId == null || maleVoiceId.isEmpty())
-                ? DEFAULT_MALE : maleVoiceId.trim();
-        this.femaleVoiceId = (femaleVoiceId == null || femaleVoiceId.isEmpty())
-                ? DEFAULT_FEMALE : femaleVoiceId.trim();
+        this.model = (model == null || model.isEmpty()) ? "tts-1" : model.trim();
+        this.maleVoice = (maleVoice == null || maleVoice.isEmpty()) ? "onyx" : maleVoice.trim();
+        this.femaleVoice = (femaleVoice == null || femaleVoice.isEmpty()) ? "nova" : femaleVoice.trim();
     }
 
     @Override
@@ -49,36 +44,31 @@ public final class ElevenLabsSpeaker implements ITextSpeaker {
             return;
         }
         if (apiKey.isEmpty()) {
-            disable("elevenLabsKey is empty");
+            disable("openaiKey is empty");
             return;
         }
         if (gender == null || gender == Gender.UNKNOWN || gender == Gender.NEUTRAL) {
             gender = Gender.MALE;
         }
 
-        var voice = VoiceAssignment.resolve(speaker, gender);
-        if (voice == null || voice.isEmpty()) {
-            voice = (gender == Gender.FEMALE) ? femaleVoiceId : maleVoiceId;
-        }
-        final String voiceId = voice;
-
+        final String voice = (gender == Gender.FEMALE) ? femaleVoice : maleVoice;
         stop();
         final int g = gen.incrementAndGet();
         final Runnable done = onComplete;
 
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
-                File cache = TtsCache.file("elevenlabs",voiceId, text,"mp3");
+                File cache = TtsCache.file("openai", voice + "_" + model, text, ".mp3");
                 byte[] mp3;
 
                 if (cache.isFile() && cache.length() > 0) {
-                    System.out.println("[tts:elevenlabs] cache hit " + cache.getName());
-                    mp3 = java.nio.file.Files.readAllBytes(cache.toPath());
+                    System.out.println("[tts:openai] cache hit " + cache.getName());
+                    mp3 = Files.readAllBytes(cache.toPath());
                 } else {
-                    System.out.println("[tts:elevenlabs] cache miss → API");
-                    mp3 = synthesize(text, voiceId);
+                    System.out.println("[tts:openai] cache miss → API");
+                    mp3 = synthesize(text, voice);
                     if (mp3 != null && mp3.length > 0) {
-                        java.nio.file.Files.write(cache.toPath(), mp3);
+                        Files.write(cache.toPath(), mp3);
                     }
                 }
 
@@ -86,50 +76,50 @@ public final class ElevenLabsSpeaker implements ITextSpeaker {
                     return;
                 }
                 if (mp3 == null || mp3.length == 0) {
-                    disable("ElevenLabs returned empty audio");
+                    disable("OpenAI returned empty audio");
                     return;
                 }
 
-                playMp3(mp3, g); // existing method (temp file + ffplay)
+                playMp3(mp3, g);
 
                 if (g == gen.get() && done != null) {
                     done.run();
                 }
             } catch (Exception e) {
-                System.err.println("[tts:elevenlabs] " + e.getMessage());
+                System.err.println("[tts:openai] " + e.getMessage());
             }
-        }, "elevenlabs-speak").start();
+        }, "openai-speak");
+        t.setDaemon(true);
+        t.start();
     }
 
     @Override
     public void stop() {
         gen.incrementAndGet();
-        Process p = playProcess;
-        playProcess = null;
-        if (p != null) {
+        if (playProcess != null) {
             try {
-                p.destroy();
+                playProcess.destroy();
             } catch (Exception ignored) {
             }
+            playProcess = null;
         }
     }
 
-    private byte[] synthesize(String text, String voiceId) throws Exception {
-        URL url = new URL(API + voiceId);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    private byte[] synthesize(String text, String voice) throws Exception {
+        HttpURLConnection conn = (HttpURLConnection) new URL(API).openConnection();
         conn.setRequestMethod("POST");
         conn.setDoOutput(true);
         conn.setConnectTimeout(15000);
         conn.setReadTimeout(60000);
-        conn.setRequestProperty("xi-api-key", apiKey);
+        conn.setRequestProperty("Authorization", "Bearer " + apiKey);
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("Accept", "audio/mpeg");
 
-        String body = "{\"text\":\"" + jsonEscape(text)
-                + "\",\"model_id\":\"eleven_turbo_v2_5\"}";
+        String body = "{\"model\":\"" + jsonEscape(model) + "\","
+                + "\"input\":\"" + jsonEscape(text) + "\","
+                + "\"voice\":\"" + jsonEscape(voice) + "\","
+                + "\"response_format\":\"mp3\"}";
+
         byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
-        conn.setRequestProperty("Content-Length", String.valueOf(bodyBytes.length));
-
         OutputStream os = conn.getOutputStream();
         os.write(bodyBytes);
         os.close();
@@ -137,26 +127,24 @@ public final class ElevenLabsSpeaker implements ITextSpeaker {
         int code = conn.getResponseCode();
         InputStream in = (code >= 200 && code < 300) ? conn.getInputStream() : conn.getErrorStream();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        int n;
+        while (in != null && (n = in.read(buf)) >= 0) {
+            bos.write(buf, 0, n);
+        }
         if (in != null) {
-            byte[] buf = new byte[4096];
-            int n;
-            while ((n = in.read(buf)) >= 0) {
-                bos.write(buf, 0, n);
-            }
             in.close();
         }
         if (code < 200 || code >= 300) {
-            throw new java.io.IOException("HTTP " + code + " " + bos.toString("UTF-8"));
+            throw new IllegalStateException("OpenAI HTTP " + code + " " + bos.toString("UTF-8"));
         }
         return bos.toByteArray();
     }
 
     private void playMp3(byte[] mp3, int g) throws Exception {
-        java.io.File tmp = java.io.File.createTempFile("amilious-tts-", ".mp3");
+        File tmp = File.createTempFile("amilious-openai-", ".mp3");
         tmp.deleteOnExit();
-        java.io.FileOutputStream fos = new java.io.FileOutputStream(tmp);
-        fos.write(mp3);
-        fos.close();
+        Files.write(tmp.toPath(), mp3);
 
         if (g != gen.get()) {
             return;
@@ -165,15 +153,13 @@ public final class ElevenLabsSpeaker implements ITextSpeaker {
         String os = System.getProperty("os.name", "").toLowerCase();
         String[] cmd;
         if (os.contains("win")) {
-            if (onPath("ffplay")) {
-                cmd = new String[] {
-                        "ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", tmp.getAbsolutePath()
-                };
-            } else {
-                // SoundPlayer is WAV-only — needs ffplay for real mp3, or convert first
-                disable("Install ffplay (ffmpeg) to play ElevenLabs mp3 on Windows");
+            if (!onPath("ffplay")) {
+                disable("Install ffplay (ffmpeg) to play OpenAI mp3 on Windows");
                 return;
             }
+            cmd = new String[] {
+                    "ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", tmp.getAbsolutePath()
+            };
         } else if (os.contains("mac")) {
             cmd = new String[] { "afplay", tmp.getAbsolutePath() };
         } else if (onPath("ffplay")) {
@@ -183,7 +169,7 @@ public final class ElevenLabsSpeaker implements ITextSpeaker {
         } else if (onPath("mpg123")) {
             cmd = new String[] { "mpg123", "-q", tmp.getAbsolutePath() };
         } else {
-            disable("No mp3 player (ffplay/mpg123). Install ffmpeg or mpg123.");
+            disable("No mp3 player (ffplay/mpg123)");
             return;
         }
 
@@ -195,11 +181,14 @@ public final class ElevenLabsSpeaker implements ITextSpeaker {
         disabled = true;
         if (!missingLogged) {
             missingLogged = true;
-            System.err.println("[tts:elevenlabs] " + msg);
+            System.err.println("[tts:openai] " + msg);
         }
     }
 
     private static String jsonEscape(String s) {
+        if (s == null) {
+            return "";
+        }
         return s.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")

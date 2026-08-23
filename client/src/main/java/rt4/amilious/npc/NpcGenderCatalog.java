@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class NpcGenderCatalog {
 
-    private static final String RESOURCE = "/rt4/amilious/npc/npc-genders.json";
+    private static final String RESOURCE = "/rt4/amilious/npc/npc_genders.json";
 
     /** Normalized name → gender from file */
     private static final Map<String, Gender> FROM_FILE = new HashMap<String, Gender>();
@@ -52,12 +52,14 @@ public final class NpcGenderCatalog {
 
         Gender g = FROM_FILE.get(key);
         if (g == null) {
+            g = guessGender(key);
+        }
+        if (g == null) {
             g = defaultGender;
         }
         CACHE.put(key, g);
         return g;
     }
-
     /** Optional: remember a decision without editing JSON */
     public static void putOverride(String speaker, Gender gender) {
         if (speaker == null || gender == null) {
@@ -112,6 +114,92 @@ public final class NpcGenderCatalog {
             sb.append(line).append('\n');
         }
         return sb.toString();
+    }
+
+    /**
+     * Best-effort guess from the display name. Returns null if unsure
+     * (caller uses defaultGender).
+     */
+    private static Gender guessGender(String key) {
+        if (key == null || key.isEmpty()) {
+            return null;
+        }
+
+        // Phrases / exact tokens
+        if (containsWord(key, "woman") || containsWord(key, "girl")
+                || containsWord(key, "lady") || containsWord(key, "miss")
+                || containsWord(key, "mrs") || containsWord(key, "ms")
+                || containsWord(key, "mother") || containsWord(key, "sister")
+                || containsWord(key, "daughter") || containsWord(key, "wife")
+                || containsWord(key, "queen") || containsWord(key, "princess")
+                || containsWord(key, "priestess") || containsWord(key, "witch")
+                || containsWord(key, "nurse") || containsWord(key, "maid")) {
+            return Gender.FEMALE;
+        }
+
+        if (containsWord(key, "man") || containsWord(key, "boy")
+                || containsWord(key, "mr") || containsWord(key, "sir")
+                || containsWord(key, "father") || containsWord(key, "brother")
+                || containsWord(key, "son") || containsWord(key, "husband")
+                || containsWord(key, "king") || containsWord(key, "prince")
+                || containsWord(key, "lord") || containsWord(key, "monk")
+                || containsWord(key, "priest") || containsWord(key, "guard")
+                || containsWord(key, "sailor") || containsWord(key, "wizard")
+                || containsWord(key, "warrior") || containsWord(key, "knight")
+                || containsWord(key, "fisherman") || containsWord(key, "master")) {
+            // "master chef" etc. — still male-leaning titles in RS
+            return Gender.MALE;
+        }
+
+        // Leading title
+        if (key.startsWith("mr ") || key.startsWith("sir ")) {
+            return Gender.MALE;
+        }
+        if (key.startsWith("mrs ") || key.startsWith("ms ") || key.startsWith("miss ")) {
+            return Gender.FEMALE;
+        }
+
+        // Weak suffix heuristics (easy to get wrong — keep conservative)
+        // Many RS female names end in a, ia, elle — optional:
+        if (key.endsWith("ia") || key.endsWith("elle") || key.endsWith("ette")
+                || key.endsWith("wyn") || key.endsWith("a") && key.length() >= 4) {
+            // "a" ending is noisy (e.g. "bryona" ok, "extra" rare as NPC)
+            // Only apply 'a' if not a known neutral word
+            if (!key.endsWith("a") || looksFeminineA(key)) {
+                return Gender.FEMALE;
+            }
+        }
+
+        return null; // unknown → defaultGender
+    }
+
+    private static boolean containsWord(String hay, String needle) {
+        // word boundary-ish: start/end or spaces
+        int i = 0;
+        while (i <= hay.length() - needle.length()) {
+            int at = hay.indexOf(needle, i);
+            if (at < 0) {
+                return false;
+            }
+            boolean leftOk = at == 0 || hay.charAt(at - 1) == ' ';
+            int end = at + needle.length();
+            boolean rightOk = end == hay.length() || hay.charAt(end) == ' ';
+            if (leftOk && rightOk) {
+                return true;
+            }
+            i = at + 1;
+        }
+        return false;
+    }
+
+    private static boolean looksFeminineA(String key) {
+        // skip short / obvious non-names
+        if (key.length() < 4) {
+            return false;
+        }
+        // avoid "man" already handled; skip ends like "ia" already true above
+        return key.endsWith("na") || key.endsWith("ra") || key.endsWith("la")
+                || key.endsWith("sa") || key.endsWith("ta") || key.endsWith("ya");
     }
 
     /**

@@ -4,11 +4,12 @@ import rt4.*;
 import java.util.ArrayList;
 import plugin.PluginRepository;
 import rt4.amilious.Commands.DumpNames_Command;
-import rt4.amilious.dialouge.ChatHeadReader;
+import rt4.amilious.voice.ChatHeadReader;
 import rt4.amilious.input.InputManager;
 import rt4.amilious.Commands.Bind_Command;
 import rt4.amilious.Commands.ICommand;
-import rt4.amilious.dialouge.TutorialGuideReader;
+import rt4.amilious.voice.NarratorReader;
+import rt4.amilious.voice.TutorialGuideReader;
 import rt4.amilious.voice.Voiceover;
 
 /**
@@ -96,8 +97,8 @@ public final class AmiliousClient {
         InputManager.tick();
         ModalTools.update();
         MapController.tickInput();
-        TutorialGuideReader.tick();
-        ChatHeadReader.tick();
+        Voiceover.tick();
+        TutorialPatch.tick();
     }
 
 
@@ -112,18 +113,19 @@ public final class AmiliousClient {
     }
 
     private static void onLogout() {
-        ChatHeadReader.reset();
+        Voiceover.onLogout();
     }
 
     private static void onLogin() {
         MenuTab.onLogin(); //let the menu tab know we just logged in
         PluginRepository.OnLogin();
         InputManager.onLogin();
+        Voiceover.onLogin();
     }
 
     public static void onInterfaceOpen(int interfaceId) {
         ModalController.onInterfaceOpen(interfaceId);
-        ChatHeadReader.onInterfaceOpen(interfaceId);
+        Voiceover.onInterfaceOpen(interfaceId);
     }
 
     public static void onIntegerInputSubmitted() {
@@ -140,6 +142,7 @@ public final class AmiliousClient {
 
     public static void onWidgetClosed() {
         ModalController.onWidgetClosed();
+
     }
 
     public static void onMiniMenuAction(int index, int actionCode, JagString op, JagString opBase,
@@ -171,10 +174,10 @@ public final class AmiliousClient {
     }
 
     public static void onTutorialGuideText(int packetId, int iFaceId, int childId, String text) {
-        TutorialGuideReader.onSetText(packetId,iFaceId, childId, text);
+        Voiceover.onTutorialGuideText(packetId, iFaceId, childId, text);
     }
 
     public static void onInterfaceClose(int interfaceId) {
-        ChatHeadReader.onInterfaceClose(interfaceId);
+        Voiceover.onInterfaceClose(interfaceId);
     }
 }

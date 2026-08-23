@@ -1,31 +1,43 @@
-package rt4.amilious.dialouge;
+package rt4.amilious.voice;
 
 import rt4.*;
-import rt4.amilious.voice.Voiceover;
 
 /**
- * Chathead dialogues: iface 243 and 65 (left head).
- * Continue: prefer space key (83) bind on a component; fallback press space one frame.
+ * Chathead dialogues (530 official iface names).
+ *
+ * Player:  chat1–4 (64–67), chat_np1–4 (68–71)
+ * NPC:     npcchat1–4 (241–244), npcchat_np1–4 (245–248)
+ *
+ * Multi-line: re-read open iface every tick; speak when speaker|text changes.
+ * Continue: MiniMenu.method10 when "Click here to continue" is present.
  */
 public final class ChatHeadReader {
 
-    private static final int IFACE_A = 243;
-    private static final int IFACE_B = 65;
     private static final int KEY_SPACE = 83; // Keyboard CODE_MAP[VK_SPACE]
+
+    /** 530 chathead interfaces only — no heuristic discovery. */
+    private static final int[] CHATHEAD_IFACES = {
+            // player continue
+            64, 65, 66, 67,
+            // player no-continue
+            68, 69, 70, 71,
+            // npc continue
+            241, 242, 243, 244,
+            // npc no-continue
+            245, 246, 247, 248
+    };
 
     private static final String CONTINUE_TEXT = "Click here to continue";
     private static final String PLACEHOLDER_NAME = "Name";
 
-    private static boolean dirty;
     private static int speakingInterfaceId = -1;
 
     private static String speaker;
     private static String spokenText;
     private static int continueId = -1;
     private static int continueChild = -1;
-    /** Component that has space in aByteArray8 (real continue target). */
     private static int spaceBindComponentId = -1;
-    private static int spaceBindOpIndex = 1; // i+1 passed to method4512
+    private static int spaceBindOpIndex = 1;
 
     private static String lastSpoken;
 
@@ -38,28 +50,38 @@ public final class ChatHeadReader {
     private ChatHeadReader() {
     }
 
-    public static void onInterfaceOpen(int interfaceId) {
-        if (interfaceId == IFACE_A || interfaceId == IFACE_B) {
-            speakingInterfaceId = interfaceId;
-            dirty = true;
-            spaceBindComponentId = -1;
-            System.out.println("[dlg] open iface=" + interfaceId);
-            dumpKeyBinds(interfaceId);
+    private static boolean isChatheadDialogue(int iface) {
+        for (int id : CHATHEAD_IFACES) {
+            if (id == iface) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    public static void onInterfaceOpen(int interfaceId) {
+        if (!isChatheadDialogue(interfaceId)) {
+            return;
+        }
+        speakingInterfaceId = interfaceId;
+        spaceBindComponentId = -1;
+        lastSpoken = null;
+        System.out.println("[dlg] open iface=" + interfaceId);
     }
 
     public static void onInterfaceButton(JagString option, int child, int button, int componentId) {
+        if (speakingInterfaceId < 0) {
+            return;
+        }
         if (continueId != -1 && componentId == continueId
                 || spaceBindComponentId != -1 && componentId == spaceBindComponentId) {
             Voiceover.stop();
             lastSpoken = null;
-            dirty = true;
             pendingAutoContinue = false;
         }
     }
 
     public static void tick() {
-        // Clear synthetic space after 1–2 frames
         if (spaceDown) {
             spaceClearTicks--;
             if (spaceClearTicks <= 0) {
@@ -74,20 +96,16 @@ public final class ChatHeadReader {
             doContinue();
         }
 
-        if (!dirty) {
-            return;
-        }
-        dirty = false;
-
         if (speakingInterfaceId < 0) {
             return;
         }
 
         getContents(speakingInterfaceId);
-        findSpaceBind(speakingInterfaceId);
+        if (spaceBindComponentId == -1) {
+            findSpaceBind(speakingInterfaceId);
+        }
 
         if (speaker == null || speaker.isEmpty() || PLACEHOLDER_NAME.equals(speaker)) {
-            dirty = true;
             return;
         }
         if (spokenText == null || spokenText.isEmpty()) {
@@ -103,28 +121,27 @@ public final class ChatHeadReader {
         System.out.println("[dlg-speak] iface=" + speakingInterfaceId
                 + " speaker=" + speaker + " text=" + spokenText);
 
+        final boolean canAutoContinue = continueId != -1 || spaceBindComponentId != -1;
         Voiceover.speak(speaker, spokenText, new Runnable() {
             @Override
             public void run() {
-                pendingAutoContinue = true;
+                if (canAutoContinue) {
+                    pendingAutoContinue = true;
+                }
             }
         });
     }
 
     public static void onInterfaceClose(int interfaceId) {
-        if (interfaceId != IFACE_A && interfaceId != IFACE_B) {
+        if (speakingInterfaceId < 0 || speakingInterfaceId != interfaceId) {
             return;
         }
-        if (speakingInterfaceId != -1 && speakingInterfaceId != interfaceId) {
-            return; // different chathead still open
-        }
-        clearDialogueState(); // Voiceover.stop + clear pending/cache
+        clearDialogueState();
     }
 
     private static void clearDialogueState() {
         Voiceover.stop();
         pendingAutoContinue = false;
-        dirty = false;
         speakingInterfaceId = -1;
         speaker = null;
         spokenText = null;
@@ -188,7 +205,6 @@ public final class ChatHeadReader {
         }
     }
 
-    /** Find component with space (83) in aByteArray8 — same as InterfaceList key path. */
     private static void findSpaceBind(int iface) {
         spaceBindComponentId = -1;
         spaceBindOpIndex = 1;
@@ -212,51 +228,23 @@ public final class ChatHeadReader {
                     }
                 }
             }
-            System.out.println("[dlg] no space bind on iface=" + iface);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static void dumpKeyBinds(int iface) {
-        try {
-            Component[] list = InterfaceList.components[iface];
-            if (list == null) {
-                return;
-            }
-            for (int i = 0; i < list.length; i++) {
-                Component c = list[i];
-                if (c == null || c.aByteArray8 == null) {
-                    continue;
-                }
-                System.out.print("[dlg-key] iface=" + iface + " child=" + i + " id=" + c.id + " keys=");
-                for (int k = 0; k < c.aByteArray8.length; k++) {
-                    System.out.print((c.aByteArray8[k] & 0xFF) + " ");
-                }
-                System.out.println(" text=" + (c.text != null ? c.text : ""));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Prefer method4512 on space-bound component; else hold space 2 frames
-     * so InterfaceList.method946 does the same thing as a real keypress.
-     */
     private static void doContinue() {
         Component c = getContinueComponent(continueId, continueChild);
         if (c == null && continueId != -1) {
-            // still try with known id
             System.out.println("[dlg] resume-pause method10 id=" + continueId);
-            MiniMenu.method10(0, continueId); // createdComponentId often 0 / -1
+            MiniMenu.method10(0, continueId);
             return;
         }
         if (c == null) {
             System.out.println("[dlg] no continue component");
             return;
         }
-        int created = c.createdComponentId; // often -1 for non-inv
+        int created = c.createdComponentId;
         if (created < 0) {
             created = 0;
         }
@@ -266,7 +254,6 @@ public final class ChatHeadReader {
 
     private static Component getContinueComponent(int componentId, int child) {
         try {
-            // Prefer child index on the open dialogue iface (243 or 65)
             int iface = speakingInterfaceId;
             if (iface < 0 && componentId > 0) {
                 iface = componentId >>> 16;
@@ -282,7 +269,6 @@ public final class ChatHeadReader {
                     return c;
                 }
             }
-            // Fallback: packed id
             if (componentId != -1) {
                 return InterfaceList.method1418(componentId, -1);
             }
@@ -294,5 +280,9 @@ public final class ChatHeadReader {
 
     public static void reset() {
         clearDialogueState();
+    }
+
+    public static boolean isActive() {
+        return speakingInterfaceId >= 0;
     }
 }

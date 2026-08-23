@@ -36,5 +36,9 @@ public class GlobalJsonConfig {
 	public String elevenLabsKey = "";
 	public String elevenLabsMale = "pNInz6obpgDQGcFmaJgB";
 	public String elevenLabsFemale = "21m00Tcm4TlvDq8ikWAM";
+	public String openaiKey = "";
+	public String openaiModel = "tts-1";           // or tts-1-hd
+	public String openaiVoiceMale = "onyx";        // onyx, echo
+	public String openaiVoiceFemale = "nova";      // nova, shimmer, alloy
 
 }

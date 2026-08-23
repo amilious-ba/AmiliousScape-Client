@@ -377,11 +377,25 @@ public final class DisplayMode {
 		}
 
 		try {
-			GraphicsConfiguration gc = GameShell.frame.getGraphicsConfiguration();
+			/*GraphicsConfiguration gc = GameShell.frame.getGraphicsConfiguration();
 			Rectangle bounds = gc.getBounds();
 
 			int w = (width > 0) ? width : bounds.width;
-			int h = (height > 0) ? height : bounds.height;
+			int h = (height > 0) ? height : bounds.height;*/
+
+			GraphicsConfiguration gc = GameShell.frame.getGraphicsConfiguration();
+			if (gc == null) {
+				gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+						.getDefaultScreenDevice()
+						.getDefaultConfiguration();
+			}
+			Rectangle bounds = gc.getBounds();
+
+			// Always use scaled AWT bounds — never native DisplayMode w/h
+			int w = bounds.width;
+			int h = bounds.height;
+
+
 
 			// Detach canvas BEFORE dispose so JOGL isn't holding a dead surface
 			if (GameShell.canvas != null) {
@@ -404,8 +418,10 @@ public final class DisplayMode {
 			GameShell.frame.setUndecorated(true);
 			GameShell.frame.setBounds(bounds.x, bounds.y, w, h);
 			GameShell.frame.setVisible(true);
+			GameShell.frame.setAlwaysOnTop(true);  // force above taskba
 			GameShell.frame.validate();
 			GameShell.frame.toFront();
+			GameShell.frame.requestFocus();
 
 			GameShell.borderlessFullscreenActive = true;
 			GameShell.fullScreenFrame = GameShell.frame; // marker so getWindowMode / scripts see FS
@@ -494,32 +510,90 @@ public final class DisplayMode {
 				}
 			}
 
-			GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
+			GraphicsConfiguration gc = GameShell.frame.getGraphicsConfiguration();
+			GraphicsDevice device = gc.getDevice();
 			if (!device.isFullScreenSupported()) {
 				System.out.println("[FS] Exclusive not supported on this device");
 				return;
 			}
 
-			if (width > 0 && height > 0) {
-				java.awt.DisplayMode[] modes = device.getDisplayModes();
-				java.awt.DisplayMode best = null;
-				for (java.awt.DisplayMode dm : modes) {
-					if (dm.getWidth() == width && dm.getHeight() == height
-							&& (best == null || dm.getBitDepth() > best.getBitDepth())) {
-						best = dm;
-					}
+			// Native (physical) size of the monitor — what setDisplayMode understands
+			java.awt.DisplayMode current = device.getDisplayMode();
+			int wantW = current.getWidth();
+			int wantH = current.getHeight();
+
+			// Optional: honor a *native* preference if it matches a real mode
+			if (width >= 800 && height >= 600) {
+				// If prefs look like scaled logical size, map up via transform
+				double sx = 1.0, sy = 1.0;
+				try {
+					java.awt.geom.AffineTransform tx = gc.getDefaultTransform();
+					if (tx.getScaleX() > 0) sx = tx.getScaleX();
+					if (tx.getScaleY() > 0) sy = tx.getScaleY();
+				} catch (Exception ignored) {
 				}
-				if (best != null) {
-					try {
-						device.setDisplayMode(best);
-						System.out.println("[FS] Exclusive display mode: " + best.getWidth() + "x" + best.getHeight());
-					} catch (Exception e) {
-						System.out.println("[FS] Could not set display mode, using current");
+				int nativeFromArgsW = (int) Math.round(width * sx);
+				int nativeFromArgsH = (int) Math.round(height * sy);
+
+				// Prefer exact native match to current if args are clearly logical
+				boolean argsLookLogical = (width < current.getWidth() - 50);
+				int candidateW = argsLookLogical ? nativeFromArgsW : width;
+				int candidateH = argsLookLogical ? nativeFromArgsH : height;
+
+				for (java.awt.DisplayMode dm : device.getDisplayModes()) {
+					if (dm.getWidth() == candidateW && dm.getHeight() == candidateH) {
+						wantW = candidateW;
+						wantH = candidateH;
+						break;
 					}
 				}
 			}
 
+			java.awt.DisplayMode best = null;
+			for (java.awt.DisplayMode dm : device.getDisplayModes()) {
+				if (dm.getWidth() == wantW && dm.getHeight() == wantH) {
+					if (best == null
+							|| dm.getBitDepth() > best.getBitDepth()
+							|| (dm.getBitDepth() == best.getBitDepth()
+							&& dm.getRefreshRate() > best.getRefreshRate())) {
+						best = dm;
+					}
+				}
+			}
+			if (best == null) {
+				best = current;
+			}
+
+			// Undecorated while not displayable
+			GameShell.frame.setVisible(false);
+			try {
+				GameShell.frame.dispose();
+			} catch (Exception ignored) {
+			}
+			try {
+				GameShell.frame.setUndecorated(true);
+			} catch (Exception e) {
+				System.out.println("[FS] setUndecorated failed: " + e.getMessage());
+			}
+
+			// REQUIRED order: full-screen window first, then display mode
 			device.setFullScreenWindow(GameShell.frame);
+
+			try {
+				if (best != null && !best.equals(device.getDisplayMode())) {
+					device.setDisplayMode(best);
+					System.out.println("[FS] Exclusive display mode: "
+							+ best.getWidth() + "x" + best.getHeight()
+							+ " @" + best.getRefreshRate());
+				} else {
+					System.out.println("[FS] Exclusive using current mode: "
+							+ device.getDisplayMode().getWidth() + "x"
+							+ device.getDisplayMode().getHeight());
+				}
+			} catch (Exception e) {
+				System.out.println("[FS] Could not set display mode, using current: " + e.getMessage());
+			}
+
 			GameShell.frame.validate();
 
 			GameShell.exclusiveFullscreenActive = true;
@@ -527,16 +601,25 @@ public final class DisplayMode {
 			GameShell.fullScreenFrame = GameShell.frame;
 			GameShell.replaceCanvas = true;
 
+			// Canvas/layout: use frame size after FS (AWT may still report scaled numbers)
 			Rectangle bounds = GameShell.frame.getBounds();
-			Preferences.fullScreenWidth = bounds.width;
-			Preferences.fullScreenHeight = bounds.height;
+			int storeW = bounds.width > 0 ? bounds.width : wantW;
+			int storeH = bounds.height > 0 ? bounds.height : wantH;
+			Preferences.fullScreenWidth = storeW;
+			Preferences.fullScreenHeight = storeH;
 			Preferences.write(GameShell.signLink);
 
-			System.out.println("[FS] Entered exclusive fullscreen: " + bounds.width + "x" + bounds.height);
+			System.out.println("[FS] Entered exclusive fullscreen: " + storeW + "x" + storeH
+					+ " (native target " + wantW + "x" + wantH + ")");
 		} catch (Exception e) {
 			e.printStackTrace();
 			GameShell.exclusiveFullscreenActive = false;
 			GameShell.fullScreenFrame = null;
+			try {
+				GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
+				device.setFullScreenWindow(null);
+			} catch (Exception ignored) {
+			}
 		}
 	}
 

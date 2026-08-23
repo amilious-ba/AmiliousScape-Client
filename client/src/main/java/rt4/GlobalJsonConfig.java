@@ -32,5 +32,9 @@ public class GlobalJsonConfig {
 	public boolean enableAmiliousDebugAtStart = false;
 	/** VSync: 0 = off, 1 = on (default), -1 = adaptive if supported */
 	public int swapInterval = 1;
+	public String voiceoverSpeaker = "";      // empty = off
+	public String elevenLabsKey = "";
+	public String elevenLabsMale = "pNInz6obpgDQGcFmaJgB";
+	public String elevenLabsFemale = "21m00Tcm4TlvDq8ikWAM";
 
 }

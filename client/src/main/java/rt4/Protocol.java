@@ -6,9 +6,11 @@ import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
 import rt4.amilious.AmiliousClient;
 import rt4.amilious.ChatController;
+import rt4.amilious.DebugConsole;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.DelayQueue;
 
 public class Protocol {
 	@OriginalMember(owner = "client!eg", name = "e", descriptor = "Lclient!i;")
@@ -2084,6 +2086,12 @@ public class Protocol {
 			int tracknum = inboundBuffer.g2add();
 			setVerifyId(tracknum);
 			DelayedStateChange.method3617(text, id);
+			int iface = id >>> 16;
+			int child = id & 0xFFFF;
+			if (iface == 372) {
+				DebugConsole.log("Text: " + text);
+				AmiliousClient.onTutorialGuideText(id,iface, child, text.toString());
+			}
 			opcode = -1;
 			return true;
 		} else if (opcode == ServerProt.VARBIT_LARGE) {
@@ -3502,6 +3510,7 @@ public class Protocol {
 
 	@OriginalMember(owner = "client!dh", name = "a", descriptor = "(IIII)Lclient!wk;")
 	public static ComponentPointer method1148(@OriginalArg(1) int arg0, @OriginalArg(2) int arg1, @OriginalArg(3) int arg2) {
+		System.out.println("[dlg-open] iface=" + arg0);
 		@Pc(9) ComponentPointer local9 = new ComponentPointer();
 		local9.anInt5879 = arg2;
 		local9.interfaceId = arg0;

@@ -371,14 +371,14 @@ public class InterfaceList {
 
 	@OriginalMember(owner = "client!ke", name = "a", descriptor = "(ZLclient!wk;Z)V")
 	public static void closeInterface(@OriginalArg(0) boolean arg0, @OriginalArg(1) ComponentPointer arg1) {
-		@Pc(9) int local9 = (int) arg1.key;
-		@Pc(16) int local16 = arg1.interfaceId;
+		@Pc(9) int parentKey = (int) arg1.key;
+		@Pc(16) int interfaceId = arg1.interfaceId;
 		arg1.unlink();
 		if (arg0) {
-			method2275(local16);
+			method2275(interfaceId);
 		}
-		method3214(local16);
-		@Pc(32) Component local32 = getComponent(local9);
+		method3214(interfaceId);
+		@Pc(32) Component local32 = getComponent(parentKey);
 		if (local32 != null) {
 			redraw(local32);
 		}
@@ -407,6 +407,8 @@ public class InterfaceList {
 		if (topLevelInterface != -1) {
 			runScripts(1, topLevelInterface);
 		}
+		// Amilious: after unlink — iface is closed
+		rt4.amilious.AmiliousClient.onInterfaceClose(interfaceId);
 	}
 
 	@OriginalMember(owner = "client!ii", name = "a", descriptor = "(Lclient!be;III)V")

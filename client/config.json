@@ -10,5 +10,9 @@
     "startFullscreen": false,
     "borderlessFullscreen": false,
     "enableAmiliousDebugAtStart": false,
-    "swapInterval": 1
+    "swapInterval": 1,
+    "voiceoverSpeaker": "",
+    "elevenLabsKey": "",
+    "elevenLabsMale": "pNInz6obpgDQGcFmaJgB",
+    "elevenLabsFemale": "21m00Tcm4TlvDq8ikWAM"
 }

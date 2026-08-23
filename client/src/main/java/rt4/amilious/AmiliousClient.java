@@ -1,14 +1,15 @@
 package rt4.amilious;
 
-import plugin.PluginRepository;
 import rt4.*;
+import java.util.ArrayList;
+import plugin.PluginRepository;
+import rt4.amilious.Commands.DumpNames_Command;
+import rt4.amilious.dialouge.ChatHeadReader;
+import rt4.amilious.input.InputManager;
 import rt4.amilious.Commands.Bind_Command;
 import rt4.amilious.Commands.ICommand;
-import rt4.amilious.Commands.*;
-import rt4.amilious.input.InputManager;
-import rt4.amilious.input.SpecialModalRegistry;
-
-import java.util.ArrayList;
+import rt4.amilious.dialouge.TutorialGuideReader;
+import rt4.amilious.voice.Voiceover;
 
 /**
  * All AmiliousScape client customizations.
@@ -34,6 +35,7 @@ public final class AmiliousClient {
 
         CommandBinds.load();
         AmiliousClient.AddCommand(new Bind_Command());
+        AmiliousClient.AddCommand(new DumpNames_Command());
 
         // Input system
         InputManager.init();
@@ -44,8 +46,11 @@ public final class AmiliousClient {
         ModalController.init();
 
         DebugConsole.Init();
+        Voiceover.init();
         DebugConsole.log("AmiliousScape client initialized!");
     }
+
+
 
     public static void AddCommand(ICommand c){
         commands.add(c);
@@ -79,6 +84,7 @@ public final class AmiliousClient {
         MapController.onComponent(componentId);
         rt4.amilious.input.ChatboxState.onChatTabClicked(componentId);
         if(DebugConsole.showInteractions)DebugConsole.log(option.toString() + " " + child + " " + button + " " + componentId);
+        ChatHeadReader.onInterfaceButton(option, child, button, componentId);
     }
 
     /** call after PluginRepository.Update(); in client.mainLoop */
@@ -90,6 +96,8 @@ public final class AmiliousClient {
         InputManager.tick();
         ModalTools.update();
         MapController.tickInput();
+        TutorialGuideReader.tick();
+        ChatHeadReader.tick();
     }
 
 
@@ -104,6 +112,7 @@ public final class AmiliousClient {
     }
 
     private static void onLogout() {
+        ChatHeadReader.reset();
     }
 
     private static void onLogin() {
@@ -114,6 +123,7 @@ public final class AmiliousClient {
 
     public static void onInterfaceOpen(int interfaceId) {
         ModalController.onInterfaceOpen(interfaceId);
+        ChatHeadReader.onInterfaceOpen(interfaceId);
     }
 
     public static void onIntegerInputSubmitted() {
@@ -138,10 +148,6 @@ public final class AmiliousClient {
 
     public static void onComponentHiddenChanged(int componentId, boolean hidden) {
         ModalController.onComponentHiddenChanged(componentId, hidden);
-        /*if (componentId == 8978432 && !hidden) {
-            System.out.println("[QC] root shown");
-            new Exception("QC open stack").printStackTrace(System.out);
-        }*/
     }
 
     public static void onQuickChatShown() {
@@ -153,9 +159,6 @@ public final class AmiliousClient {
     }
 
     public static void onRun_CS2(int scriptId, JagString argTypes, Object[] scriptArgs) {
-        System.out.println("[RUN_CS2] scriptId=" + scriptId
-                + " types=" + argTypes
-                + " argc=" + scriptArgs.length);
         ModalController.onRun_CS2(scriptId, argTypes, scriptArgs);
     }
 
@@ -165,5 +168,13 @@ public final class AmiliousClient {
      */
     public static void onClientOptionScript(int scriptId, int componentId, JagString opBase, int op,Object[] scriptArgs) {
         ModalController.onClientOptionScript(scriptId, componentId, opBase, op, scriptArgs);
+    }
+
+    public static void onTutorialGuideText(int packetId, int iFaceId, int childId, String text) {
+        TutorialGuideReader.onSetText(packetId,iFaceId, childId, text);
+    }
+
+    public static void onInterfaceClose(int interfaceId) {
+        ChatHeadReader.onInterfaceClose(interfaceId);
     }
 }

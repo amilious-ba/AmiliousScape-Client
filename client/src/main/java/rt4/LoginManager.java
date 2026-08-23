@@ -1449,7 +1449,7 @@ public class LoginManager {
 		}
 		if (!Cs1ScriptRunner.aBoolean108) {
 			PluginRepository.OnMiniMenuCreate();
-			//MiniMenuDrawer.draw();
+			MiniMenuDrawer.draw();
 		}
 		MiniMenu.sort();
 		if (Cs1ScriptRunner.aBoolean108) {

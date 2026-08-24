@@ -208,7 +208,7 @@ public final class TutorialPatch {
         if (top == 746) {
             return false;
         }
-        return DisplayMode.aBoolean156;
+        return DisplayMode.hdModeActive;
     }
 
     private static Component findChatAnchor() {

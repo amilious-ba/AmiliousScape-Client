@@ -11,14 +11,21 @@ import java.awt.*;
 @OriginalClass("client!od")
 public final class DisplayMode {
 
+	// ==================== Static Fields ====================
+
 	@OriginalMember(owner = "client!ib", name = "i", descriptor = "[Lclient!od;")
-	public static DisplayMode[] aClass114Array1;
+	public static DisplayMode[] cachedDisplayModes;
+
 	@OriginalMember(owner = "client!rc", name = "M", descriptor = "Z")
-	public static boolean aBoolean73 = false;
+	public static boolean glNativesLoaded = false;
+
 	@OriginalMember(owner = "client!jk", name = "y", descriptor = "Z")
-	public static boolean aBoolean156 = false;
+	public static boolean hdModeActive = false;
+
 	@OriginalMember(owner = "client!hi", name = "f", descriptor = "J")
-	public static long aLong89 = 0L;
+	public static long lastModeChangeTime = 0L;
+
+	// ==================== Instance Fields ====================
 
 	@OriginalMember(owner = "client!od", name = "j", descriptor = "I")
 	public int width;
@@ -32,66 +39,323 @@ public final class DisplayMode {
 	@OriginalMember(owner = "client!od", name = "m", descriptor = "I")
 	public int bitDepth;
 
+	// ==================== Public Methods ====================
 
+	/**
+	 * Sets the window display mode (software, GL, HD, or fullscreen).
+	 * This is the public entry point that determines if HD mode changed.
+	 *
+	 * @param forceReload whether to force canvas recreation
+	 * @param newMode the desired mode (0=software, 1=GL, 2=HD, 3=fullscreen)
+	 * @param width fullscreen width (or -1 for default)
+	 * @param height fullscreen height (or -1 for default)
+	 */
+	@OriginalMember(owner = "client!th", name = "a", descriptor = "(ZIIII)V")
+	public static void setWindowMode(@OriginalArg(0) boolean forceReload, @OriginalArg(1) int newMode, @OriginalArg(3) int width, @OriginalArg(4) int height) {
+		lastModeChangeTime = 0L;
+		@Pc(4) int currentMode = getWindowMode();
+
+		// Fullscreen transitions always require reload
+		if (newMode == 3 || currentMode == 3) {
+			forceReload = true;
+		}
+
+		// Check if we're switching between HD/non-HD modes
+		@Pc(44) boolean hdModeChanged = currentMode > 0 != newMode > 0;
+		if (forceReload && newMode > 0) {
+			hdModeChanged = true;
+		}
+
+		setWindowMode(forceReload, newMode, hdModeChanged, currentMode, width, height);
+	}
+
+	/**
+	 * Gets the current window/display mode.
+	 *
+	 * @return 0=software, 1=GL, 2=HD, 3=fullscreen
+	 */
+	@OriginalMember(owner = "client!le", name = "a", descriptor = "(I)I")
+	public static int getWindowMode() {
+		// Fullscreen takes priority
+		if (GameShell.fullScreenFrame != null
+				|| GameShell.borderlessFullscreenActive
+				|| GameShell.exclusiveFullscreenActive) {
+			return 3;
+		} else if (GlRenderer.enabled && hdModeActive) {
+			return 2; // HD mode
+		} else if (GlRenderer.enabled) {
+			return 1; // GL mode
+		} else {
+			return 0; // Software mode
+		}
+	}
+
+	/**
+	 * Gets available display modes, filtering by minimum requirements.
+	 * Caches the result for subsequent calls.
+	 *
+	 * @return array of supported display modes
+	 */
+	@OriginalMember(owner = "client!ab", name = "c", descriptor = "(B)[Lclient!od;")
+	public static DisplayMode[] getDisplayModes() {
+		if (cachedDisplayModes == null) {
+			DisplayMode[] availableModes = fetchDisplayModes(GameShell.signLink);
+			DisplayMode[] filteredModes = new DisplayMode[availableModes.length];
+			int filteredCount = 0;
+
+			// Get native screen size to filter out modes larger than the display
+			int maxWidth = Integer.MAX_VALUE;
+			int maxHeight = Integer.MAX_VALUE;
+			try {
+				java.awt.DisplayMode nativeMode = GraphicsEnvironment
+						.getLocalGraphicsEnvironment()
+						.getDefaultScreenDevice()
+						.getDisplayMode();
+				maxWidth = nativeMode.getWidth();
+				maxHeight = nativeMode.getHeight();
+			} catch (Exception ignored) {
+			}
+
+			// Filter modes: keep only those that meet minimum requirements
+			label52:
+			for (int i = 0; i < availableModes.length; i++) {
+				DisplayMode mode = availableModes[i];
+
+				// Skip modes with insufficient color depth
+				if (mode.bitDepth > 0 && mode.bitDepth < 24) {
+					continue;
+				}
+
+				// Skip modes below minimum resolution
+				if (mode.width < 1024 || mode.height < 768) {
+					continue;
+				}
+
+				// Skip modes larger than the native screen
+				if (mode.width > maxWidth || mode.height > maxHeight) {
+					continue;
+				}
+
+				// Check for duplicate resolutions, keep the one with highest bit depth
+				for (int j = 0; j < filteredCount; j++) {
+					DisplayMode existing = filteredModes[j];
+					if (mode.width == existing.width && existing.height == mode.height) {
+						if (mode.bitDepth > existing.bitDepth) {
+							filteredModes[j] = mode;
+						}
+						continue label52;
+					}
+				}
+
+				filteredModes[filteredCount] = mode;
+				filteredCount++;
+			}
+
+			// Copy filtered modes to final array
+			cachedDisplayModes = new DisplayMode[filteredCount];
+			ArrayUtils.copy(filteredModes, 0, cachedDisplayModes, 0, filteredCount);
+
+			// Sort by total pixel count (width * height)
+			int[] sortKeys = new int[cachedDisplayModes.length];
+			for (int i = 0; i < cachedDisplayModes.length; i++) {
+				DisplayMode mode = cachedDisplayModes[i];
+				sortKeys[i] = mode.height * mode.width;
+			}
+			ArrayUtils.sort(sortKeys, cachedDisplayModes);
+		}
+		return cachedDisplayModes;
+	}
+
+	/**
+	 * Fetches raw display modes from the system via privileged SignLink request.
+	 *
+	 * @param signLink the SignLink instance for privileged operations
+	 * @return array of available display modes
+	 */
+	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ILsignlink!ll;)[Lclient!od;")
+	public static DisplayMode[] fetchDisplayModes(@OriginalArg(1) SignLink signLink) {
+		if (!signLink.isFullScreenSupported()) {
+			return new DisplayMode[0];
+		}
+
+		// Request display modes from system
+		@Pc(17) PrivilegedRequest request = signLink.getDisplayModes();
+		while (request.status == 0) {
+			ThreadUtils.sleep(10L);
+		}
+
+		if (request.status == 2) {
+			return new DisplayMode[0];
+		}
+
+		// Parse raw data: 4 ints per mode (width, height, bitDepth, refreshRate)
+		@Pc(39) int[] rawData = (int[]) request.result;
+		@Pc(45) DisplayMode[] modes = new DisplayMode[rawData.length >> 2];
+		for (@Pc(47) int i = 0; i < modes.length; i++) {
+			@Pc(59) DisplayMode mode = new DisplayMode();
+			modes[i] = mode;
+			mode.width = rawData[i << 2];
+			mode.height = rawData[(i << 2) + 1];
+			mode.bitDepth = rawData[(i << 2) + 2];
+			mode.refreshRate = rawData[(i << 2) + 3];
+		}
+		return modes;
+	}
+
+	/**
+	 * Creates a fullscreen frame using the legacy second-frame approach.
+	 * This is a fallback when modern fullscreen methods fail.
+	 *
+	 * @param bitDepth desired bit depth (or 0 for auto)
+	 * @param height desired height
+	 * @param width desired width
+	 * @param signLink SignLink for privileged operations
+	 * @return the created Frame, or null if failed
+	 */
+	@OriginalMember(owner = "client!nf", name = "a", descriptor = "(IIIIILsignlink!ll;)Ljava/awt/Frame;")
+	public static Frame createFullScreenFrame(@OriginalArg(2) int bitDepth, @OriginalArg(3) int height, @OriginalArg(4) int width, @OriginalArg(5) SignLink signLink) {
+		if (!signLink.isFullScreenSupported()) {
+			return null;
+		}
+
+		// Find a matching display mode
+		@Pc(20) DisplayMode[] modes = fetchDisplayModes(signLink);
+		if (modes == null) {
+			return null;
+		}
+
+		// Search for best matching mode (highest bit depth for given resolution)
+		@Pc(27) boolean foundMatch = false;
+		for (@Pc(29) int i = 0; i < modes.length; i++) {
+			if (width == modes[i].width && height == modes[i].height && (!foundMatch || modes[i].bitDepth > bitDepth)) {
+				bitDepth = modes[i].bitDepth;
+				foundMatch = true;
+			}
+		}
+
+		if (!foundMatch) {
+			return null;
+		}
+
+		// Create fullscreen frame via privileged request
+		@Pc(90) PrivilegedRequest request = signLink.enterFullScreen(bitDepth, height, width);
+		while (request.status == 0) {
+			ThreadUtils.sleep(10L);
+		}
+
+		@Pc(103) Frame frame = (Frame) request.result;
+		if (frame == null) {
+			return null;
+		} else if (request.status == 2) {
+			// Failed - clean up and return null
+			exitFullScreen(frame, signLink);
+			return null;
+		} else {
+			return frame;
+		}
+	}
+
+	/**
+	 * Exits fullscreen mode for the given frame (legacy approach).
+	 *
+	 * @param frame the fullscreen frame to close
+	 * @param signLink SignLink for privileged operations
+	 */
 	@OriginalMember(owner = "client!c", name = "a", descriptor = "(Ljava/awt/Frame;ZLsignlink!ll;)V")
-	public static void exitFullScreen(@OriginalArg(0) Frame arg0, @OriginalArg(2) SignLink arg1) {
+	public static void exitFullScreen(@OriginalArg(0) Frame frame, @OriginalArg(2) SignLink signLink) {
 		while (true) {
-			@Pc(16) PrivilegedRequest local16 = arg1.exitFullScreen(arg0);
-			while (local16.status == 0) {
+			@Pc(16) PrivilegedRequest request = signLink.exitFullScreen(frame);
+			while (request.status == 0) {
 				ThreadUtils.sleep(10L);
 			}
-			if (local16.status == 1) {
-				arg0.setVisible(false);
-				arg0.dispose();
+			if (request.status == 1) {
+				frame.setVisible(false);
+				frame.dispose();
 				return;
 			}
 			ThreadUtils.sleep(100L);
 		}
 	}
 
-	@OriginalMember(owner = "client!th", name = "a", descriptor = "(ZIIII)V")
-	public static void setWindowMode(@OriginalArg(0) boolean arg0, @OriginalArg(1) int arg1, @OriginalArg(3) int arg2, @OriginalArg(4) int arg3) {
-		aLong89 = 0L;
-		@Pc(4) int mode = getWindowMode();
-		if (arg1 == 3 || mode == 3) {
-			arg0 = true;
-		}
-		@Pc(44) boolean useHd = mode > 0 != arg1 > 0;
-		if (arg0 && arg1 > 0) {
-			useHd = true;
-		}
-		setWindowMode(arg0, arg1, useHd, mode, arg2, arg3);
-	}
+	// ==================== Private Methods ====================
 
-
-
-
-	@OriginalMember(owner = "client!le", name = "a", descriptor = "(I)I")
-	public static int getWindowMode() {
-		if (GameShell.fullScreenFrame != null
-				|| GameShell.borderlessFullscreenActive
-				|| GameShell.exclusiveFullscreenActive) {
-			return 3;
-		} else if (GlRenderer.enabled && aBoolean156) {
-			return 2;
-		} else if (GlRenderer.enabled) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-
+	/**
+	 * Main implementation of window mode switching.
+	 * Handles fullscreen enter/exit, canvas recreation, and GL initialization.
+	 *
+	 * @param forceReload whether to recreate the canvas
+	 * @param newMode target mode (0-3)
+	 * @param hdModeChanged whether switching between HD/non-HD
+	 * @param currentMode current mode (0-3)
+	 * @param width fullscreen width (-1 for default)
+	 * @param height fullscreen height (-1 for default)
+	 */
 	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ZIZIZII)V")
-	public static void setWindowMode(boolean arg0, int arg1, boolean arg2, int mode, int arg4, int arg5) {
-		if (arg2) {
+	private static void setWindowMode(boolean forceReload, int newMode, boolean hdModeChanged, int currentMode, int width, int height) {
+		// Quit GL renderer if switching rendering modes
+		if (hdModeChanged) {
 			GlRenderer.quit();
 		}
 
-		// ----- EXIT fullscreen -----
-		boolean leavingFullscreen = (GameShell.fullScreenFrame != null
-				|| GameShell.borderlessFullscreenActive
-				|| GameShell.exclusiveFullscreenActive)
-				&& (arg1 != 3 || arg4 != Preferences.fullScreenWidth || arg5 != Preferences.fullScreenHeight);
+		// Handle fullscreen exit
+		handleFullscreenExit(newMode, currentMode, width, height);
+
+		// Handle fullscreen entry
+		handleFullscreenEntry(newMode, currentMode, width, height);
+
+		// If fullscreen entry failed completely, fall back to windowed mode
+		if (newMode == 3 && !isInFullscreenMode()) {
+			setWindowMode(true, Preferences.favoriteWorlds, true, currentMode, -1, -1);
+			return;
+		}
+
+		// Canvas replacement required after fullscreen peer rebuild
+		if (GameShell.replaceCanvas) {
+			forceReload = true;
+		}
+
+		// Determine active container and calculate frame dimensions
+		Container activeContainer = getActiveContainer();
+		calculateFrameDimensions(activeContainer, currentMode);
+
+		// Set canvas dimensions based on display mode
+		setCanvasDimensions(newMode, currentMode);
+
+		// Recreate canvas if needed, or just resize it
+		if (forceReload) {
+			recreateCanvas(newMode);
+		} else {
+			resizeCanvas(activeContainer);
+		}
+
+		// Handle GL context for mode transitions
+		handleGLContextTransition(newMode, currentMode);
+
+		// Handle HD mode initialization
+		handleHDModeInitialization(hdModeChanged, newMode, currentMode);
+
+		// Verify GL is enabled when requested
+		if (!GlRenderer.enabled && newMode > 0) {
+			setWindowMode(true, 0, true, currentMode, -1, -1);
+			return;
+		}
+
+		// Configure rendering based on mode
+		configureRenderingMode(newMode, currentMode);
+
+		// Update scene and interface state
+		updateSceneAndInterfaceState(hdModeChanged, newMode, currentMode);
+
+		// Notify other systems of mode change
+		notifyModeChange();
+	}
+
+	/**
+	 * Handles exiting from fullscreen mode if needed.
+	 */
+	private static void handleFullscreenExit(int newMode, int currentMode, int width, int height) {
+		boolean leavingFullscreen = isInFullscreenMode()
+				&& (newMode != 3 || width != Preferences.fullScreenWidth || height != Preferences.fullScreenHeight);
 
 		if (leavingFullscreen) {
 			if (GameShell.borderlessFullscreenActive) {
@@ -99,7 +363,7 @@ public final class DisplayMode {
 			} else if (GameShell.exclusiveFullscreenActive) {
 				exitExclusiveFullscreen();
 			} else if (GameShell.fullScreenFrame != null && GameShell.fullScreenFrame != GameShell.frame) {
-				// legacy second-frame exclusive only
+				// Legacy second-frame exclusive fullscreen
 				if (GameShell.frame != null) {
 					GameShell.frame.setVisible(false);
 				}
@@ -107,235 +371,347 @@ public final class DisplayMode {
 				GameShell.fullScreenFrame = null;
 			}
 		}
+	}
 
-		// ----- ENTER fullscreen (mode 3) -----
-		if (arg1 == 3 && GameShell.fullScreenFrame == null
-				&& !GameShell.borderlessFullscreenActive
-				&& !GameShell.exclusiveFullscreenActive) {
+	/**
+	 * Handles entering fullscreen mode if needed.
+	 */
+	private static void handleFullscreenEntry(int newMode, int currentMode, int width, int height) {
+		if (newMode == 3 && !isInFullscreenMode()) {
+			// Save windowed dimensions before entering fullscreen
+			saveWindowedDimensions(currentMode);
 
-			if (GameShell.frame != null && mode != 3 && GameShell.windowedFrameWidth == 0) {
-				java.awt.Dimension currentSize = GameShell.frame.getSize();
-				java.awt.Insets insets = GameShell.frame.getInsets();
-				java.awt.Point location = GameShell.frame.getLocation();
-				GameShell.windowedFrameWidth = currentSize.width - insets.left - insets.right;
-				GameShell.windowedFrameHeight = currentSize.height - insets.top - insets.bottom;
-				GameShell.windowedFrameX = location.x;
-				GameShell.windowedFrameY = location.y;
-				System.out.println("Saved windowed size: " + GameShell.windowedFrameWidth + "x" + GameShell.windowedFrameHeight
-						+ " at " + GameShell.windowedFrameX + "," + GameShell.windowedFrameY);
-			}
-
+			// Choose fullscreen method based on config
 			boolean useBorderless = GlobalJsonConfig.instance == null
 					|| GlobalJsonConfig.instance.borderlessFullscreen;
 
 			if (useBorderless) {
-				enterBorderlessFullscreen(arg4, arg5);
+				enterBorderlessFullscreen(width, height);
 			} else {
-				enterExclusiveFullscreen(arg4, arg5);
-				// Fallback: legacy second-frame exclusive
+				enterExclusiveFullscreen(width, height);
+
+				// Fallback to legacy second-frame exclusive if modern method failed
 				if (!GameShell.exclusiveFullscreenActive) {
-					GameShell.fullScreenFrame = method3176(0, arg5, arg4, GameShell.signLink);
+					GameShell.fullScreenFrame = createFullScreenFrame(0, height, width, GameShell.signLink);
 					if (GameShell.fullScreenFrame != null) {
-						Preferences.fullScreenHeight = arg5;
-						Preferences.fullScreenWidth = arg4;
+						Preferences.fullScreenHeight = height;
+						Preferences.fullScreenWidth = width;
 						Preferences.write(GameShell.signLink);
 					}
 				}
 			}
 		}
+	}
 
-		// Fallback if enter failed entirely
-		if (arg1 == 3
-				&& GameShell.fullScreenFrame == null
-				&& !GameShell.borderlessFullscreenActive
-				&& !GameShell.exclusiveFullscreenActive) {
-			setWindowMode(true, Preferences.favoriteWorlds, true, mode, -1, -1);
-			return;
+	/**
+	 * Saves the current windowed frame dimensions before entering fullscreen.
+	 */
+	private static void saveWindowedDimensions(int currentMode) {
+		if (GameShell.frame != null && currentMode != 3 && GameShell.windowedFrameWidth == 0) {
+			java.awt.Dimension currentSize = GameShell.frame.getSize();
+			java.awt.Insets insets = GameShell.frame.getInsets();
+			java.awt.Point location = GameShell.frame.getLocation();
+
+			// Store client area size (excluding window decorations)
+			GameShell.windowedFrameWidth = currentSize.width - insets.left - insets.right;
+			GameShell.windowedFrameHeight = currentSize.height - insets.top - insets.bottom;
+			GameShell.windowedFrameX = location.x;
+			GameShell.windowedFrameY = location.y;
+
+			System.out.println("Saved windowed size: " + GameShell.windowedFrameWidth + "x" + GameShell.windowedFrameHeight
+					+ " at " + GameShell.windowedFrameX + "," + GameShell.windowedFrameY);
 		}
+	}
 
-		if (GameShell.replaceCanvas) {
-			arg0 = true;
-		}
-
-		// ----- Active container -----
-		Container local85;
+	/**
+	 * Gets the active container (fullscreen frame, main frame, or applet).
+	 */
+	private static Container getActiveContainer() {
 		if (GameShell.fullScreenFrame != null) {
-			local85 = GameShell.fullScreenFrame;
+			return GameShell.fullScreenFrame;
 		} else if (GameShell.frame == null) {
-			local85 = GameShell.signLink.applet;
+			return GameShell.signLink.applet;
 		} else {
-			local85 = GameShell.frame;
+			return GameShell.frame;
 		}
+	}
 
-		// Restore windowed size when exiting, else use container size
-		Insets local109 = null;
-		boolean restoredFromSaved =
-				GameShell.fullScreenFrame == null
-						&& !GameShell.borderlessFullscreenActive
-						&& !GameShell.exclusiveFullscreenActive
-						&& GameShell.windowedFrameWidth > 0
-						&& mode == 3;
+	/**
+	 * Calculates and sets the frame width/height based on container or saved dimensions.
+	 */
+	private static void calculateFrameDimensions(Container activeContainer, int currentMode) {
+		Insets insets = null;
+
+		// Check if we're restoring from saved windowed size
+		boolean restoredFromSaved = !isInFullscreenMode()
+				&& GameShell.windowedFrameWidth > 0
+				&& currentMode == 3;
 
 		if (restoredFromSaved) {
-			// Already client-area size (saved before FS). Do NOT subtract insets again.
+			// Use saved dimensions (already client area, don't subtract insets)
 			GameShell.frameWidth = GameShell.windowedFrameWidth;
 			GameShell.frameHeight = GameShell.windowedFrameHeight;
 			System.out.println("Restoring windowed size: " + GameShell.frameWidth + "x" + GameShell.frameHeight);
 		} else {
-			GameShell.frameWidth = local85.getSize().width;
-			GameShell.frameHeight = local85.getSize().height;
+			// Get current container size
+			GameShell.frameWidth = activeContainer.getSize().width;
+			GameShell.frameHeight = activeContainer.getSize().height;
 
-			// Outer → client only when we measured getSize()
-			if (GameShell.frame == local85
-					&& !GameShell.borderlessFullscreenActive
-					&& !GameShell.exclusiveFullscreenActive) {
-				local109 = GameShell.frame.getInsets();
-				GameShell.frameWidth -= local109.right + local109.left;
-				GameShell.frameHeight -= local109.bottom + local109.top;
+			// Subtract window decorations if using main frame
+			if (GameShell.frame == activeContainer && !isInFullscreenMode()) {
+				insets = GameShell.frame.getInsets();
+				GameShell.frameWidth -= insets.right + insets.left;
+				GameShell.frameHeight -= insets.bottom + insets.top;
+			}
+		}
+	}
+
+	/**
+	 * Sets canvas dimensions and margins based on display mode.
+	 * This also handles frame resizing and UI scale compensation.
+	 *
+	 * @param newMode the new display mode (0-3)
+	 * @param currentMode the current/previous display mode (0-3)
+	 */
+	private static void setCanvasDimensions(int newMode, int currentMode) {
+		// Configure frame resizability and size BEFORE setting canvas dimensions
+		// (skip if fullscreen or no frame)
+		if (GameShell.frame != null && !isInFullscreenMode()) {
+			if (newMode >= 2) {
+				// HD modes: allow resizing
+				GameShell.frame.setResizable(true);
+
+				// Only auto-resize when transitioning TO HD mode (2) from other modes
+				// (0->2, 1->2, or 3->2, but not 2->2)
+				boolean transitioningToHD = newMode == 2 && currentMode != 2;
+
+				if (transitioningToHD) {
+					// Get current frame size (client area)
+					Dimension currentSize = GameShell.frame.getSize();
+					Insets insets = GameShell.frame.getInsets();
+					int currentClientWidth = currentSize.width - insets.left - insets.right;
+					int currentClientHeight = currentSize.height - insets.top - insets.bottom;
+
+					// Check if we need to resize (frame is still at fixed 765x503 size)
+					// Allow some tolerance for insets variations
+					boolean isFixedSize = Math.abs(currentClientWidth - 765) < 50
+						&& Math.abs(currentClientHeight - 503) < 50;
+
+					if (isFixedSize) {
+						int targetWidth = 1024;
+						int targetHeight = 768;
+
+						// Detect UI scale and adjust target size
+						double uiScale = getUIScale();
+						if (uiScale > 1.0) {
+							// Compensate for UI scaling so actual canvas is the target size
+							targetWidth = (int) Math.round(targetWidth / uiScale);
+							targetHeight = (int) Math.round(targetHeight / uiScale);
+							System.out.println("UI scale detected: " + uiScale +
+								", adjusting HD window to " + targetWidth + "x" + targetHeight);
+						}
+
+						GameShell.frame.setSize(
+							insets.left + targetWidth + insets.right,
+							insets.top + targetHeight + insets.bottom
+						);
+					}
+				}
+			} else {
+				// SD/GL modes: fixed size, no resizing
+				GameShell.frame.setResizable(false);
+				// Size frame to exactly fit 765x503 canvas plus window decorations
+				Insets insets = GameShell.frame.getInsets();
+				GameShell.frame.setSize(
+					insets.left + 765 + insets.right,
+					insets.top + 503 + insets.bottom
+				);
 			}
 		}
 
-
-		if (arg1 >= 2) {
+		// Now set canvas dimensions based on mode
+		if (newMode >= 2) {
+			// HD/Fullscreen: use entire frame
 			GameShell.canvasWidth = GameShell.frameWidth;
 			GameShell.canvasHeight = GameShell.frameHeight;
 			GameShell.leftMargin = 0;
 			GameShell.topMargin = 0;
 		} else {
+			// Fixed size for software/GL modes
 			GameShell.topMargin = 0;
 			GameShell.leftMargin = (GameShell.frameWidth - 765) / 2;
 			GameShell.canvasWidth = 765;
 			GameShell.canvasHeight = 503;
 		}
+	}
 
-		if (arg0) {
-			Keyboard.stop(GameShell.canvas);
-			Mouse.stop(GameShell.canvas);
-			if (client.mouseWheel != null) {
-				client.mouseWheel.stop(GameShell.canvas);
+	/**
+	 * Gets the UI scale factor (e.g., from -Dsun.java2d.uiScale).
+	 */
+	private static double getUIScale() {
+		if (GameShell.frame == null) {
+			return 1.0;
+		}
+		try {
+			GraphicsConfiguration gc = GameShell.frame.getGraphicsConfiguration();
+			if (gc != null) {
+				java.awt.geom.AffineTransform tx = gc.getDefaultTransform();
+				double scaleX = tx.getScaleX();
+				double scaleY = tx.getScaleY();
+				// Use the larger scale if they differ
+				return Math.max(scaleX, scaleY);
 			}
-			client.instance.addCanvas();
-			Keyboard.start(GameShell.canvas);
-			Mouse.start(GameShell.canvas);
-			if (client.mouseWheel != null) {
-				client.mouseWheel.start(GameShell.canvas);
-			}
+		} catch (Exception ignored) {
+		}
+		return 1.0;
+	}
 
-			long deadline = System.currentTimeMillis() + 2000;
-			while (GameShell.canvas != null
-					&& !GameShell.canvas.isDisplayable()
-					&& System.currentTimeMillis() < deadline) {
-				try {
-					GameShell.frame.validate();
-					GameShell.canvas.setVisible(true);
-					Thread.sleep(50);
-				} catch (Exception ignored) {
-				}
-			}
+	/**
+	 * Recreates the canvas and initializes GL if needed.
+	 */
+	private static void recreateCanvas(int newMode) {
+		// Stop input handlers
+		detachCanvas();
 
-			System.out.println("Canvas displayable=" + (GameShell.canvas != null && GameShell.canvas.isDisplayable())
-					+ " size=" + GameShell.canvasWidth + "x" + GameShell.canvasHeight);
+		// Create new canvas
+		client.instance.addCanvas();
 
-			if (arg1 > 0) {
-				try {
-					GameShell.canvas.setIgnoreRepaint(true);
+		// Restart input handlers
+		Keyboard.start(GameShell.canvas);
+		Mouse.start(GameShell.canvas);
+		if (client.mouseWheel != null) {
+			client.mouseWheel.start(GameShell.canvas);
+		}
 
-					if (!aBoolean73) {
-						PrivilegedRequest req = GameShell.signLink.loadGlNatives(client.instance.getClass());
-						while (req.status == 0) {
-							ThreadUtils.sleep(100L);
-						}
-						if (req.status == 1) {
-							aBoolean73 = true;
-						}
-						System.out.println("loadGlNatives status=" + req.status);
-					}
-
-					if (aBoolean73) {
-						int result = GlRenderer.init(GameShell.canvas, Preferences.antiAliasingMode * 2);
-						System.out.println("GlRenderer.init result=" + result + " enabled=" + GlRenderer.enabled);
-					} else {
-						System.out.println("Skipped GlRenderer.init – natives not loaded");
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		} else {
-			if (GlRenderer.enabled) {
-				GlRenderer.setCanvasSize(GameShell.canvasWidth, GameShell.canvasHeight);
-			}
-			GameShell.canvas.setSize(GameShell.canvasWidth, GameShell.canvasHeight);
-			if (GameShell.frame == local85
-					&& !GameShell.borderlessFullscreenActive
-					&& !GameShell.exclusiveFullscreenActive) {
-				local109 = GameShell.frame.getInsets();
-				GameShell.canvas.setLocation(local109.left + GameShell.leftMargin, local109.top + GameShell.topMargin);
-			} else {
-				GameShell.canvas.setLocation(GameShell.leftMargin, GameShell.topMargin);
+		// Wait for canvas to become displayable
+		long deadline = System.currentTimeMillis() + 2000;
+		while (GameShell.canvas != null
+				&& !GameShell.canvas.isDisplayable()
+				&& System.currentTimeMillis() < deadline) {
+			try {
+				GameShell.frame.validate();
+				GameShell.canvas.setVisible(true);
+				Thread.sleep(50);
+			} catch (Exception ignored) {
 			}
 		}
 
-		if (arg1 == 0 && mode > 0) {
+		System.out.println("Canvas displayable=" + (GameShell.canvas != null && GameShell.canvas.isDisplayable())
+				+ " size=" + GameShell.canvasWidth + "x" + GameShell.canvasHeight);
+
+		// Initialize GL for GL/HD modes
+		if (newMode > 0) {
+			initializeGLRenderer();
+		}
+	}
+
+	/**
+	 * Resizes the existing canvas without recreating it.
+	 */
+	private static void resizeCanvas(Container activeContainer) {
+		if (GlRenderer.enabled) {
+			GlRenderer.setCanvasSize(GameShell.canvasWidth, GameShell.canvasHeight);
+		}
+
+		GameShell.canvas.setSize(GameShell.canvasWidth, GameShell.canvasHeight);
+
+		// Position canvas with proper insets
+		if (GameShell.frame == activeContainer && !isInFullscreenMode()) {
+			Insets insets = GameShell.frame.getInsets();
+			GameShell.canvas.setLocation(insets.left + GameShell.leftMargin, insets.top + GameShell.topMargin);
+		} else {
+			GameShell.canvas.setLocation(GameShell.leftMargin, GameShell.topMargin);
+		}
+	}
+
+	/**
+	 * Handles GL context transitions when switching modes.
+	 */
+	private static void handleGLContextTransition(int newMode, int currentMode) {
+		// Switching from GL to software: destroy context
+		if (newMode == 0 && currentMode > 0) {
 			GlRenderer.createAndDestroyContext(GameShell.canvas);
 		}
+	}
 
-		if (arg2 && arg1 > 0) {
+	/**
+	 * Handles HD mode initialization when switching rendering modes.
+	 */
+	private static void handleHDModeInitialization(boolean hdModeChanged, int newMode, int currentMode) {
+		if (hdModeChanged && newMode > 0) {
 			GameShell.canvas.setIgnoreRepaint(true);
-			if (!aBoolean73) {
-				SceneGraph.clear();
-				SoftwareRaster.frameBuffer = null;
-				SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.canvasHeight, GameShell.canvasWidth, GameShell.canvas);
-				SoftwareRaster.clear();
-				if (client.gameState == 5) {
-					LoadingBar.render(true, Fonts.b12Full);
-				} else {
-					Fonts.drawTextOnScreen(false, LocalizedText.LOADING);
-				}
-				try {
-					Graphics local269 = GameShell.canvas.getGraphics();
-					SoftwareRaster.frameBuffer.draw(local269);
-				} catch (Exception local277) {
-				}
-				GameShell.method2704();
-				if (mode == 0) {
-					SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
-				} else {
-					SoftwareRaster.frameBuffer = null;
-				}
-				PrivilegedRequest local300 = GameShell.signLink.loadGlNatives(client.instance.getClass());
-				while (local300.status == 0) {
-					ThreadUtils.sleep(100L);
-				}
-				if (local300.status == 1) {
-					aBoolean73 = true;
-				}
+
+			if (!glNativesLoaded) {
+				// Show loading screen while initializing
+				showLoadingScreen(currentMode);
+
+				// Load GL natives
+				loadGLNatives();
 			}
-			if (aBoolean73) {
+
+			if (glNativesLoaded) {
 				GlRenderer.init(GameShell.canvas, Preferences.antiAliasingMode * 2);
 			}
 		}
+	}
 
-		if (!GlRenderer.enabled && arg1 > 0) {
-			setWindowMode(true, 0, true, mode, -1, -1);
-			return;
+	/**
+	 * Shows a loading screen during HD initialization.
+	 */
+	private static void showLoadingScreen(int currentMode) {
+		SceneGraph.clear();
+		SoftwareRaster.frameBuffer = null;
+		SoftwareRaster.frameBuffer = FrameBuffer.create(GameShell.canvasHeight, GameShell.canvasWidth, GameShell.canvas);
+		SoftwareRaster.clear();
+
+		// Render appropriate loading message
+		if (client.gameState == 5) {
+			LoadingBar.render(true, Fonts.b12Full);
+		} else {
+			Fonts.drawTextOnScreen(false, LocalizedText.LOADING);
 		}
 
-		if (arg1 > 0 && mode == 0) {
+		try {
+			Graphics graphics = GameShell.canvas.getGraphics();
+			SoftwareRaster.frameBuffer.draw(graphics);
+		} catch (Exception ignored) {
+		}
+
+		GameShell.method2704();
+
+		// Restore appropriate framebuffer for current mode
+		if (currentMode == 0) {
+			SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
+		} else {
+			SoftwareRaster.frameBuffer = null;
+		}
+	}
+
+	/**
+	 * Configures rendering settings based on the selected mode.
+	 */
+	private static void configureRenderingMode(int newMode, int currentMode) {
+		if (newMode > 0 && currentMode == 0) {
+			// Switching to GL/HD mode
 			GameShell.thread.setPriority(5);
 			SoftwareRaster.frameBuffer = null;
 			SoftwareModel.method4580();
 			((Js5GlTextureProvider) Rasteriser.textureProvider).method3248(200);
+
 			if (Preferences.highDetailLighting) {
 				Rasteriser.setBrightness(0.7F);
 			}
 			LoginManager.method4637();
-		} else if (arg1 == 0 && mode > 0) {
+
+		} else if (newMode == 0 && currentMode > 0) {
+			// Switching to software mode
 			GameShell.thread.setPriority(1);
 			SoftwareRaster.frameBuffer = FrameBuffer.create(503, 765, GameShell.canvas);
 			SoftwareModel.method4583();
 			ParticleSystem.quit();
 			((Js5GlTextureProvider) Rasteriser.textureProvider).method3248(20);
+
+			// Apply brightness based on preference
 			if (Preferences.highDetailLighting) {
 				if (Preferences.brightness == 1) {
 					Rasteriser.setBrightness(0.9F);
@@ -353,22 +729,31 @@ public final class DisplayMode {
 			GlTile.method1939();
 			LoginManager.method4637();
 		}
+	}
 
+	/**
+	 * Updates scene graph and interface state after mode change.
+	 */
+	private static void updateSceneAndInterfaceState(boolean hdModeChanged, int newMode, int currentMode) {
 		SceneGraph.aBoolean130 = !SceneGraph.allLevelsAreVisible();
-		if (arg2) {
+
+		if (hdModeChanged) {
 			client.method2721();
 		}
-		aBoolean156 = arg1 >= 2;
+
+		hdModeActive = newMode >= 2;
+
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method3712(true);
 		}
 
-		// FS enter/leave rebuilds peers — re-run interface *open* scripts so Graphics
-		// radios match getWindowMode() (same path as closing + reopening the panel)
-		if (arg1 == 3 || mode == 3) {
+		// Re-run interface open scripts when entering/leaving fullscreen
+		// (peer rebuild causes component state to reset)
+		if (newMode == 3 || currentMode == 3) {
 			if (InterfaceList.topLevelInterface != -1) {
 				InterfaceList.method1626(InterfaceList.topLevelInterface);
 			}
+
 			if (InterfaceList.openInterfaces != null) {
 				for (rt4.ComponentPointer p = (rt4.ComponentPointer) InterfaceList.openInterfaces.head();
 					 p != null;
@@ -376,39 +761,168 @@ public final class DisplayMode {
 					InterfaceList.method1626(p.interfaceId);
 				}
 			}
+
 			for (int i = 0; i < 100; i++) {
 				InterfaceList.aBooleanArray100[i] = true;
 			}
 			GameShell.fullRedraw = true;
 		}
+	}
 
-		// Amilious: keep 371 on the right parent + pin above chat
+	/**
+	 * Notifies other systems that the window mode has changed.
+	 */
+	private static void notifyModeChange() {
+		// Custom patch for tutorial interface positioning
 		rt4.amilious.TutorialPatch.onWindowModeChanged();
 
+		// Send window details to server
 		if (Protocol.socket != null && (client.gameState == 30 || client.gameState == 25)) {
 			ClientProt.sendWindowDetails();
 		}
-		for (int local466 = 0; local466 < 100; local466++) {
-			InterfaceList.aBooleanArray100[local466] = true;
+
+		// Mark interfaces for update
+		for (int i = 0; i < 100; i++) {
+			InterfaceList.aBooleanArray100[i] = true;
 		}
+
 		GameShell.fullRedraw = true;
 		GameShell.replaceCanvas = false;
+
+		// Reload plugins for new window state
 		PluginRepository.reloadPlugins();
 	}
 
-	/** Enter single-window borderless fullscreen using the existing GameShell.frame. */
+	// ==================== Helper Methods ====================
+
+	/**
+	 * Checks if currently in any fullscreen mode.
+	 */
+	private static boolean isInFullscreenMode() {
+		return GameShell.fullScreenFrame != null
+				|| GameShell.borderlessFullscreenActive
+				|| GameShell.exclusiveFullscreenActive;
+	}
+
+	/**
+	 * Detaches the canvas from input handlers and its parent container.
+	 * This must be called before disposing the frame to prevent JOGL issues.
+	 */
+	private static void detachCanvas() {
+		if (GameShell.canvas != null) {
+			try {
+				Keyboard.stop(GameShell.canvas);
+				Mouse.stop(GameShell.canvas);
+				if (client.mouseWheel != null) {
+					client.mouseWheel.stop(GameShell.canvas);
+				}
+				if (GameShell.canvas.getParent() != null) {
+					GameShell.canvas.getParent().remove(GameShell.canvas);
+				}
+			} catch (Exception ignored) {
+			}
+		}
+	}
+
+	/**
+	 * Rebuilds the frame's peer by disposing and recreating it.
+	 * Required on Windows to properly toggle window decorations.
+	 */
+	private static void rebuildFramePeer() {
+		GameShell.frame.setVisible(false);
+		GameShell.frame.dispose();
+	}
+
+	/**
+	 * Gets the saved or default windowed dimensions.
+	 */
+	private static Dimension getWindowedDimensions() {
+		int w = GameShell.windowedFrameWidth > 0 ? GameShell.windowedFrameWidth : 1024;
+		int h = GameShell.windowedFrameHeight > 0 ? GameShell.windowedFrameHeight : 768;
+		return new Dimension(w, h);
+	}
+
+	/**
+	 * Restores the frame to decorated windowed mode with the specified dimensions.
+	 * Rebuilds the frame peer, restores decorations, and adjusts size for insets.
+	 *
+	 * @param w client area width
+	 * @param h client area height
+	 */
+	private static void restoreDecoratedWindow(int w, int h) {
+		// Rebuild frame peer to restore decorations
+		rebuildFramePeer();
+
+		GameShell.frame.setUndecorated(false);
+
+		// Set rough size first (insets become valid after setVisible)
+		GameShell.frame.setSize(w + 16, h + 39);
+		if (GameShell.windowedFrameX > 0 || GameShell.windowedFrameY > 0) {
+			GameShell.frame.setLocation(GameShell.windowedFrameX, GameShell.windowedFrameY);
+		} else {
+			GameShell.frame.setLocationRelativeTo(null);
+		}
+
+		GameShell.frame.setVisible(true);
+		GameShell.frame.validate();
+
+		// Adjust for actual insets
+		Insets insets = GameShell.frame.getInsets();
+		GameShell.frame.setSize(
+				insets.left + w + insets.right,
+				insets.top + h + insets.bottom
+		);
+	}
+
+	/**
+	 * Initializes the GL renderer and loads natives if needed.
+	 */
+	private static void initializeGLRenderer() {
+		try {
+			GameShell.canvas.setIgnoreRepaint(true);
+
+			// Load GL natives if not already loaded
+			if (!glNativesLoaded) {
+				loadGLNatives();
+			}
+
+			// Initialize GL renderer
+			if (glNativesLoaded) {
+				int result = GlRenderer.init(GameShell.canvas, Preferences.antiAliasingMode * 2);
+				System.out.println("GlRenderer.init result=" + result + " enabled=" + GlRenderer.enabled);
+			} else {
+				System.out.println("Skipped GlRenderer.init – natives not loaded");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Loads OpenGL native libraries via privileged request.
+	 */
+	private static void loadGLNatives() {
+		PrivilegedRequest request = GameShell.signLink.loadGlNatives(client.instance.getClass());
+		while (request.status == 0) {
+			ThreadUtils.sleep(100L);
+		}
+		if (request.status == 1) {
+			glNativesLoaded = true;
+		}
+		System.out.println("loadGlNatives status=" + request.status);
+	}
+
+	/**
+	 * Enters single-window borderless fullscreen using the existing GameShell.frame.
+	 * This method uses the frame's graphics configuration to get screen bounds.
+	 */
 	private static void enterBorderlessFullscreen(int width, int height) {
 		if (GameShell.frame == null) {
 			return;
 		}
 
 		try {
-			/*GraphicsConfiguration gc = GameShell.frame.getGraphicsConfiguration();
-			Rectangle bounds = gc.getBounds();
-
-			int w = (width > 0) ? width : bounds.width;
-			int h = (height > 0) ? height : bounds.height;*/
-
+			// Get screen bounds for borderless fullscreen
 			GraphicsConfiguration gc = GameShell.frame.getGraphicsConfiguration();
 			if (gc == null) {
 				gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -417,41 +931,31 @@ public final class DisplayMode {
 			}
 			Rectangle bounds = gc.getBounds();
 
-			// Always use scaled AWT bounds — never native DisplayMode w/h
+			// Always use scaled AWT bounds (not native DisplayMode dimensions)
 			int w = bounds.width;
 			int h = bounds.height;
 
+			// Detach canvas before disposing frame (prevents JOGL issues)
+			detachCanvas();
 
+			// Rebuild frame peer to remove decorations
+			rebuildFramePeer();
 
-			// Detach canvas BEFORE dispose so JOGL isn't holding a dead surface
-			if (GameShell.canvas != null) {
-				try {
-					Keyboard.stop(GameShell.canvas);
-					Mouse.stop(GameShell.canvas);
-					if (client.mouseWheel != null) {
-						client.mouseWheel.stop(GameShell.canvas);
-					}
-					if (GameShell.canvas.getParent() != null) {
-						GameShell.canvas.getParent().remove(GameShell.canvas);
-					}
-				} catch (Exception ignored) {
-				}
-			}
-
-			GameShell.frame.setVisible(false);
-			GameShell.frame.dispose();
-
+			// Configure as undecorated fullscreen
 			GameShell.frame.setUndecorated(true);
 			GameShell.frame.setBounds(bounds.x, bounds.y, w, h);
 			GameShell.frame.setVisible(true);
-			GameShell.frame.setAlwaysOnTop(true);  // force above taskba
+			GameShell.frame.setAlwaysOnTop(true);  // Force above taskbar
 			GameShell.frame.validate();
 			GameShell.frame.toFront();
 			GameShell.frame.requestFocus();
 
+			// Update fullscreen state
 			GameShell.borderlessFullscreenActive = true;
-			GameShell.fullScreenFrame = GameShell.frame; // marker so getWindowMode / scripts see FS
+			GameShell.fullScreenFrame = GameShell.frame; // Marker for getWindowMode()
 			GameShell.replaceCanvas = true;
+
+			// Save preferences
 			Preferences.fullScreenWidth = w;
 			Preferences.fullScreenHeight = h;
 			Preferences.write(GameShell.signLink);
@@ -463,7 +967,9 @@ public final class DisplayMode {
 		}
 	}
 
-	/** Restore the normal decorated window from borderless fullscreen. */
+	/**
+	 * Restores the normal decorated window from borderless fullscreen.
+	 */
 	private static void exitBorderlessFullscreen() {
 		if (GameShell.frame == null) {
 			GameShell.borderlessFullscreenActive = false;
@@ -471,44 +977,22 @@ public final class DisplayMode {
 		}
 
 		try {
-			int w = GameShell.windowedFrameWidth > 0 ? GameShell.windowedFrameWidth : 1024;
-			int h = GameShell.windowedFrameHeight > 0 ? GameShell.windowedFrameHeight : 768;
+			Dimension size = getWindowedDimensions();
+			int w = size.width;
+			int h = size.height;
 
-			if (GameShell.canvas != null) {
-				try {
-					Keyboard.stop(GameShell.canvas);
-					Mouse.stop(GameShell.canvas);
-					if (client.mouseWheel != null) {
-						client.mouseWheel.stop(GameShell.canvas);
-					}
-					if (GameShell.canvas.getParent() != null) {
-						GameShell.canvas.getParent().remove(GameShell.canvas);
-					}
-				} catch (Exception ignored) {
-				}
-			}
+			// Detach canvas before disposing
+			detachCanvas();
 
-			GameShell.frame.setVisible(false);
-			GameShell.frame.dispose();
-
-			GameShell.frame.setUndecorated(false);
-			GameShell.frame.setSize(w + 16, h + 39);
-			if (GameShell.windowedFrameX > 0 || GameShell.windowedFrameY > 0) {
-				GameShell.frame.setLocation(GameShell.windowedFrameX, GameShell.windowedFrameY);
-			} else {
-				GameShell.frame.setLocationRelativeTo(null);
-			}
-
-			GameShell.frame.setVisible(true);
-			GameShell.frame.validate();
-
-			Insets insets = GameShell.frame.getInsets();
-			GameShell.frame.setSize(insets.left + w + insets.right, insets.top + h + insets.bottom);
+			// Restore decorated window
+			restoreDecoratedWindow(w, h);
 			GameShell.frame.toFront();
 
+			// Clear fullscreen state
 			GameShell.borderlessFullscreenActive = false;
-			GameShell.fullScreenFrame = null; // clear marker only – do NOT dispose
+			GameShell.fullScreenFrame = null;
 			GameShell.replaceCanvas = true;
+
 			System.out.println("Exited borderless fullscreen, restored " + w + "x" + h);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -516,41 +1000,35 @@ public final class DisplayMode {
 		}
 	}
 
+	/**
+	 * Enters exclusive fullscreen mode using Java's native fullscreen API.
+	 * This changes the actual display mode of the monitor.
+	 */
 	private static void enterExclusiveFullscreen(int width, int height) {
 		if (GameShell.frame == null) {
 			return;
 		}
 
 		try {
-			if (GameShell.canvas != null) {
-				try {
-					Keyboard.stop(GameShell.canvas);
-					Mouse.stop(GameShell.canvas);
-					if (client.mouseWheel != null) {
-						client.mouseWheel.stop(GameShell.canvas);
-					}
-					if (GameShell.canvas.getParent() != null) {
-						GameShell.canvas.getParent().remove(GameShell.canvas);
-					}
-				} catch (Exception ignored) {
-				}
-			}
+			// Detach canvas first
+			detachCanvas();
 
 			GraphicsConfiguration gc = GameShell.frame.getGraphicsConfiguration();
 			GraphicsDevice device = gc.getDevice();
+
 			if (!device.isFullScreenSupported()) {
 				System.out.println("[FS] Exclusive not supported on this device");
 				return;
 			}
 
-			// Native (physical) size of the monitor — what setDisplayMode understands
+			// Determine target display mode (native physical size)
 			java.awt.DisplayMode current = device.getDisplayMode();
 			int wantW = current.getWidth();
 			int wantH = current.getHeight();
 
-			// Optional: honor a *native* preference if it matches a real mode
+			// Try to match requested dimensions to a real display mode
 			if (width >= 800 && height >= 600) {
-				// If prefs look like scaled logical size, map up via transform
+				// Account for HiDPI scaling
 				double sx = 1.0, sy = 1.0;
 				try {
 					java.awt.geom.AffineTransform tx = gc.getDefaultTransform();
@@ -558,14 +1036,16 @@ public final class DisplayMode {
 					if (tx.getScaleY() > 0) sy = tx.getScaleY();
 				} catch (Exception ignored) {
 				}
+
 				int nativeFromArgsW = (int) Math.round(width * sx);
 				int nativeFromArgsH = (int) Math.round(height * sy);
 
-				// Prefer exact native match to current if args are clearly logical
+				// Check if args look like logical (scaled) size
 				boolean argsLookLogical = (width < current.getWidth() - 50);
 				int candidateW = argsLookLogical ? nativeFromArgsW : width;
 				int candidateH = argsLookLogical ? nativeFromArgsH : height;
 
+				// Find matching display mode
 				for (java.awt.DisplayMode dm : device.getDisplayModes()) {
 					if (dm.getWidth() == candidateW && dm.getHeight() == candidateH) {
 						wantW = candidateW;
@@ -575,6 +1055,7 @@ public final class DisplayMode {
 				}
 			}
 
+			// Find best display mode (highest bit depth and refresh rate)
 			java.awt.DisplayMode best = null;
 			for (java.awt.DisplayMode dm : device.getDisplayModes()) {
 				if (dm.getWidth() == wantW && dm.getHeight() == wantH) {
@@ -590,44 +1071,52 @@ public final class DisplayMode {
 				best = current;
 			}
 
-			// Undecorated while not displayable
-			GameShell.frame.setVisible(false);
-			try {
-				GameShell.frame.dispose();
-			} catch (Exception ignored) {
-			}
+			// Prepare frame for fullscreen
+			rebuildFramePeer();
+
 			try {
 				GameShell.frame.setUndecorated(true);
 			} catch (Exception e) {
 				System.out.println("[FS] setUndecorated failed: " + e.getMessage());
 			}
 
-			// REQUIRED order: full-screen window first, then display mode
+			// Enter fullscreen mode (MUST happen before setDisplayMode)
 			device.setFullScreenWindow(GameShell.frame);
 
-			try {
-				if (best != null && !best.equals(device.getDisplayMode())) {
-					device.setDisplayMode(best);
-					System.out.println("[FS] Exclusive display mode: "
-							+ best.getWidth() + "x" + best.getHeight()
-							+ " @" + best.getRefreshRate());
-				} else {
-					System.out.println("[FS] Exclusive using current mode: "
-							+ device.getDisplayMode().getWidth() + "x"
-							+ device.getDisplayMode().getHeight());
+			// Set display mode only if supported (prevents iconification exceptions)
+			if (device.isDisplayChangeSupported()) {
+				try {
+					if (best != null && !best.equals(device.getDisplayMode())) {
+						device.setDisplayMode(best);
+						System.out.println("[FS] Exclusive display mode: "
+								+ best.getWidth() + "x" + best.getHeight()
+								+ " @" + best.getRefreshRate() + "hz");
+					} else {
+						System.out.println("[FS] Exclusive using current mode: "
+								+ device.getDisplayMode().getWidth() + "x"
+								+ device.getDisplayMode().getHeight()
+								+ " @" + device.getDisplayMode().getRefreshRate() + "hz");
+					}
+				} catch (Exception e) {
+					// Gracefully fall back to current mode
+					System.out.println("[FS] Could not set display mode, using current: " + e.getMessage());
 				}
-			} catch (Exception e) {
-				System.out.println("[FS] Could not set display mode, using current: " + e.getMessage());
+			} else {
+				System.out.println("[FS] Display mode changes not supported, using current mode: "
+						+ device.getDisplayMode().getWidth() + "x"
+						+ device.getDisplayMode().getHeight()
+						+ " @" + device.getDisplayMode().getRefreshRate() + "hz");
 			}
 
 			GameShell.frame.validate();
 
+			// Update state
 			GameShell.exclusiveFullscreenActive = true;
 			GameShell.borderlessFullscreenActive = false;
 			GameShell.fullScreenFrame = GameShell.frame;
 			GameShell.replaceCanvas = true;
 
-			// Canvas/layout: use frame size after FS (AWT may still report scaled numbers)
+			// Save dimensions (use frame bounds as AWT may report scaled values)
 			Rectangle bounds = GameShell.frame.getBounds();
 			int storeW = bounds.width > 0 ? bounds.width : wantW;
 			int storeH = bounds.height > 0 ? bounds.height : wantH;
@@ -641,6 +1130,8 @@ public final class DisplayMode {
 			e.printStackTrace();
 			GameShell.exclusiveFullscreenActive = false;
 			GameShell.fullScreenFrame = null;
+
+			// Try to exit fullscreen on error
 			try {
 				GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
 				device.setFullScreenWindow(null);
@@ -649,6 +1140,9 @@ public final class DisplayMode {
 		}
 	}
 
+	/**
+	 * Exits exclusive fullscreen mode and restores windowed state.
+	 */
 	private static void exitExclusiveFullscreen() {
 		if (GameShell.frame == null) {
 			GameShell.exclusiveFullscreenActive = false;
@@ -657,21 +1151,10 @@ public final class DisplayMode {
 		}
 
 		try {
-			if (GameShell.canvas != null) {
-				try {
-					Keyboard.stop(GameShell.canvas);
-					Mouse.stop(GameShell.canvas);
-					if (client.mouseWheel != null) {
-						client.mouseWheel.stop(GameShell.canvas);
-					}
-					if (GameShell.canvas.getParent() != null) {
-						GameShell.canvas.getParent().remove(GameShell.canvas);
-					}
-				} catch (Exception ignored) {
-				}
-			}
+			// Detach canvas
+			detachCanvas();
 
-			// Leave exclusive mode first
+			// Exit fullscreen mode first
 			try {
 				GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
 				device.setFullScreenWindow(null);
@@ -679,50 +1162,22 @@ public final class DisplayMode {
 				System.out.println("[FS] setFullScreenWindow(null) failed: " + e);
 			}
 
-			int w = GameShell.windowedFrameWidth > 0 ? GameShell.windowedFrameWidth : 1024;
-			int h = GameShell.windowedFrameHeight > 0 ? GameShell.windowedFrameHeight : 768;
+			Dimension size = getWindowedDimensions();
+			int w = size.width;
+			int h = size.height;
 
-			// Same peer rebuild as borderless exit — required to restore decorations on Windows
-			GameShell.frame.setVisible(false);
-			GameShell.frame.dispose();
+			// Restore decorated window
+			restoreDecoratedWindow(w, h);
 
-			GameShell.frame.setUndecorated(false);
-
-			// Rough size first so insets become non-zero after show
-			GameShell.frame.setSize(w + 16, h + 39);
-			if (GameShell.windowedFrameX > 0 || GameShell.windowedFrameY > 0) {
-				GameShell.frame.setLocation(GameShell.windowedFrameX, GameShell.windowedFrameY);
-			} else {
-				GameShell.frame.setLocationRelativeTo(null);
-			}
-
-			GameShell.frame.setVisible(true);
-			GameShell.frame.validate();
-
-			Insets insets = GameShell.frame.getInsets();
-			GameShell.frame.setSize(
-					insets.left + w + insets.right,
-					insets.top + h + insets.bottom
-			);
+			// Restore position again (just to be sure after inset adjustment)
 			if (GameShell.windowedFrameX > 0 || GameShell.windowedFrameY > 0) {
 				GameShell.frame.setLocation(GameShell.windowedFrameX, GameShell.windowedFrameY);
 			}
 
-			// Force above other apps (toFront alone is ignored a lot on Windows)
-			try {
-				GameShell.frame.setAlwaysOnTop(true);
-				GameShell.frame.toFront();
-				GameShell.frame.requestFocus();
-				if (GameShell.canvas != null) {
-					GameShell.canvas.requestFocus();
-				}
-				GameShell.frame.setAlwaysOnTop(false);
-			} catch (Exception ignored) {}
+			// Force window to front (toFront alone often fails on Windows)
+			forceToFront();
 
-			//GameShell.frame.toFront();
-
-
-
+			// Clear fullscreen state
 			GameShell.exclusiveFullscreenActive = false;
 			GameShell.fullScreenFrame = null;
 			GameShell.replaceCanvas = true;
@@ -737,212 +1192,16 @@ public final class DisplayMode {
 		}
 	}
 
-	/*private static void exitExclusiveFullscreen() {
-		if (GameShell.frame == null) {
-			GameShell.exclusiveFullscreenActive = false;
-			GameShell.fullScreenFrame = null;
-			return;
-		}
-
+	private static void forceToFront() {
+		if (GameShell.frame == null) return;
 		try {
-			if (GameShell.canvas != null) {
-				try {
-					Keyboard.stop(GameShell.canvas);
-					Mouse.stop(GameShell.canvas);
-					if (client.mouseWheel != null) {
-						client.mouseWheel.stop(GameShell.canvas);
-					}
-					if (GameShell.canvas.getParent() != null) {
-						GameShell.canvas.getParent().remove(GameShell.canvas);
-					}
-				} catch (Exception ignored) {
-				}
-			}
-
-			GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
-			device.setFullScreenWindow(null);
-
-			int w = GameShell.windowedFrameWidth > 0 ? GameShell.windowedFrameWidth : 1024;
-			int h = GameShell.windowedFrameHeight > 0 ? GameShell.windowedFrameHeight : 768;
-
-			GameShell.frame.setSize(w + 16, h + 39);
-			if (GameShell.windowedFrameX > 0 || GameShell.windowedFrameY > 0) {
-				GameShell.frame.setLocation(GameShell.windowedFrameX, GameShell.windowedFrameY);
-			} else {
-				GameShell.frame.setLocationRelativeTo(null);
-			}
-			GameShell.frame.setVisible(true);
-			GameShell.frame.validate();
-
-			Insets insets = GameShell.frame.getInsets();
-			GameShell.frame.setSize(insets.left + w + insets.right, insets.top + h + insets.bottom);
-
-			GameShell.exclusiveFullscreenActive = false;
-			GameShell.fullScreenFrame = null;
-			GameShell.replaceCanvas = true;
-
-			System.out.println("[FS] Exited exclusive fullscreen, restored " + w + "x" + h);
-		} catch (Exception e) {
-			e.printStackTrace();
-			GameShell.exclusiveFullscreenActive = false;
-			GameShell.fullScreenFrame = null;
-		}
-	}*/
-
-
-
-
-
-	@OriginalMember(owner = "client!ab", name = "c", descriptor = "(B)[Lclient!od;")
-	public static DisplayMode[] getDisplayModes() {
-		if (aClass114Array1 == null) {
-			DisplayMode[] local16 = method3558(GameShell.signLink);
-			DisplayMode[] local20 = new DisplayMode[local16.length];
-			int local22 = 0;
-
-			// Native size of the default screen (cap the list)
-			int maxW = Integer.MAX_VALUE;
-			int maxH = Integer.MAX_VALUE;
-			try {
-				java.awt.DisplayMode nativeDm = GraphicsEnvironment
-						.getLocalGraphicsEnvironment()
-						.getDefaultScreenDevice()
-						.getDisplayMode();
-				maxW = nativeDm.getWidth();
-				maxH = nativeDm.getHeight();
-			} catch (Exception ignored) {
-			}
-
-			label52:
-			for (int local24 = 0; local24 < local16.length; local24++) {
-				DisplayMode local32 = local16[local24];
-
-				if (local32.bitDepth > 0 && local32.bitDepth < 24) {
-					continue;
-				}
-				if (local32.width < 1024 || local32.height < 768) {
-					continue;
-				}
-				// no larger than native desktop
-				if (local32.width > maxW || local32.height > maxH) {
-					continue;
-				}
-
-				for (int local52 = 0; local52 < local22; local52++) {
-					DisplayMode local59 = local20[local52];
-					if (local32.width == local59.width && local59.height == local32.height) {
-						if (local32.bitDepth > local59.bitDepth) {
-							local20[local52] = local32;
-						}
-						continue label52;
-					}
-				}
-				local20[local22] = local32;
-				local22++;
-			}
-
-			aClass114Array1 = new DisplayMode[local22];
-			ArrayUtils.copy(local20, 0, aClass114Array1, 0, local22);
-
-			int[] local112 = new int[aClass114Array1.length];
-			for (int local114 = 0; local114 < aClass114Array1.length; local114++) {
-				DisplayMode local122 = aClass114Array1[local114];
-				local112[local114] = local122.height * local122.width;
-			}
-			ArrayUtils.sort(local112, aClass114Array1);
-		}
-		return aClass114Array1;
-		/*if (aClass114Array1 == null) {
-			@Pc(16) DisplayMode[] local16 = method3558(GameShell.signLink);
-			@Pc(20) DisplayMode[] local20 = new DisplayMode[local16.length];
-			@Pc(22) int local22 = 0;
-			label52:
-			for (@Pc(24) int local24 = 0; local24 < local16.length; local24++) {
-				@Pc(32) DisplayMode local32 = local16[local24];
-				// Filter to minimum 1024x768 to avoid mouse coordinate issues and poor quality on modern monitors
-				if ((local32.bitDepth <= 0 || local32.bitDepth >= 24) && local32.width >= 1024 && local32.height >= 768) {
-					for (@Pc(52) int local52 = 0; local52 < local22; local52++) {
-						@Pc(59) DisplayMode local59 = local20[local52];
-						if (local32.width == local59.width && local59.height == local32.height) {
-							if (local32.bitDepth > local59.bitDepth) {
-								local20[local52] = local32;
-							}
-							continue label52;
-						}
-					}
-					local20[local22] = local32;
-					local22++;
-				}
-			}
-			aClass114Array1 = new DisplayMode[local22];
-			ArrayUtils.copy(local20, 0, aClass114Array1, 0, local22);
-			@Pc(112) int[] local112 = new int[aClass114Array1.length];
-			for (@Pc(114) int local114 = 0; local114 < aClass114Array1.length; local114++) {
-				@Pc(122) DisplayMode local122 = aClass114Array1[local114];
-				local112[local114] = local122.height * local122.width;
-			}
-			ArrayUtils.sort(local112, aClass114Array1);
-		}
-		return aClass114Array1;*/
-	}
-
-	@OriginalMember(owner = "client!pm", name = "a", descriptor = "(ILsignlink!ll;)[Lclient!od;")
-	public static DisplayMode[] method3558(@OriginalArg(1) SignLink arg0) {
-		if (!arg0.isFullScreenSupported()) {
-			return new DisplayMode[0];
-		}
-		@Pc(17) PrivilegedRequest local17 = arg0.getDisplayModes();
-		while (local17.status == 0) {
-			ThreadUtils.sleep(10L);
-		}
-		if (local17.status == 2) {
-			return new DisplayMode[0];
-		}
-		@Pc(39) int[] local39 = (int[]) local17.result;
-		@Pc(45) DisplayMode[] local45 = new DisplayMode[local39.length >> 2];
-		for (@Pc(47) int local47 = 0; local47 < local45.length; local47++) {
-			@Pc(59) DisplayMode local59 = new DisplayMode();
-			local45[local47] = local59;
-			local59.width = local39[local47 << 2];
-			local59.height = local39[(local47 << 2) + 1];
-			local59.bitDepth = local39[(local47 << 2) + 2];
-			local59.refreshRate = local39[(local47 << 2) + 3];
-		}
-		return local45;
-	}
-
-	@OriginalMember(owner = "client!nf", name = "a", descriptor = "(IIIIILsignlink!ll;)Ljava/awt/Frame;")
-	public static Frame method3176(@OriginalArg(2) int arg0, @OriginalArg(3) int arg1, @OriginalArg(4) int arg2, @OriginalArg(5) SignLink arg3) {
-		if (!arg3.isFullScreenSupported()) {
-			return null;
-		}
-		@Pc(20) DisplayMode[] local20 = method3558(arg3);
-		if (local20 == null) {
-			return null;
-		}
-		@Pc(27) boolean local27 = false;
-		for (@Pc(29) int local29 = 0; local29 < local20.length; local29++) {
-			if (arg2 == local20[local29].width && arg1 == local20[local29].height && (!local27 || local20[local29].bitDepth > arg0)) {
-				arg0 = local20[local29].bitDepth;
-				local27 = true;
-			}
-		}
-		if (!local27) {
-			return null;
-		}
-		@Pc(90) PrivilegedRequest local90 = arg3.enterFullScreen(arg0, arg1, arg2);
-		while (local90.status == 0) {
-			ThreadUtils.sleep(10L);
-		}
-		@Pc(103) Frame local103 = (Frame) local90.result;
-		if (local103 == null) {
-			return null;
-		} else if (local90.status == 2) {
-			exitFullScreen(local103, arg3);
-			return null;
-		} else {
-			return local103;
-		}
+			GameShell.frame.setAlwaysOnTop(true);
+			GameShell.frame.toFront();
+			GameShell.frame.requestFocus();
+			if (GameShell.canvas != null)
+				GameShell.canvas.requestFocus();
+			GameShell.frame.setAlwaysOnTop(false);
+		} catch (Exception ignored) {}
 	}
 
 }

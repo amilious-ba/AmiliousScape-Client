@@ -57,6 +57,8 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	public static boolean borderlessFullscreenActive = false;
 	/** True when exclusive FS is active on the main frame (setFullScreenWindow). */
 	public static boolean exclusiveFullscreenActive = false;
+	/** True when we should suppress display mode exceptions (brief window after iconification). */
+	private static volatile boolean suppressDisplayModeException = false;
 
 	@OriginalMember(owner = "client!uj", name = "B", descriptor = "I")
 	public static int canvasHeight;
@@ -302,6 +304,19 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	@OriginalMember(owner = "client!rc", name = "windowIconified", descriptor = "(Ljava/awt/event/WindowEvent;)V")
 	@Override
 	public final void windowIconified(@OriginalArg(0) WindowEvent event) {
+		// If in exclusive fullscreen, suppress the display mode exception that Windows throws
+		if (exclusiveFullscreenActive) {
+			suppressDisplayModeException = true;
+			// Clear flag after 500ms (exception should have been thrown by then)
+			new Thread(() -> {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// Ignore
+				}
+				suppressDisplayModeException = false;
+			}, "DisplayModeExceptionSuppressor").start();
+		}
 	}
 
 	@OriginalMember(owner = "client!rc", name = "windowDeactivated", descriptor = "(Ljava/awt/event/WindowEvent;)V")
@@ -729,6 +744,9 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	@OriginalMember(owner = "client!rc", name = "a", descriptor = "(IIZILjava/lang/String;III)V")
 	protected final void startApplication(@OriginalArg(0) int cacheId, @OriginalArg(4) String cacheSubDir) {
 		try {
+			// Install filtered System.err to suppress harmless Windows display mode exceptions
+			System.setErr(new FilteredPrintStream(System.err));
+
 			leftMargin = 0;
 			clientBuild = 530;
 			frameWidth = 1024;
@@ -813,6 +831,96 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 		} catch (@Pc(103) Exception ex) {
 			TracingException.report(null, ex);
 			this.error("crash");
+		}
+	}
+
+	/**
+	 * Filtering PrintStream that suppresses Windows display mode exceptions during iconification.
+	 */
+	private static class FilteredPrintStream extends java.io.PrintStream {
+		private final java.io.PrintStream original;
+		private boolean inSuppressedStackTrace = false;
+		private boolean sawExceptionInThread = false;
+
+		public FilteredPrintStream(java.io.PrintStream original) {
+			super(original);
+			this.original = original;
+		}
+
+		private boolean shouldSuppressLine(String line) {
+			if (line == null) return false;
+
+			// Check if this is the "Exception in thread" line
+			if (suppressDisplayModeException && line.startsWith("Exception in thread")) {
+				sawExceptionInThread = true;
+				return true; // Suppress it for now, will check next line
+			}
+
+			// Check if we should start suppressing (the actual exception message)
+			if (suppressDisplayModeException &&
+					line.contains("UnsupportedOperationException") &&
+					line.contains("Cannot change display mode")) {
+				inSuppressedStackTrace = true;
+				sawExceptionInThread = false;
+				// Print our friendly message instead
+				original.println("[FS] Windows display mode exception during iconification (harmless, ignoring)");
+				return true;
+			}
+
+			// If we saw "Exception in thread" but next line wasn't our exception, print it now
+			if (sawExceptionInThread) {
+				sawExceptionInThread = false;
+				// This wasn't our exception, print the "Exception in thread" line we held back
+				original.println("Exception in thread \"AWT-EventQueue-0\"");
+				return false; // And print this line too
+			}
+
+			// If we're in a suppressed stack trace, skip lines
+			if (inSuppressedStackTrace) {
+				// Stack trace lines start with whitespace or "at " or "Caused by:" or "..."
+				if (line.trim().startsWith("at ") ||
+						line.trim().startsWith("...") ||
+						line.trim().startsWith("Caused by:") ||
+						(line.startsWith("\t") || line.startsWith("  ")) && !line.trim().isEmpty()) {
+					return true;
+				} else {
+					// End of stack trace
+					inSuppressedStackTrace = false;
+					return false;
+				}
+			}
+
+			return false;
+		}
+
+		@Override
+		public void println(String line) {
+			if (!shouldSuppressLine(line)) {
+				original.println(line);
+			}
+		}
+
+		@Override
+		public void println(Object obj) {
+			String line = String.valueOf(obj);
+			if (!shouldSuppressLine(line)) {
+				original.println(obj);
+			}
+		}
+
+		@Override
+		public void print(String s) {
+			if (s != null && !shouldSuppressLine(s)) {
+				original.print(s);
+			}
+		}
+
+		@Override
+		public void print(Object obj) {
+			String s = String.valueOf(obj);
+			if (!shouldSuppressLine(s)) {
+				original.print(obj);
+			}
 		}
 	}
 }

@@ -168,26 +168,33 @@ public final class DisplayMode {
 		}
 
 		// Restore windowed size when exiting, else use container size
-		if (GameShell.fullScreenFrame == null
-				&& !GameShell.borderlessFullscreenActive
-				&& !GameShell.exclusiveFullscreenActive
-				&& GameShell.windowedFrameWidth > 0 && mode == 3) {
+		Insets local109 = null;
+		boolean restoredFromSaved =
+				GameShell.fullScreenFrame == null
+						&& !GameShell.borderlessFullscreenActive
+						&& !GameShell.exclusiveFullscreenActive
+						&& GameShell.windowedFrameWidth > 0
+						&& mode == 3;
+
+		if (restoredFromSaved) {
+			// Already client-area size (saved before FS). Do NOT subtract insets again.
 			GameShell.frameWidth = GameShell.windowedFrameWidth;
 			GameShell.frameHeight = GameShell.windowedFrameHeight;
 			System.out.println("Restoring windowed size: " + GameShell.frameWidth + "x" + GameShell.frameHeight);
 		} else {
 			GameShell.frameWidth = local85.getSize().width;
 			GameShell.frameHeight = local85.getSize().height;
+
+			// Outer → client only when we measured getSize()
+			if (GameShell.frame == local85
+					&& !GameShell.borderlessFullscreenActive
+					&& !GameShell.exclusiveFullscreenActive) {
+				local109 = GameShell.frame.getInsets();
+				GameShell.frameWidth -= local109.right + local109.left;
+				GameShell.frameHeight -= local109.bottom + local109.top;
+			}
 		}
 
-		Insets local109 = null;
-		if (GameShell.frame == local85
-				&& !GameShell.borderlessFullscreenActive
-				&& !GameShell.exclusiveFullscreenActive) {
-			local109 = GameShell.frame.getInsets();
-			GameShell.frameWidth -= local109.right + local109.left;
-			GameShell.frameHeight -= local109.bottom + local109.top;
-		}
 
 		if (arg1 >= 2) {
 			GameShell.canvasWidth = GameShell.frameWidth;
@@ -354,6 +361,25 @@ public final class DisplayMode {
 		aBoolean156 = arg1 >= 2;
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method3712(true);
+		}
+
+		// FS enter/leave rebuilds peers — re-run interface *open* scripts so Graphics
+		// radios match getWindowMode() (same path as closing + reopening the panel)
+		if (arg1 == 3 || mode == 3) {
+			if (InterfaceList.topLevelInterface != -1) {
+				InterfaceList.method1626(InterfaceList.topLevelInterface);
+			}
+			if (InterfaceList.openInterfaces != null) {
+				for (rt4.ComponentPointer p = (rt4.ComponentPointer) InterfaceList.openInterfaces.head();
+					 p != null;
+					 p = (rt4.ComponentPointer) InterfaceList.openInterfaces.next()) {
+					InterfaceList.method1626(p.interfaceId);
+				}
+			}
+			for (int i = 0; i < 100; i++) {
+				InterfaceList.aBooleanArray100[i] = true;
+			}
+			GameShell.fullRedraw = true;
 		}
 
 		// Amilious: keep 371 on the right parent + pin above chat
@@ -645,6 +671,94 @@ public final class DisplayMode {
 				}
 			}
 
+			// Leave exclusive mode first
+			try {
+				GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
+				device.setFullScreenWindow(null);
+			} catch (Exception e) {
+				System.out.println("[FS] setFullScreenWindow(null) failed: " + e);
+			}
+
+			int w = GameShell.windowedFrameWidth > 0 ? GameShell.windowedFrameWidth : 1024;
+			int h = GameShell.windowedFrameHeight > 0 ? GameShell.windowedFrameHeight : 768;
+
+			// Same peer rebuild as borderless exit — required to restore decorations on Windows
+			GameShell.frame.setVisible(false);
+			GameShell.frame.dispose();
+
+			GameShell.frame.setUndecorated(false);
+
+			// Rough size first so insets become non-zero after show
+			GameShell.frame.setSize(w + 16, h + 39);
+			if (GameShell.windowedFrameX > 0 || GameShell.windowedFrameY > 0) {
+				GameShell.frame.setLocation(GameShell.windowedFrameX, GameShell.windowedFrameY);
+			} else {
+				GameShell.frame.setLocationRelativeTo(null);
+			}
+
+			GameShell.frame.setVisible(true);
+			GameShell.frame.validate();
+
+			Insets insets = GameShell.frame.getInsets();
+			GameShell.frame.setSize(
+					insets.left + w + insets.right,
+					insets.top + h + insets.bottom
+			);
+			if (GameShell.windowedFrameX > 0 || GameShell.windowedFrameY > 0) {
+				GameShell.frame.setLocation(GameShell.windowedFrameX, GameShell.windowedFrameY);
+			}
+
+			// Force above other apps (toFront alone is ignored a lot on Windows)
+			try {
+				GameShell.frame.setAlwaysOnTop(true);
+				GameShell.frame.toFront();
+				GameShell.frame.requestFocus();
+				if (GameShell.canvas != null) {
+					GameShell.canvas.requestFocus();
+				}
+				GameShell.frame.setAlwaysOnTop(false);
+			} catch (Exception ignored) {}
+
+			//GameShell.frame.toFront();
+
+
+
+			GameShell.exclusiveFullscreenActive = false;
+			GameShell.fullScreenFrame = null;
+			GameShell.replaceCanvas = true;
+
+			System.out.println("[FS] Exited exclusive fullscreen, restored " + w + "x" + h
+					+ " at " + GameShell.windowedFrameX + "," + GameShell.windowedFrameY
+					+ " undecorated=" + GameShell.frame.isUndecorated());
+		} catch (Exception e) {
+			e.printStackTrace();
+			GameShell.exclusiveFullscreenActive = false;
+			GameShell.fullScreenFrame = null;
+		}
+	}
+
+	/*private static void exitExclusiveFullscreen() {
+		if (GameShell.frame == null) {
+			GameShell.exclusiveFullscreenActive = false;
+			GameShell.fullScreenFrame = null;
+			return;
+		}
+
+		try {
+			if (GameShell.canvas != null) {
+				try {
+					Keyboard.stop(GameShell.canvas);
+					Mouse.stop(GameShell.canvas);
+					if (client.mouseWheel != null) {
+						client.mouseWheel.stop(GameShell.canvas);
+					}
+					if (GameShell.canvas.getParent() != null) {
+						GameShell.canvas.getParent().remove(GameShell.canvas);
+					}
+				} catch (Exception ignored) {
+				}
+			}
+
 			GraphicsDevice device = GameShell.frame.getGraphicsConfiguration().getDevice();
 			device.setFullScreenWindow(null);
 
@@ -673,7 +787,7 @@ public final class DisplayMode {
 			GameShell.exclusiveFullscreenActive = false;
 			GameShell.fullScreenFrame = null;
 		}
-	}
+	}*/
 
 
 

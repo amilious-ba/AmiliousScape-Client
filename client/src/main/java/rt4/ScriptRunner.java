@@ -4627,7 +4627,9 @@ public final class ScriptRunner {
 														int3 = intStack[isp + 1];
 														int1 = intStack[isp];
 														DisplayMode.setWindowMode(false, 3, int1, int3);
-														intStack[isp++] = GameShell.fullScreenFrame == null ? 0 : 1;
+														intStack[isp++] = (GameShell.fullScreenFrame != null
+																|| GameShell.borderlessFullscreenActive
+																|| GameShell.exclusiveFullscreenActive) ? 1 : 0;
 														continue;
 													}
 													if (opcode == 5301) {

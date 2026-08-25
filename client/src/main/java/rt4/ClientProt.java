@@ -147,7 +147,7 @@ public class ClientProt {
 			Protocol.outboundBuffer.p1isaac(77);
 			Protocol.outboundBuffer.p1(local13 + local13 + 3);
 		}
-		Protocol.outboundBuffer.p1add(Keyboard.pressedKeys[Keyboard.KEY_CTRL] ? 1 : 0);
+		Protocol.outboundBuffer.p1add(rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL) ? 1 : 0);
 		Protocol.outboundBuffer.p2(Camera.originX + local23);
 		Protocol.outboundBuffer.p2add(Camera.originZ + local27);
 		LoginManager.mapFlagZ = PathFinder.queueZ[0];

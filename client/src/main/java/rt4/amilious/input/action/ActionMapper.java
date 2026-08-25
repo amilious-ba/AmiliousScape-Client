@@ -58,6 +58,22 @@ public final class ActionMapper {
         bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.A, InputMode.WORLD);
         bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.D, InputMode.WORLD);
 
+        // Camera in CHAT mode (arrows only, NOT WASD) - GameShell.java:608-611
+        bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.UP, InputMode.CHAT);
+        bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.DOWN, InputMode.CHAT);
+        bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.LEFT, InputMode.CHAT);
+        bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.RIGHT, InputMode.CHAT);
+
+        // Map panning (MAP mode) - MapController.java:123-126
+        bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.UP, InputMode.MAP);
+        bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.DOWN, InputMode.MAP);
+        bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.LEFT, InputMode.MAP);
+        bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.RIGHT, InputMode.MAP);
+        bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.W, InputMode.MAP);
+        bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.S, InputMode.MAP);
+        bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.A, InputMode.MAP);
+        bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.D, InputMode.MAP);
+
         // Modifier keys (no mode filter - work everywhere)
         bind(Action.MODIFIER_CTRL, rt4.amilious.input.state.InputButtons.KB_CTRL);
         bind(Action.MODIFIER_ALT, rt4.amilious.input.state.InputButtons.KB_ALT);

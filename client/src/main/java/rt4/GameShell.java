@@ -602,18 +602,13 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 			return;
 		}
 
-		// Arrows: camera in WORLD and CHAT
-		// WASD: camera only in WORLD (not while typing)
-		boolean wasdEnabled = rt4.amilious.input.InputManager.shouldAllowWorldBinds();
-
-		boolean upPressed = Keyboard.pressedKeys[Keyboard.KEY_UP]
-				|| (wasdEnabled && Keyboard.pressedKeys[33]); // W
-		boolean downPressed = Keyboard.pressedKeys[Keyboard.KEY_DOWN]
-				|| (wasdEnabled && Keyboard.pressedKeys[49]); // S
-		boolean leftPressed = Keyboard.pressedKeys[Keyboard.KEY_LEFT]
-				|| (wasdEnabled && Keyboard.pressedKeys[48]); // A
-		boolean rightPressed = Keyboard.pressedKeys[Keyboard.KEY_RIGHT]
-				|| (wasdEnabled && Keyboard.pressedKeys[50]); // D
+		// Camera movement via Actions (mode-filtered by ActionMapper)
+		// Arrow keys work in WORLD and CHAT modes
+		// WASD works only in WORLD mode (not while typing)
+		boolean upPressed = rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.CAMERA_UP);
+		boolean downPressed = rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.CAMERA_DOWN);
+		boolean leftPressed = rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.CAMERA_LEFT);
+		boolean rightPressed = rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.CAMERA_RIGHT);
 
 		if (upPressed || downPressed || leftPressed || rightPressed) {
 			double vertical = calcRenderDelta(18.0d);

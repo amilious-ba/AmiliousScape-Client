@@ -202,9 +202,96 @@ public class API {
     /**
      * Very simple wrapper around the already rename Keyboard checks.
      * @param keycode the keycode to use. Keyboard class has named constants for these
+     * @deprecated Use {@link #IsActionDown(String)} or {@link #IsModifierDown(String)} instead.
+     *             This method bypasses the input system's mode filtering and may not work correctly
+     *             when the input system is active. Will be removed in a future version.
      */
+    @Deprecated
     public static boolean IsKeyPressed(int keycode) {
+        // Keep old behavior for backward compatibility
+        if (keycode < 0 || keycode >= Keyboard.pressedKeys.length) {
+            return false;
+        }
         return Keyboard.pressedKeys[keycode];
+    }
+
+    /**
+     * Check if a modifier key is currently held down.
+     * Works correctly with the input system and respects mode filtering.
+     *
+     * @param modifier "CTRL", "ALT", or "SHIFT" (case-insensitive)
+     * @return true if the modifier is held, false otherwise
+     */
+    public static boolean IsModifierDown(String modifier) {
+        if (modifier == null) {
+            return false;
+        }
+        String m = modifier.toUpperCase();
+        switch (m) {
+            case "CTRL":
+            case "CONTROL":
+                return rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL);
+            case "ALT":
+                return rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_ALT);
+            case "SHIFT":
+                return rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_SHIFT);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Check if an action is currently active (down state).
+     *
+     * @param actionName Name of the action (e.g., "CAMERA_UP", "HOTKEY_1")
+     * @return true if the action is active, false otherwise
+     */
+    public static boolean IsActionDown(String actionName) {
+        if (actionName == null) {
+            return false;
+        }
+        try {
+            rt4.amilious.input.action.Action action = rt4.amilious.input.action.Action.valueOf(actionName.toUpperCase());
+            return rt4.amilious.input.InputManager.isActionDown(action);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if an action was just pressed this frame (edge detection).
+     *
+     * @param actionName Name of the action (e.g., "CAMERA_UP", "HOTKEY_1")
+     * @return true if the action was just pressed, false otherwise
+     */
+    public static boolean IsActionPressed(String actionName) {
+        if (actionName == null) {
+            return false;
+        }
+        try {
+            rt4.amilious.input.action.Action action = rt4.amilious.input.action.Action.valueOf(actionName.toUpperCase());
+            return rt4.amilious.input.InputManager.isActionPressed(action);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if an action was just released this frame (edge detection).
+     *
+     * @param actionName Name of the action (e.g., "CAMERA_UP", "HOTKEY_1")
+     * @return true if the action was just released, false otherwise
+     */
+    public static boolean IsActionReleased(String actionName) {
+        if (actionName == null) {
+            return false;
+        }
+        try {
+            rt4.amilious.input.action.Action action = rt4.amilious.input.action.Action.valueOf(actionName.toUpperCase());
+            return rt4.amilious.input.InputManager.isActionReleased(action);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     public static MiniMenuEntry[] GetMiniMenuEntries() {

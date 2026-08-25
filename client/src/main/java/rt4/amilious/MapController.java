@@ -120,10 +120,10 @@ public final class MapController {
         int dx = 0;
         int dz = 0;
 
-        if (Keyboard.pressedKeys[Keyboard.KEY_LEFT])  dx -= s;
-        if (Keyboard.pressedKeys[Keyboard.KEY_RIGHT]) dx += s;
-        if (Keyboard.pressedKeys[Keyboard.KEY_UP])    dz -= s;
-        if (Keyboard.pressedKeys[Keyboard.KEY_DOWN])  dz += s;
+        if (rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.CAMERA_LEFT))  dx -= s;
+        if (rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.CAMERA_RIGHT)) dx += s;
+        if (rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.CAMERA_UP))    dz -= s;
+        if (rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.CAMERA_DOWN))  dz += s;
 
         if (dx != 0 || dz != 0) {
             pan(dx, dz);

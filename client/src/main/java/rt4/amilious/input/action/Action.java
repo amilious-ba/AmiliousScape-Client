@@ -28,17 +28,34 @@ public enum Action {
 
     // ===== Camera Controls =====
     // Optional key-camera (mouse remains primary)
+    // Also used for world map panning
 
-    /** Move camera up (Arrow Up or W in WORLD mode) - Protocol.java:2544 */
+    /**
+     * Move camera up / pan map up.
+     * - WORLD mode: Arrow Up or W - Protocol.java:2544
+     * - MAP mode: Arrow Up or W - MapController.java:125
+     */
     CAMERA_UP,
 
-    /** Move camera down (Arrow Down or S in WORLD mode) - Protocol.java:2544 */
+    /**
+     * Move camera down / pan map down.
+     * - WORLD mode: Arrow Down or S - Protocol.java:2544
+     * - MAP mode: Arrow Down or S - MapController.java:126
+     */
     CAMERA_DOWN,
 
-    /** Move camera left (Arrow Left or A in WORLD mode) - Protocol.java:2544 */
+    /**
+     * Move camera left / pan map left.
+     * - WORLD mode: Arrow Left or A - Protocol.java:2544
+     * - MAP mode: Arrow Left or A - MapController.java:123
+     */
     CAMERA_LEFT,
 
-    /** Move camera right (Arrow Right or D in WORLD mode) - Protocol.java:2544 */
+    /**
+     * Move camera right / pan map right.
+     * - WORLD mode: Arrow Right or D - Protocol.java:2544
+     * - MAP mode: Arrow Right or D - MapController.java:124
+     */
     CAMERA_RIGHT,
 
     // ===== Modifier Keys =====

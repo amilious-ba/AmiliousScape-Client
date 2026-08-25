@@ -82,14 +82,7 @@ public final class ChatHeadReader {
     }
 
     public static void tick() {
-        if (spaceDown) {
-            spaceClearTicks--;
-            if (spaceClearTicks <= 0) {
-                Keyboard.pressedKeys[KEY_SPACE] = false;
-                spaceDown = false;
-                System.out.println("[dlg] space released");
-            }
-        }
+        // Note: spaceDown/spaceClearTicks dead code removed (never set to true)
 
         if (pendingAutoContinue) {
             pendingAutoContinue = false;
@@ -149,10 +142,7 @@ public final class ChatHeadReader {
         continueChild = -1;
         lastSpoken = null;
         spaceBindComponentId = -1;
-        if (spaceDown) {
-            Keyboard.pressedKeys[KEY_SPACE] = false;
-            spaceDown = false;
-        }
+        // Note: spaceDown check removed (dead code - never set to true)
     }
 
     private static void getContents(int iface) {

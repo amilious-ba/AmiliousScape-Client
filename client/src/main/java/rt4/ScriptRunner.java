@@ -4425,27 +4425,15 @@ public final class ScriptRunner {
 												}
 											} else if (opcode < 5200) {
 												if (opcode == Cs2Opcodes.isHoldingAlt) {
-													if (Keyboard.pressedKeys[Keyboard.KEY_ALT]) {
-														intStack[isp++] = 1;
-													} else {
-														intStack[isp++] = 0;
-													}
+													intStack[isp++] = rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_ALT) ? 1 : 0;
 													continue;
 												}
 												if (opcode == Cs2Opcodes.isHoldingCtrl) {
-													if (Keyboard.pressedKeys[Keyboard.KEY_CTRL]) {
-														intStack[isp++] = 1;
-													} else {
-														intStack[isp++] = 0;
-													}
+													intStack[isp++] = rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL) ? 1 : 0;
 													continue;
 												}
 												if (opcode == Cs2Opcodes.isHoldingShift) {
-													if (Keyboard.pressedKeys[Keyboard.KEY_SHIFT]) {
-														intStack[isp++] = 1;
-													} else {
-														intStack[isp++] = 0;
-													}
+													intStack[isp++] = rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_SHIFT) ? 1 : 0;
 													continue;
 												}
 											} else {

@@ -53,7 +53,7 @@ if (pollDevices) {
 
 ## Migration Progress
 
-### ✅ Completed Files (7)
+### ✅ Completed Files (9)
 
 | File | Lines Migrated | Actions Created | Notes |
 |------|----------------|-----------------|-------|
@@ -61,21 +61,23 @@ if (pollDevices) {
 | **MiniMenu.java** | 4 locations | MENU_ALTERNATIVE_ACTION, cheat helpers | Shift-click, teleport |
 | **InterfaceList.java** | 2 locations | MODIFIER_CTRL/ALT/SHIFT, HOTKEY_1-0 | Interface hotkeys, world map teleport |
 | **LoginManager.java** | 1 location | MENU_ALTERNATIVE_ACTION | Cursor selection |
+| **ClientProt.java** | 1 location | MODIFIER_CTRL | Send Ctrl state to server during movement |
+| **MapController.java** | 4 locations | CAMERA_UP/DOWN/LEFT/RIGHT (MAP mode) | World map panning with arrow keys |
 | **InputManager.java** | Helper methods | N/A | `isCheatTeleportModifierDown()`, `isMenuAlternativeActionDown()`, `isAnyCameraKeyDown()`, `isRawKeyPressed()` |
-| **ActionMapper.java** | Default bindings | All gameplay actions | Keyboard bindings installed |
+| **ActionMapper.java** | Default bindings | All gameplay actions | Keyboard bindings installed (WORLD + MAP modes) |
 | **Action.java** | Full documentation | All actions | JavaDoc added per user request |
 
-### 🔄 Remaining Files - Keyboard (~8 files, ~40 sites)
+### 🔄 Remaining Files - Keyboard (~6 files, ~27 sites)
 
 | File | Est. Sites | Priority | Notes |
 |------|------------|----------|-------|
 | **GameShell.java** | ~5 | Medium | AWT keyboard handling, fullscreen toggles |
 | **ScriptRunner.java** | ~10 | Medium | CS2 script keyboard access |
 | **ChatHeadReader.java** | ~3 | Low | Voice/accessibility |
-| **ClientProt.java** | ~8 | High | Network protocol keyboard checks |
-| **MapController.java** | ~5 | Medium | World map keyboard shortcuts |
 | **plugin/api/API.java** | ~9 | Low | Plugin API keyboard access |
 | **Other files** | TBD | TBD | Find via grep |
+| ~~**ClientProt.java**~~ | ✅ 1/1 | ~~High~~ | **COMPLETED** |
+| ~~**MapController.java**~~ | ✅ 4/4 | ~~Medium~~ | **COMPLETED** |
 
 **Search command:**
 ```bash
@@ -110,10 +112,14 @@ grep -rE "Mouse\.(x|y|clickButton|clickX|clickY|clickTime)" --include="*.java" c
 | `CLOSE_CHAT` | Escape | CHAT | Close chat |
 | `ESCAPE` | Escape | Any | General escape |
 | `CAMERA_UP` | ↑ or W | WORLD | Move camera up |
+| `CAMERA_UP` | ↑ or W | MAP | Pan world map up |
 | `CAMERA_DOWN` | ↓ or S | WORLD | Move camera down |
+| `CAMERA_DOWN` | ↓ or S | MAP | Pan world map down |
 | `CAMERA_LEFT` | ← or A | WORLD | Move camera left |
+| `CAMERA_LEFT` | ← or A | MAP | Pan world map left |
 | `CAMERA_RIGHT` | → or D | WORLD | Move camera right |
-| `MODIFIER_CTRL` | Ctrl | Any | Ctrl modifier |
+| `CAMERA_RIGHT` | → or D | MAP | Pan world map right |
+| `MODIFIER_CTRL` | Ctrl | Any | Ctrl modifier (sent to server in movement packets) |
 | `MODIFIER_ALT` | Alt | Any | Alt modifier |
 | `MODIFIER_SHIFT` | Shift | Any | Shift modifier |
 | `MENU_ALTERNATIVE_ACTION` | Shift | WORLD | Shift-click alternative |

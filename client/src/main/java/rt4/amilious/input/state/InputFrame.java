@@ -13,6 +13,19 @@ public final class InputFrame {
     public final boolean[] buttonReleased;
     public final float[] axes;
 
+    // Mouse state (from MouseDevice)
+    public int mouseX = 0;
+    public int mouseY = 0;
+    public int mouseWheel = 0;
+    public int clickX = 0;
+    public int clickY = 0;
+    public long clickTime = 0L;
+    public long prevClickTime = 0L;
+
+    // Idle tracking (for AFK detection)
+    public int mouseIdleLoops = 0;
+    public int keyboardIdleLoops = 0;
+
     public InputFrame(int buttonCount, int axisCount) {
         buttonDown = new boolean[buttonCount];
         buttonPressed = new boolean[buttonCount];
@@ -25,11 +38,29 @@ public final class InputFrame {
         Arrays.fill(buttonPressed, false);
         Arrays.fill(buttonReleased, false);
         Arrays.fill(axes, 0f);
+        mouseX = 0;
+        mouseY = 0;
+        mouseWheel = 0;
+        clickX = 0;
+        clickY = 0;
+        clickTime = 0L;
+        prevClickTime = 0L;
+        mouseIdleLoops = 0;
+        keyboardIdleLoops = 0;
     }
 
     public void copyDownFrom(InputFrame other) {
         System.arraycopy(other.buttonDown, 0, buttonDown, 0, buttonDown.length);
         System.arraycopy(other.axes, 0, axes, 0, axes.length);
+        mouseX = other.mouseX;
+        mouseY = other.mouseY;
+        mouseWheel = other.mouseWheel;
+        clickX = other.clickX;
+        clickY = other.clickY;
+        clickTime = other.clickTime;
+        prevClickTime = other.prevClickTime;
+        mouseIdleLoops = other.mouseIdleLoops;
+        keyboardIdleLoops = other.keyboardIdleLoops;
     }
 
     /**

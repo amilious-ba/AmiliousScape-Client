@@ -48,6 +48,7 @@ public final class AmiliousClient {
 
         DebugConsole.Init();
         Voiceover.init();
+        InputManager.setGamepadDebugLogging(true);
         DebugConsole.log("AmiliousScape client initialized!");
     }
 

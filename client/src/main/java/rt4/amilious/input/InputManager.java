@@ -3,9 +3,11 @@ package rt4.amilious.input;
 import rt4.amilious.MapController;
 import rt4.amilious.input.action.Action;
 import rt4.amilious.input.action.ActionMapper;
+import rt4.amilious.input.device.BotInputDevice;
 import rt4.amilious.input.device.GamepadDevice;
 import rt4.amilious.input.device.InputDevice;
 import rt4.amilious.input.device.KeyboardDevice;
+import rt4.amilious.input.device.MouseDevice;
 import rt4.amilious.input.state.InputButtons;
 import rt4.amilious.input.state.InputFrame;
 import rt4.client;
@@ -40,7 +42,9 @@ public final class InputManager {
 
     private static final List<InputDevice> devices = new ArrayList<InputDevice>();
     private static final KeyboardDevice keyboardDevice = new KeyboardDevice();
+    private static final MouseDevice mouseDevice = new MouseDevice();
     private static final GamepadDevice gamepadDevice = new GamepadDevice();
+    private static final BotInputDevice botDevice = new BotInputDevice();
 
     private static final InputFrame currentFrame =
             new InputFrame(InputButtons.BUTTON_COUNT, InputButtons.AXIS_COUNT);
@@ -76,7 +80,9 @@ public final class InputManager {
         initialized = true;
         devices.clear();
         devices.add(keyboardDevice);
+        devices.add(mouseDevice);
         devices.add(gamepadDevice);
+        devices.add(botDevice);  // Bot device polls AFTER real devices (can override)
         mapper.installDefaultKeyboardBindings();
         reset();
     }
@@ -105,6 +111,12 @@ public final class InputManager {
                 InputDevice d = devices.get(i);
                 if (d.isConnected()) {
                     d.poll(currentFrame);
+                    // Poll idle counters for AF K detection
+                    if (d == keyboardDevice) {
+                        currentFrame.keyboardIdleLoops = d.getIdleLoops();
+                    } else if (d == mouseDevice) {
+                        currentFrame.mouseIdleLoops = d.getIdleLoops();
+                    }
                 }
             }
         }
@@ -462,6 +474,27 @@ public final class InputManager {
 
     public static GamepadDevice getGamepadDevice() {
         return gamepadDevice;
+    }
+
+    public static MouseDevice getMouseDevice() {
+        return mouseDevice;
+    }
+
+    public static BotInputDevice getBotDevice() {
+        return botDevice;
+    }
+
+    // -------------------------------------------------------------------------
+    // Debug
+    // -------------------------------------------------------------------------
+
+    /**
+     * Enable debug logging for gamepad input.
+     * Logs controller name, buttons, and axes to console.
+     * @param enabled true to enable logging
+     */
+    public static void setGamepadDebugLogging(boolean enabled) {
+        gamepadDevice.setDebugLogging(enabled);
     }
 
     // -------------------------------------------------------------------------

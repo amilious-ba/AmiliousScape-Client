@@ -47,11 +47,14 @@ Tracked: `previousMode`, optional `ModeListener`, log via `InputManager.setLogMo
       SpecialModalRegistry.java
       device/
         InputDevice.java
-        KeyboardDevice.java
-        GamepadDevice.java
+        KeyboardDevice.java      ✅ Fully implemented (100+ keys mapped, idle tracking)
+        MouseDevice.java          ✅ Fully implemented (position, buttons, wheel, timing, idle tracking)
+        GamepadDevice.java        ✅ Fully implemented (JInput, auto-detection, hot-plug)
+        BotInputDevice.java       ✅ Fully implemented (keyboard + mouse simulation)
+        JInputGamepadPoller.java  ✅ Native controller support (Steam/Xbox/PS/DirectInput)
       state/
         InputFrame.java
-        InputButtons.java
+        InputButtons.java         ✅ Updated (KB_ prefix, mouse buttons 130-136)
       action/
         Action.java
         ActionMapper.java
@@ -125,12 +128,18 @@ Tracked: `previousMode`, optional `ModeListener`, log via `InputManager.setLogMo
 
 ## Not done / partial
 
+- [x] **KeyboardDevice fully implemented** — all 100+ keys mapped from Keyboard.CODE_MAP, idle tracking
+- [x] **MouseDevice implemented** — position, buttons (1/2/3), wheel, click timing, idle tracking from Mouse.java + MouseWheel.java
+- [x] **GamepadDevice implemented** — JInput-based native controller support (Steam Input, XInput, DirectInput, PS/Xbox controllers)
+- [x] **BotInputDevice implemented** — keyboard + mouse simulation for automation (polls last, can override)
+- [x] **Idle tracking** — InputDevice.getIdleLoops() for keyboard/mouse AFK detection (Protocol opcode 245)
 - [ ] Full **ActionMapper** driving camera / binds (vanilla Keyboard + InputController still primary)
 - [ ] Gate all chat script input solely via shouldSendKeyToChat inside every path (Protocol accept + onKey Enter is main)
 - [ ] Name / string dialogs same as amount (hooks exist; ids TBD)
-- [ ] MouseDevice / real GamepadDevice
 - [ ] Remove ChatController entirely
 - [ ] Plugin API for modes / key intercept
+- [ ] Migrate direct `Keyboard.pressedKeys[]` access (~40 sites) to InputManager
+- [ ] Migrate direct `Mouse` access (~90 sites) to InputManager
 
 ---
 

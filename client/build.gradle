@@ -47,6 +47,14 @@ dependencies {
 
     // Required at runtime for Kotlin plugins (Intrinsics, etc.)
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.23'
+
+    // JInput for native gamepad support (Steam Input, XInput, DirectInput, etc.)
+    // Using 2.0.9 for Java 11 compatibility (2.0.10 requires Java 17)
+    implementation 'net.java.jinput:jinput:2.0.9'
+    implementation 'net.java.jinput:jinput:2.0.9:natives-all'
+
+    // XInput-Wrapper for better Xbox controller support (handles exclusive access better than DirectInput)
+    implementation 'com.github.RalleYTN:XInput-Wrapper:1.2.2'
 }
 
 jar {
@@ -60,5 +68,18 @@ jar {
     from {
         configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+
+    // Extract JInput native libraries to root of JAR
+    from {
+        configurations.runtimeClasspath.findAll { it.name.contains('jinput') && it.name.contains('natives') }.collect {
+            zipTree(it).matching {
+                include '**/*.dll'
+                include '**/*.so'
+                include '**/*.dylib'
+                include '**/*.jnilib'
+            }
+        }
+    }
+
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }

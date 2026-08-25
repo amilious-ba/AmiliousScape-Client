@@ -454,16 +454,16 @@ public final class InputManager {
                 || m == InputMode.MAP; // Allow typing in map search field
     }
 
-    /** Skip Enter for QC only in WORLD/MAP (not amount / report / chat). */
+    /** Skip Enter for QC only in WORLD. MAP search / special modals need Enter. */
     public static boolean shouldConsumeEnter() {
         if (!InputConfig.INSTANCE.enabled) {
             return false;
         }
         if (consumeEnterThisFrame) {
-            return true;
+            return true; // same-frame arm chat in WORLD only
         }
-        InputMode m = getMode();
-        return m == InputMode.WORLD || m == InputMode.MAP;
+        // Do NOT include MAP — world map search submits on Enter
+        return getMode() == InputMode.WORLD;
     }
 
     public static boolean shouldBlockQuickChat() {

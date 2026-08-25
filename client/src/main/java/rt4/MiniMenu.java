@@ -1671,6 +1671,23 @@ public class MiniMenu {
 
 	@OriginalMember(owner = "client!ej", name = "h", descriptor = "(I)V")
 	public static void method1372() {
+		// FIX: Block Walk Here / Cancel when modal owns input
+		if (rt4.amilious.input.InputManager.isSpecialModalMode()
+				|| rt4.amilious.input.InputManager.isChatBoxModalMode()) {
+			if (size > 0) {
+				int idx = size - 1;
+				int code = actions[idx];
+				if (code >= 2000) {
+					code -= 2000;
+				}
+				// Block Walk Here (60) and Cancel (1005) under text modals
+				if (code == WALK_HERE || code == 1005) {
+					anInt3953 = 0;
+					return;
+				}
+			}
+		}
+
 		if (anInt3953 == 2) {
 			if (ScriptRunner.anInt3751 == Mouse.anInt5850 && ScriptRunner.anInt1892 == Mouse.anInt5895) {
 				anInt3953 = 0;

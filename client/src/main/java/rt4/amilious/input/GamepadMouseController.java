@@ -65,23 +65,37 @@ public final class GamepadMouseController {
             return;
         }
 
-        // Skip only during text input modes (CHAT, SPECIAL_MODAL, CHATBOX_MODAL)
-        // to avoid interference with typing
-        if (mode == InputMode.CHAT || mode == InputMode.SPECIAL_MODAL || mode == InputMode.CHATBOX_MODAL) {
+        // GameShell.canvas might be null during initialization
+        if (GameShell.canvas == null) {
+            return;
+        }
+
+        // Check if we're in a text input mode
+        boolean textMode = mode == InputMode.CHAT
+                || mode == InputMode.SPECIAL_MODAL
+                || mode == InputMode.CHATBOX_MODAL;
+
+        // Always keep virtual cursor aligned with real mouse (FIX: don't freeze cursor in modals)
+        // This ensures menu building + hover detection work correctly even in text modes
+        if (!ignorePhysicalMouse && frame != null) {
+            if (frame.mouseX != lastMouseX || frame.mouseY != lastMouseY) {
+                lastMouseX = frame.mouseX;
+                lastMouseY = frame.mouseY;
+                virtualX = frame.mouseX;
+                virtualY = frame.mouseY;
+                lastMovementWasMouse = true;
+            }
+        }
+
+        // No gamepad cursor/buttons while typing / special text UIs
+        if (textMode) {
             // Reset trigger states when disabled to prevent stuck buttons
             wasLTPressed = false;
             wasRTPressed = false;
             return;
         }
-        // Active in: WORLD, MAP, MAIN_MENU (login screen)
 
-        // GameShell.canvas might be null during initialization
-        if (GameShell.canvas == null) {
-            // Reset trigger states when disabled
-            wasLTPressed = false;
-            wasRTPressed = false;
-            return;
-        }
+        // Active in: WORLD, MAP, MAIN_MENU (login screen)
 
         // Read right stick axes
         float rightX = 0.0f;
@@ -92,25 +106,11 @@ public final class GamepadMouseController {
         }
 
         // Check for actual movement from each input source
-        boolean mouseMovedThisFrame = false;
         boolean gamepadMovedThisFrame = false;
         boolean botMovedThisFrame = false;
 
-        // Detect physical mouse movement (unless disabled)
-        // Only count as movement if position changed AND it's not from our own synthetic events
-        if (!ignorePhysicalMouse && (frame.mouseX > 0 || frame.mouseY > 0)) {
-            // Check if mouse position changed from last frame
-            if (frame.mouseX != lastMouseX || frame.mouseY != lastMouseY) {
-                lastMouseX = frame.mouseX;
-                lastMouseY = frame.mouseY;
-
-                // Only treat as mouse movement if it differs from virtual cursor
-                // (If they match, it's probably our synthetic gamepad event)
-                if (Math.abs(frame.mouseX - virtualX) > 1 || Math.abs(frame.mouseY - virtualY) > 1) {
-                    mouseMovedThisFrame = true;
-                }
-            }
-        }
+        // NOTE: Physical mouse movement already handled above (before textMode check)
+        // to keep virtual cursor synced even in modals
 
         // Detect gamepad stick movement (with deadzone to ignore drift)
         float gamepadDeadzone = 0.15f;
@@ -128,13 +128,7 @@ public final class GamepadMouseController {
         }
 
         // Update cursor position based on which input moved
-        // Priority: mouse > gamepad > bot, but gamepad can take over if moved significantly
-        if (mouseMovedThisFrame) {
-            // Physical mouse moved - update position and mark as last input
-            virtualX = frame.mouseX;
-            virtualY = frame.mouseY;
-            lastMovementWasMouse = true;
-        } else if (gamepadMovedThisFrame) {
+        if (gamepadMovedThisFrame) {
             // Gamepad moved - apply movement and switch to gamepad mode
             // Apply quadratic curve for better precision at low values
             float curvedX = applyCurve(rightX);

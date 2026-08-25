@@ -2885,12 +2885,16 @@ public class Protocol {
 												}
 												anInt4422 = 0;
 											} else if (MiniMenu.anInt1742 != -1 && MiniMenu.anInt3096 == 0 && anInt4422 == 0) {
-												@Pc(1871) boolean local1871 = PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 0, true, 0, MiniMenu.anInt1742, 0, 0, 0, MiniMenu.anInt2954, PlayerList.self.movementQueueX[0]);
-												if (local1871) {
-													Cross.y = rt4.amilious.input.InputManager.getLastClickY();
-													Cross.milliseconds = 0;
-													Cross.x = rt4.amilious.input.InputManager.getLastClickX();
-													Cross.type = 1;
+												// FIX: Don't walk through modals
+												if (!rt4.amilious.input.InputManager.isSpecialModalMode()
+														&& !rt4.amilious.input.InputManager.isChatBoxModalMode()) {
+													@Pc(1871) boolean local1871 = PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 0, true, 0, MiniMenu.anInt1742, 0, 0, 0, MiniMenu.anInt2954, PlayerList.self.movementQueueX[0]);
+													if (local1871) {
+														Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+														Cross.milliseconds = 0;
+														Cross.x = rt4.amilious.input.InputManager.getLastClickX();
+														Cross.type = 1;
+													}
 												}
 											}
 											MiniMenu.anInt1742 = -1;

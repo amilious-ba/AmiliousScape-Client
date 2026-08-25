@@ -511,20 +511,43 @@ public final class DisplayMode {
 								", adjusting HD window to " + targetWidth + "x" + targetHeight);
 						}
 
+						// Capture position/size BEFORE resize
+						java.awt.Point oldLoc = GameShell.frame.getLocation();
+						java.awt.Dimension oldOuter = GameShell.frame.getSize();
+
 						GameShell.frame.setSize(
 							insets.left + targetWidth + insets.right,
 							insets.top + targetHeight + insets.bottom
+						);
+
+						// Keep center, then clamp on-screen (top pinned if taller than display)
+						repositionFrameAfterResize(
+							GameShell.frame,
+							oldOuter.width, oldOuter.height,
+							oldLoc.x, oldLoc.y
 						);
 					}
 				}
 			} else {
 				// SD/GL modes: fixed size, no resizing
 				GameShell.frame.setResizable(false);
+
+				// Capture position/size BEFORE resize
+				java.awt.Point oldLoc = GameShell.frame.getLocation();
+				java.awt.Dimension oldOuter = GameShell.frame.getSize();
+
 				// Size frame to exactly fit 765x503 canvas plus window decorations
 				Insets insets = GameShell.frame.getInsets();
 				GameShell.frame.setSize(
 					insets.left + 765 + insets.right,
 					insets.top + 503 + insets.bottom
+				);
+
+				// Keep center, then clamp on-screen
+				repositionFrameAfterResize(
+					GameShell.frame,
+					oldOuter.width, oldOuter.height,
+					oldLoc.x, oldLoc.y
 				);
 			}
 		}
@@ -564,6 +587,84 @@ public final class DisplayMode {
 		} catch (Exception ignored) {
 		}
 		return 1.0;
+	}
+
+	/**
+	 * After setSize: keep the old center, then clamp so the window stays on the
+	 * monitor. If the window is larger than the screen, pin top (and left) on-screen.
+	 */
+	private static void repositionFrameAfterResize(java.awt.Frame frame,
+	                                                int oldOuterW, int oldOuterH,
+	                                                int oldX, int oldY) {
+		if (frame == null) {
+			return;
+		}
+
+		java.awt.Dimension newSize = frame.getSize();
+		int newW = newSize.width;
+		int newH = newSize.height;
+
+		// 1) Keep center point stable
+		int centerX = oldX + oldOuterW / 2;
+		int centerY = oldY + oldOuterH / 2;
+		int newX = centerX - newW / 2;
+		int newY = centerY - newH / 2;
+
+		// 2) Clamp to the monitor that contains the old center (fallback: default screen)
+		java.awt.Rectangle screen;
+		try {
+			java.awt.GraphicsConfiguration gc = frame.getGraphicsConfiguration();
+			if (gc == null) {
+				gc = java.awt.GraphicsEnvironment
+						.getLocalGraphicsEnvironment()
+						.getDefaultScreenDevice()
+						.getDefaultConfiguration();
+			}
+			// Bounds in absolute coords; usable area prefers max window bounds (taskbar-safe)
+			java.awt.GraphicsDevice device = gc.getDevice();
+			screen = device.getDefaultConfiguration().getBounds();
+			try {
+				java.awt.Insets screenInsets = java.awt.Toolkit.getDefaultToolkit()
+						.getScreenInsets(gc);
+				screen = new java.awt.Rectangle(
+						screen.x + screenInsets.left,
+						screen.y + screenInsets.top,
+						screen.width - screenInsets.left - screenInsets.right,
+						screen.height - screenInsets.top - screenInsets.bottom
+				);
+			} catch (Exception ignored) {
+			}
+		} catch (Exception e) {
+			frame.setLocation(newX, newY);
+			return;
+		}
+
+		// Horizontal
+		if (newW >= screen.width) {
+			// Wider than screen → pin left edge on screen
+			newX = screen.x;
+		} else {
+			if (newX < screen.x) {
+				newX = screen.x;
+			}
+			if (newX + newW > screen.x + screen.width) {
+				newX = screen.x + screen.width - newW;
+			}
+		}
+
+		// Vertical — if taller than screen, keep TOP on screen (your rule)
+		if (newH >= screen.height) {
+			newY = screen.y;
+		} else {
+			if (newY < screen.y) {
+				newY = screen.y;
+			}
+			if (newY + newH > screen.y + screen.height) {
+				newY = screen.y + screen.height - newH;
+			}
+		}
+
+		frame.setLocation(newX, newY);
 	}
 
 	/**

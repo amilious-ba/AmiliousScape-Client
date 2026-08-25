@@ -129,6 +129,9 @@ public final class InputManager {
 
         currentFrame.computeEdges(previousFrame);
 
+        // Apply gamepad mouse control (right stick → cursor movement, triggers → clicks)
+        GamepadMouseController.tick(currentFrame, mode);
+
         if (processModeKeys) {
             boolean enterDown = currentFrame.buttonDown[InputButtons.ENTER];
             boolean escapeDown = currentFrame.buttonDown[InputButtons.ESCAPE];
@@ -626,5 +629,93 @@ public final class InputManager {
             }
             applyMode(newMode);
         }
+    }
+
+    // ===== Mouse/Cursor Helper Methods =====
+    // Unified cursor position from GamepadMouseController (works for mouse, gamepad, and bot)
+
+    /**
+     * Get current cursor X position.
+     * This returns the unified virtual cursor position that works for mouse, gamepad, and bot input.
+     */
+    public static int getCursorX() {
+        return rt4.amilious.input.GamepadMouseController.getVirtualX();
+    }
+
+    /**
+     * Get current cursor Y position.
+     * This returns the unified virtual cursor position that works for mouse, gamepad, and bot input.
+     */
+    public static int getCursorY() {
+        return rt4.amilious.input.GamepadMouseController.getVirtualY();
+    }
+
+    /**
+     * Get last click X position from current input frame.
+     */
+    public static int getLastClickX() {
+        return currentFrame != null ? currentFrame.clickX : 0;
+    }
+
+    /**
+     * Get last click Y position from current input frame.
+     */
+    public static int getLastClickY() {
+        return currentFrame != null ? currentFrame.clickY : 0;
+    }
+
+    /**
+     * Get last click time from current input frame.
+     */
+    public static long getLastClickTime() {
+        return currentFrame != null ? currentFrame.clickTime : 0L;
+    }
+
+    /**
+     * Get previous click time from current input frame (for double-click detection).
+     */
+    public static long getPreviousClickTime() {
+        return currentFrame != null ? currentFrame.prevClickTime : 0L;
+    }
+
+    /**
+     * Get mouse wheel rotation delta from current input frame.
+     * Positive = scroll up, negative = scroll down.
+     */
+    public static int getMouseWheel() {
+        return currentFrame != null ? currentFrame.mouseWheel : 0;
+    }
+
+    /**
+     * Check if a mouse button is currently held down.
+     * @param button InputButtons.MOUSE_BUTTON_1 (left), MOUSE_BUTTON_2 (right), or MOUSE_BUTTON_3 (middle)
+     */
+    public static boolean isMouseButtonDown(int button) {
+        if (currentFrame == null || button < 0 || button >= currentFrame.buttonDown.length) {
+            return false;
+        }
+        return currentFrame.buttonDown[button];
+    }
+
+    /**
+     * Check if a mouse button was just pressed this frame.
+     * @param button InputButtons.MOUSE_BUTTON_1 (left), MOUSE_BUTTON_2 (right), or MOUSE_BUTTON_3 (middle)
+     */
+    public static boolean isMouseButtonPressed(int button) {
+        if (currentFrame == null || button < 0 || button >= currentFrame.buttonPressed.length) {
+            return false;
+        }
+        return currentFrame.buttonPressed[button];
+    }
+
+    /**
+     * Check if a mouse button was just released this frame.
+     * @param button InputButtons.MOUSE_BUTTON_1 (left), MOUSE_BUTTON_2 (right), or MOUSE_BUTTON_3 (middle)
+     */
+    public static boolean isMouseButtonReleased(int button) {
+        if (currentFrame == null || button < 0 || button >= currentFrame.buttonReleased.length) {
+            return false;
+        }
+        return currentFrame.buttonReleased[button];
     }
 }

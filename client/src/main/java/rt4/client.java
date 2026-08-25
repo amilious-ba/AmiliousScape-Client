@@ -767,6 +767,8 @@ public final class client extends GameShell {
 			LoadingBar.render(false, Fonts.b12Full);
 		} else if (gameState == 10) {
 			InterfaceList.method2460();
+			// Draw overlays on login screen (virtual cursor, etc.)
+			rt4.amilious.AmiliousClient.onDrawOverlay();
 		} else if (gameState == 25 || gameState == 28) {
 			if (LoginManager.loadingScreenState == 1) {
 				if (anInt5150 < LoginManager.mapFilesMissingCount) {

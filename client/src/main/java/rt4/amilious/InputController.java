@@ -2,6 +2,7 @@ package rt4.amilious;
 
 import rt4.*;
 import rt4.amilious.input.InputManager;
+import rt4.amilious.input.action.Action;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -14,62 +15,22 @@ public final class InputController {
             if(e.getKeyCode() == KeyEvent.VK_END) TouchKeyboard.show(true);
             if (client.gameState != 30) {return; }
 
-            // if (shouldIgnoreHotkeys()) return;
-
-            var skip = !InputManager.shouldAcceptTextInput();
-
+            // Non-gameplay system keys (work in all modes)
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_PAGE_UP:
                     if (MapController.isOpen()) MapController.zoomOut();
                     else MenuTabCycle.previous();
-                    break;
+                    return;
                 case KeyEvent.VK_PAGE_DOWN:
                     if (MapController.isOpen()) MapController.zoomIn();
                     else MenuTabCycle.next();
-                    break;
-                case KeyEvent.VK_0:
-                    if(skip) CommandBinds.run(0);
-                    break;
-                case KeyEvent.VK_1:
-                    if(skip) CommandBinds.run(1);
-                    break;
-                case KeyEvent.VK_2:
-                    if(skip) CommandBinds.run(2);
-                    break;
-                case KeyEvent.VK_3:
-                    if(skip) CommandBinds.run(3);
-                    break;
-                case KeyEvent.VK_4:
-                    if(skip) CommandBinds.run(4);
-                    break;
-                case KeyEvent.VK_5:
-                    if(skip) CommandBinds.run(5);
-                    break;
-                case KeyEvent.VK_6:
-                    if(skip) CommandBinds.run(6);
-                    break;
-                case KeyEvent.VK_7:
-                    if(skip) CommandBinds.run(7);
-                    break;
-                case KeyEvent.VK_8:
-                    if(skip) CommandBinds.run(8);
-                    break;
-                case KeyEvent.VK_9:
-                    if(skip) CommandBinds.run(9);
-                    break;
-                case KeyEvent.VK_F12:
-                    MenuTab current = MenuTabCycle.lastSelected();
-                    if (current == null) {
-                        current = MenuTab.COMBAT; // or skip
-                    }
-                    current.select();
-                    break;
+                    return;
                 case KeyEvent.VK_INSERT:
                     MapController.toggle();
-                    break;
+                    return;
                 case KeyEvent.VK_HOME:
                     RunToggler.toggle();
-                    break;
+                    return;
                 case KeyEvent.VK_ESCAPE:
                     if (MapController.isOpen()) //close map
                         MapController.close();
@@ -77,10 +38,48 @@ public final class InputController {
                         ModalTools.closeOpenModalNextUpdate();
                     else //open the close game window
                         ClientProt.method4512(JagString.EMPTY, -1, 1, 48889868);
-                    break;
+                    return;
             }
         }
     };
+
+    /**
+     * Poll command binds using Actions. Call this from Protocol or game loop.
+     * MUST be called after InputManager.tick() so Actions are up to date.
+     */
+    public static void pollCommandBinds() {
+        if (client.gameState != 30) {
+            return;
+        }
+
+        // Command binds ONLY work in WORLD mode - never steal digits in text modes
+        if (!InputManager.shouldAllowWorldBinds()) {
+            return;
+        }
+
+        // Use isActionPressed (edge-trigger) to avoid repeat firing every frame
+        if (InputManager.isActionPressed(Action.HOTKEY_0)) {
+            CommandBinds.run(0);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_1)) {
+            CommandBinds.run(1);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_2)) {
+            CommandBinds.run(2);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_3)) {
+            CommandBinds.run(3);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_4)) {
+            CommandBinds.run(4);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_5)) {
+            CommandBinds.run(5);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_6)) {
+            CommandBinds.run(6);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_7)) {
+            CommandBinds.run(7);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_8)) {
+            CommandBinds.run(8);
+        } else if (InputManager.isActionPressed(Action.HOTKEY_9)) {
+            CommandBinds.run(9);
+        }
+    }
 
     public static void register() {
         if (GameShell.canvas == null) {

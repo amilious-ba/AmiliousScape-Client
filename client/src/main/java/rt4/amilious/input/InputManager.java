@@ -592,10 +592,19 @@ public final class InputManager {
      * This is a direct pass-through to the current input frame for interface components
      * that have custom key bindings stored in their data.
      *
+     * Interface hotkeys (component.aByteArray8) are ONLY active in WORLD mode.
+     * This prevents F-keys, digits, and other hotkeys from firing in text input modes.
+     *
      * @param keyCode Keyboard key code from Keyboard.CODE_MAP
-     * @return true if the key is currently pressed
+     * @return true if the key is currently pressed AND in WORLD mode
      */
     public static boolean isRawKeyPressed(int keyCode) {
+        // Gate interface hotkeys to WORLD mode only
+        // Never allow hotkeys to fire in CHAT, MAP search, or modal text input
+        if (!shouldAllowWorldBinds()) {
+            return false;
+        }
+
         // Must check Keyboard.pressedKeys directly, NOT buttonDown array
         // buttonDown is indexed by InputButtons constants, not raw key codes
         if (rt4.Keyboard.pressedKeys == null || keyCode < 0 || keyCode >= rt4.Keyboard.pressedKeys.length) {

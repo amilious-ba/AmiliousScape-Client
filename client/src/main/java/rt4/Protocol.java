@@ -2608,6 +2608,10 @@ public class Protocol {
 					if (!change.stringArg.strEquals(component.text)) {
 						component.text = change.stringArg;
 						InterfaceList.redraw(component);
+						// Track chat input text for empty Enter check
+						if (rt4.amilious.input.InputManager.isChatMode()) {
+							rt4.amilious.input.InputManager.updateChatInputText(change.stringArg);
+						}
 					}
 				} else if (type == 4) {
 					component = InterfaceList.getComponent(i);

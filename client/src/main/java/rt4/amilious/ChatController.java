@@ -103,7 +103,7 @@ public final class ChatController {
 	 */
 	@OriginalMember(owner = "client!ChatController", name = "shouldBlockQuickChat", descriptor = "()Z")
 	public static boolean shouldBlockQuickChat() {
-		return enabled && framesSinceSubmit > 0; // -1 doesn't block, only positive values
+		return enabled && InputManager.shouldBlockQuickChat(); // FIX: delegate to InputManager
 	}
 
 	/**

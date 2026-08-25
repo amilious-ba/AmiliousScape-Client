@@ -16,6 +16,7 @@ import java.util.Arrays;
 @OriginalClass("client!uf")
 public final class Keyboard implements KeyListener, FocusListener {
 
+	public static final int KEY_TAB = 80;
 	public static final int KEY_SHIFT = 81;
 	public static final int KEY_CTRL = 82;
 	public static final int KEY_ENTER = 84;

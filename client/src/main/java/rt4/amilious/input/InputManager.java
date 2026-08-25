@@ -64,6 +64,9 @@ public final class InputManager {
     private static boolean prevEnter;
     private static boolean prevEscape;
 
+    // Track chat input to know if empty Enter should block QC
+    private static rt4.JagString lastChatInputText = null;
+
     private static boolean initialized;
 
     private InputManager() {
@@ -638,6 +641,8 @@ public final class InputManager {
         submittedThisFrame = true;
         submittedSinceArmEnter = true;
         disarmChatIfNoSubmit = false;
+        consumeEnterThisFrame = true; // FIX: prevent QC opening on same-frame Enter after submit
+        lastChatInputText = null; // FIX: clear tracked text after submit so next empty Enter is detected
         if (InputConfig.INSTANCE.autoWorldAfterSend) {
             chatArmed = false;
         }
@@ -647,6 +652,7 @@ public final class InputManager {
     public static boolean notifyEmptyEnter() {
         if (!InputConfig.INSTANCE.allowQuickChatOnEmptyEnter) {
             chatArmed = false;
+            consumeEnterThisFrame = true; // FIX: block Enter from reaching QC scripts
             applyMode(deriveMode());
             return false;
         }
@@ -695,6 +701,22 @@ public final class InputManager {
             }
             applyMode(newMode);
         }
+    }
+
+    // ===== Chat Input Tracking =====
+
+    /**
+     * Update the tracked chat input text (call this when chat component text changes).
+     */
+    public static void updateChatInputText(rt4.JagString text) {
+        lastChatInputText = text;
+    }
+
+    /**
+     * Check if the chat input is currently empty.
+     */
+    public static boolean isChatInputEmpty() {
+        return lastChatInputText == null || lastChatInputText.length() == 0;
     }
 
     // ===== Mouse/Cursor Helper Methods =====

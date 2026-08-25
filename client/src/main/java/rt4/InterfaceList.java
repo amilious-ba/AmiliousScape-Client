@@ -1019,11 +1019,29 @@ public class InterfaceList {
 							component.lastTransmitTimer = transmitTimer;
 							if (component.onKey != null) {
 								for (i = 0; i < keyQueueSize; i++) {
+									// FIX: Enter arrives as TWO events (code 84, char 10), filter both shapes
+									boolean isEnter = keyCodes[i] == Keyboard.KEY_ENTER
+											|| keyChars[i] == 10
+											|| keyChars[i] == 13;
+
 									// Blocks WORLD Enter and the same-frame Enter that opens CHAT (stops QC)
-									if (keyCodes[i] == Keyboard.KEY_ENTER
-											&& rt4.amilious.input.InputManager.shouldConsumeEnter()) {
+									if (isEnter && rt4.amilious.input.InputManager.shouldConsumeEnter()) {
 										continue;
 									}
+
+									// Extra safety: block QC when config disallows it
+									if (isEnter && rt4.amilious.input.InputManager.shouldBlockQuickChat()) {
+										// Block in WORLD mode
+										if (!rt4.amilious.input.InputManager.isChatMode()) {
+											continue;
+										}
+										// In CHAT mode: check if chat input is empty (block empty Enter from opening QC)
+										if (rt4.amilious.input.InputManager.isChatInputEmpty()) {
+											rt4.amilious.input.InputManager.notifyEmptyEnter();
+											continue;
+										}
+									}
+
 									@Pc(1430) HookRequest local1430 = new HookRequest();
 									local1430.source = component;
 									local1430.keyCode = keyCodes[i];

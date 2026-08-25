@@ -2396,6 +2396,10 @@ public final class ScriptRunner {
 									if (!str1.strEquals(component.text)) {
 										component.text = str1;
 										InterfaceList.redraw(component);
+										// Track chat input text for empty Enter check
+										if (rt4.amilious.input.InputManager.isChatMode()) {
+											rt4.amilious.input.InputManager.updateChatInputText(str1);
+										}
 									}
 									if (component.createdComponentId == -1) {
 										DelayedStateChange.method3096(component.id);
@@ -4134,6 +4138,11 @@ public final class ScriptRunner {
 																local5943 = 5;
 															}
 														}
+														// FIX: Check for empty chat (after color/effect prefixes stripped)
+														if (string == null || string.trim().length() == 0) {
+															rt4.amilious.input.InputManager.notifyEmptyEnter();
+															continue;
+														}
 														Protocol.outboundBuffer.p1isaac(237);
 														Protocol.outboundBuffer.p1(0);
 														c = Protocol.outboundBuffer.offset;
@@ -4152,6 +4161,11 @@ public final class ScriptRunner {
 													str1 = stringStack[ssp + 1];
 													string = stringStack[ssp];
 													if (LoginManager.staffModLevel != 0 || (!LoginManager.playerUnderage || LoginManager.parentalChatConsent) && !LoginManager.mapQuickChat) {
+														// FIX: Check for empty PM (str1 is the message, string is the recipient)
+														if (str1 == null || str1.trim().length() == 0) {
+															rt4.amilious.input.InputManager.notifyEmptyEnter();
+															continue;
+														}
 														Protocol.outboundBuffer.p1isaac(201);
 														Protocol.outboundBuffer.p1(0);
 														int2 = Protocol.outboundBuffer.offset;

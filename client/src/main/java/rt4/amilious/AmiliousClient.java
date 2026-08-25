@@ -108,6 +108,12 @@ public final class AmiliousClient {
         DebugConsole.draw();
     }
 
+    /** Call after MiniMenu/tooltips are drawn - for overlays that should be on top. */
+    public static void onDrawOverlay() {
+        // Draw gamepad virtual cursor (always enabled for now so we can see it)
+        rt4.amilious.input.GamepadMouseController.drawVirtualCursor(true);
+    }
+
     public static void GameStateChange(int previous, int gameState) {
         if(previous !=30 && gameState ==30) onLogin();
         if(previous ==30 && gameState !=30) onLogout();

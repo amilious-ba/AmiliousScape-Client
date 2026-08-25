@@ -1473,6 +1473,9 @@ public class LoginManager {
 				MiniMenu.method1207(null, InterfaceList.anInt5574, Cs1ScriptRunner.anInt2503);
 			}
 		}
+
+		// Draw overlays that should be on top of everything (virtual cursor, etc.)
+		rt4.amilious.AmiliousClient.onDrawOverlay();
 		local60 = Cs1ScriptRunner.aBoolean108 ? -1 : method4044();
 		if (local60 == -1) {
 			local60 = ScriptRunner.anInt5794;

@@ -66,6 +66,9 @@ Tracked: `previousMode`, optional `ModeListener`, log via `InputManager.setLogMo
       InputController.java      # AWT hotkeys (digits, Esc, tabs)
       AmiliousClient.java       # init / tick / forwards
 
+    rt4/amilious/input/
+      GamepadMouseController.java  ✅ Unified cursor system (mouse + gamepad + bot)
+
 ---
 
 ## Done
@@ -123,6 +126,45 @@ Tracked: `previousMode`, optional `ModeListener`, log via `InputManager.setLogMo
 
 - [x] Borderless / exclusive fullscreen fixes (separate from input modes)
 - [x] gl.setSwapInterval / config exposure (performance)
+
+### Gamepad Mouse Controller (Unified Cursor System)
+
+- [x] **GamepadMouseController.java** — Unified cursor rendering for mouse/gamepad/bot
+- [x] **Right stick mouse control** — Gamepad right stick moves virtual cursor with sensitivity control
+- [x] **Trigger clicking** — RT = left click, LT = right click (synthetic MouseEvent dispatch)
+- [x] **Intelligent cursor switching:**
+  - Physical mouse → Arrow cursor visible, crosshair hidden
+  - Gamepad/bot → Arrow cursor hidden (blank), cyan crosshair visible
+  - Based on **last movement** (not idle detection) — no flickering
+  - 15% stick deadzone prevents drift interference
+- [x] **Bot mode support** — `setIgnorePhysicalMouse(true)` disables physical mouse for automation
+- [x] **Multi-source input:**
+  - Real mouse → Updates `virtualX/Y` directly
+  - Gamepad → Accumulates stick movement to `virtualX/Y`
+  - BotInputDevice → Updates via `frame.mouseX/Y` when physical mouse disabled
+- [x] **Crosshair rendering:**
+  - Cyan crosshair (20px arms, 2px thick) + white center dot
+  - Uses GlRaster/SoftwareRaster for OpenGL/Software modes
+  - Draws on top of everything (MiniMenu, tooltips, etc.)
+- [x] **Rendering hooks:**
+  - Login screen: `client.java:771` → `AmiliousClient.onDrawOverlay()`
+  - In-game: `LoginManager.java:1478` → `AmiliousClient.onDrawOverlay()`
+- [x] **Mode filtering:**
+  - Active in: WORLD, MAP, MAIN_MENU (login screen)
+  - Disabled in: CHAT, SPECIAL_MODAL, CHATBOX_MODAL (text input modes)
+- [x] **Platform-independent** — Pure Java/AWT, works on Windows/Linux/macOS
+- [x] **Configuration API:**
+  - `setSensitivity(float)` — Cursor speed (1-100, default 20)
+  - `setTriggerThreshold(float)` — Click threshold (0-1, default 0.3)
+  - `setIgnorePhysicalMouse(boolean)` — Bot mode toggle
+  - `setEnabled(boolean)` — Master enable/disable
+
+**Technical details:**
+- Synthetic events avoid fighting by comparing `frame.mouseX/Y` with `virtualX/Y` (±1px tolerance)
+- If mouse position matches virtual cursor, it's our synthetic event → ignore
+- If mouse position differs, it's real mouse input → switch to arrow cursor
+- Gamepad has 15% deadzone to filter stick drift
+- Virtual cursor clamped to `GameShell.canvasWidth/Height` bounds
 
 ---
 

@@ -749,15 +749,48 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 
 			leftMargin = 0;
 			clientBuild = 530;
-			frameWidth = 1024;
-			frameHeight = 768;
+
+			// Set initial frame size based on the window mode we'll be starting in
+			// This prevents the glitchy resize when starting in modes 0-1
+			int startMode = Preferences.favoriteWorlds;
+			if (startMode < 2) {
+				// Fixed size modes (SD/GL)
+				frameWidth = 765;
+				frameHeight = 503;
+			} else {
+				// Resizable HD mode with UI scale compensation
+				frameWidth = 1024;
+				frameHeight = 768;
+
+				// Apply UI scale compensation at startup (same as when transitioning to mode 2)
+				try {
+					GraphicsConfiguration gc = GraphicsEnvironment
+							.getLocalGraphicsEnvironment()
+							.getDefaultScreenDevice()
+							.getDefaultConfiguration();
+					if (gc != null) {
+						java.awt.geom.AffineTransform tx = gc.getDefaultTransform();
+						double uiScale = Math.max(tx.getScaleX(), tx.getScaleY());
+						if (uiScale > 1.0) {
+							// Compensate for UI scaling so actual canvas is the target size
+							frameWidth = (int) Math.round(frameWidth / uiScale);
+							frameHeight = (int) Math.round(frameHeight / uiScale);
+							System.out.println("Startup UI scale detected: " + uiScale +
+									", setting HD window to " + frameWidth + "x" + frameHeight);
+						}
+					}
+				} catch (Exception ignored) {
+					// If scale detection fails, use default size
+				}
+			}
+
 			canvasWidth = frameWidth;
 			canvasHeight = frameHeight;
 			topMargin = 0;
 			instance = this;
 			frame = new Frame();
 			frame.setTitle("AmiliousScape");
-			frame.setResizable(true);
+			frame.setResizable(startMode >= 2); // Start with correct resizability
 			frame.addWindowListener(this);
 			frame.setBackground(Color.black);
 			@Pc(44) Insets insets = frame.getInsets();

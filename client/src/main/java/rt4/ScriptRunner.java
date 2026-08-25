@@ -1473,7 +1473,7 @@ public final class ScriptRunner {
 				Cs1ScriptRunner.aBoolean108 = true;
 				InterfaceList.anInt761 = local16;
 			}
-		} else if (anInt3751 == Mouse.clickX && anInt1892 == Mouse.clickY) {
+		} else if (anInt3751 == rt4.amilious.input.InputManager.getLastClickX() && anInt1892 == rt4.amilious.input.InputManager.getLastClickY()) {
 			InterfaceList.anInt4271 = local27;
 			MiniMenu.anInt3953 = 0;
 			InterfaceList.anInt761 = local16;
@@ -1481,8 +1481,8 @@ public final class ScriptRunner {
 			InterfaceList.anInt436 = (InterfaceList.aBoolean298 ? 26 : 22) + MiniMenu.size * 15;
 			Cs1ScriptRunner.aBoolean108 = true;
 		} else {
-			Mouse.anInt5895 = Mouse.clickY;
-			Mouse.anInt5850 = Mouse.clickX;
+			Mouse.anInt5895 = rt4.amilious.input.InputManager.getLastClickY();
+			Mouse.anInt5850 = rt4.amilious.input.InputManager.getLastClickX();
 			MiniMenu.anInt3953 = 1;
 		}
 	}

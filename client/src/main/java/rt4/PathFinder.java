@@ -645,10 +645,10 @@ public class PathFinder {
 		} else {
 			findPath(PlayerList.self.movementQueueZ[0], angle, 0, true, 0, arg2, 0, shape + 1, 2, arg1, PlayerList.self.movementQueueX[0]);
 		}
-		Cross.y = Mouse.clickY;
+		Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 		Cross.milliseconds = 0;
 		Cross.type = 2;
-		Cross.x = Mouse.clickX;
+		Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 		return true;
 	}
 }

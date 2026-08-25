@@ -16,6 +16,7 @@ import java.util.HashMap;
  * Amount close: chrome / submit → evaluate()
  * QC open/close: setHidden on QC_ROOT 8978432 → ChatBoxModalRegistry
  * Report Abuse: RUN_CS2 508 + iface 553 → SpecialModalRegistry
+ * GE Search: iface 389 → SpecialModalRegistry
  *
  * Always call InputManager.refreshMode() after registry changes so mode
  * updates this frame (not only on the next tick).
@@ -28,6 +29,7 @@ public final class ModalController {
     public static final int AMOUNT_CS2 = 109;
     public static final int REPORT_ABUSE_CS2 = 508;
     public static final int REPORT_ABUSE_IFACE = 553;
+    public static final int GE_SEARCH_IFACE = 389;
 
     public static final int QC_ROOT = 8978432;
     public static final int QC_TITLE = 8978433;
@@ -48,6 +50,7 @@ public final class ModalController {
     public static void init() {
         SpecialModalRegistry.registerComponent(ChatBoxModalRegistry.INPUT, "amount");
         SpecialModalRegistry.registerInterface(REPORT_ABUSE_IFACE, "report-abuse");
+        SpecialModalRegistry.registerInterface(GE_SEARCH_IFACE, "ge-search");
         resetChromeState();
     }
 
@@ -62,6 +65,10 @@ public final class ModalController {
     public static void onInterfaceOpen(int interfaceId) {
         if (interfaceId == REPORT_ABUSE_IFACE) {
             SpecialModalRegistry.setActiveInterface(REPORT_ABUSE_IFACE);
+            InputManager.refreshMode();
+        }
+        if (interfaceId == GE_SEARCH_IFACE) {
+            SpecialModalRegistry.setActiveInterface(GE_SEARCH_IFACE);
             InputManager.refreshMode();
         }
     }    

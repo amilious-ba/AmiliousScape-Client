@@ -2503,9 +2503,10 @@ public class Protocol {
 				}
 			}
 		}
-		if (Mouse.clickButton != 0) {
+		// Only send click to server if not consumed by interface
+		if (Mouse.clickButton != 0 && !rt4.amilious.input.InputManager.isMouseClickConsumed()) {
 			@Pc(411) long loops = (Mouse.clickTime - Mouse.prevClickTime) / 50L;
-			type = Mouse.clickY;
+			type = rt4.amilious.input.InputManager.getLastClickY();
 			if (type < 0) {
 				type = 0;
 			} else if (type > 65535) {
@@ -2514,7 +2515,7 @@ public class Protocol {
 			if (loops > 32767L) {
 				loops = 32767L;
 			}
-			i = Mouse.clickX;
+			i = rt4.amilious.input.InputManager.getLastClickX();
 			Mouse.prevClickTime = Mouse.clickTime;
 			@Pc(437) byte button = 0;
 			if (i < 0) {
@@ -2722,7 +2723,7 @@ public class Protocol {
 		@Pc(1361) Component component;
 		if (InterfaceList.clickedInventoryComponent != null) {
 			InterfaceList.redraw(InterfaceList.clickedInventoryComponent);
-			if (InterfaceList.clickedInventoryComponentX + 5 < Mouse.lastMouseX || Mouse.lastMouseX < InterfaceList.clickedInventoryComponentX - 5 || InterfaceList.clickedInventoryComponentY + 5 < Mouse.lastMouseY || InterfaceList.clickedInventoryComponentY - 5 > Mouse.lastMouseY) {
+			if (InterfaceList.clickedInventoryComponentX + 5 < rt4.amilious.input.InputManager.getCursorX() || rt4.amilious.input.InputManager.getCursorX() < InterfaceList.clickedInventoryComponentX - 5 || InterfaceList.clickedInventoryComponentY + 5 < rt4.amilious.input.InputManager.getCursorY() || InterfaceList.clickedInventoryComponentY - 5 > rt4.amilious.input.InputManager.getCursorY()) {
 				InterfaceList.draggingClickedInventoryObject = true;
 			}
 			InterfaceList.clickedInventoryComponentCycle++;
@@ -2868,8 +2869,8 @@ public class Protocol {
 													outboundBuffer.p2add(MiniMenu.anInt2954 + Camera.originZ);
 													Cross.type = 1;
 													Cross.milliseconds = 0;
-													Cross.y = Mouse.clickY;
-													Cross.x = Mouse.clickX;
+													Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+													Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 												}
 												MiniMenu.anInt3096 = 0;
 											} else if (anInt4422 == 2) {
@@ -2879,16 +2880,16 @@ public class Protocol {
 													outboundBuffer.p2(MiniMenu.anInt1742 + Camera.originX);
 													Cross.milliseconds = 0;
 													Cross.type = 1;
-													Cross.x = Mouse.clickX;
-													Cross.y = Mouse.clickY;
+													Cross.x = rt4.amilious.input.InputManager.getLastClickX();
+													Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 												}
 												anInt4422 = 0;
 											} else if (MiniMenu.anInt1742 != -1 && MiniMenu.anInt3096 == 0 && anInt4422 == 0) {
 												@Pc(1871) boolean local1871 = PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 0, true, 0, MiniMenu.anInt1742, 0, 0, 0, MiniMenu.anInt2954, PlayerList.self.movementQueueX[0]);
 												if (local1871) {
-													Cross.y = Mouse.clickY;
+													Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 													Cross.milliseconds = 0;
-													Cross.x = Mouse.clickX;
+													Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 													Cross.type = 1;
 												}
 											}
@@ -3588,8 +3589,8 @@ public class Protocol {
 							InterfaceList.redraw(InterfaceList.clickedInventoryComponent);
 						}
 						InterfaceList.clickedInventoryComponent = InterfaceList.getComponent(local99);
-						InterfaceList.clickedInventoryComponentX = Mouse.clickX;
-						InterfaceList.clickedInventoryComponentY = Mouse.clickY;
+						InterfaceList.clickedInventoryComponentX = rt4.amilious.input.InputManager.getLastClickX();
+						InterfaceList.clickedInventoryComponentY = rt4.amilious.input.InputManager.getLastClickY();
 						InterfaceList.mouseOverInventoryObjectIndex = local93;
 						InterfaceList.redraw(InterfaceList.clickedInventoryComponent);
 						return;
@@ -3609,8 +3610,8 @@ public class Protocol {
 		}
 		@Pc(204) int local204;
 		if (local20 != 1) {
-			local93 = Mouse.lastMouseY;
-			local204 = Mouse.lastMouseX;
+			local93 = rt4.amilious.input.InputManager.getCursorY();
+			local204 = rt4.amilious.input.InputManager.getCursorX();
 			if (local204 < InterfaceList.anInt4271 - 10 || local204 > InterfaceList.anInt761 + InterfaceList.anInt4271 + 10 || InterfaceList.anInt5138 - 10 > local93 || local93 > InterfaceList.anInt436 + InterfaceList.anInt5138 + 10) {
 				Cs1ScriptRunner.aBoolean108 = false;
 				InterfaceList.redrawScreen(InterfaceList.anInt4271, InterfaceList.anInt761, InterfaceList.anInt5138, InterfaceList.anInt436);
@@ -3622,8 +3623,8 @@ public class Protocol {
 		local204 = InterfaceList.anInt4271;
 		local93 = InterfaceList.anInt5138;
 		local99 = InterfaceList.anInt761;
-		@Pc(265) int local265 = Mouse.clickX;
-		@Pc(267) int local267 = Mouse.clickY;
+		@Pc(265) int local265 = rt4.amilious.input.InputManager.getLastClickX();
+		@Pc(267) int local267 = rt4.amilious.input.InputManager.getLastClickY();
 		@Pc(269) int local269 = -1;
 		for (@Pc(271) int local271 = 0; local271 < MiniMenu.size; local271++) {
 			@Pc(289) int local289;

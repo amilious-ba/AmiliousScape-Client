@@ -6,8 +6,8 @@ import rt4.GlRaster;
 import rt4.GlRenderer;
 import rt4.InterfaceList;
 import rt4.MiniMenu;
-import rt4.Mouse;
 import rt4.SoftwareRaster;
+import rt4.amilious.input.InputManager;
 
 /**
  * Custom "Choose Option" panel.
@@ -124,8 +124,8 @@ public final class MiniMenuDrawer {
                 0
         );
 
-        int mx = Mouse.lastMouseX;
-        int my = Mouse.lastMouseY;
+        int mx = InputManager.getCursorX();
+        int my = InputManager.getCursorY();
         for (int i = 0; i < MiniMenu.size; i++) {
             int rowBaseline = (MiniMenu.size - i - 1) * ROW_H + y + 31;
             int color = COLOR_TEXT;
@@ -182,8 +182,8 @@ public final class MiniMenuDrawer {
         );
 
         // Options — same visual order as vanilla drawA (index 0 at bottom of panel)
-        int mx = Mouse.lastMouseX;
-        int my = Mouse.lastMouseY;
+        int mx = InputManager.getCursorX();
+        int my = InputManager.getCursorY();
 
         for (int i = 0; i < MiniMenu.size; i++) {
             // vanilla: (size - i - 1) * 15 + y + 31

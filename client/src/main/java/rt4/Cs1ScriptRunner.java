@@ -332,8 +332,8 @@ public class Cs1ScriptRunner {
 							continue;
 						}
 						if (aBoolean172 && InterfaceList.aBoolean174) {
-							local164 = Mouse.lastMouseY;
-							local166 = Mouse.lastMouseX;
+							local164 = rt4.amilious.input.InputManager.getCursorY();
+							local166 = rt4.amilious.input.InputManager.getCursorX();
 							local164 -= anInt4035;
 							if (local164 < InterfaceList.anInt5103) {
 								local164 = InterfaceList.anInt5103;
@@ -620,8 +620,8 @@ public class Cs1ScriptRunner {
 													if (sprite == null) {
 														InterfaceList.redraw(component);
 													} else if (InterfaceList.clickedInventoryComponent == component && local270 == InterfaceList.mouseOverInventoryObjectIndex) {
-														int dragX = Mouse.lastMouseX - InterfaceList.clickedInventoryComponentX;
-														int dragY = Mouse.lastMouseY - InterfaceList.clickedInventoryComponentY;
+														int dragX = rt4.amilious.input.InputManager.getCursorX() - InterfaceList.clickedInventoryComponentX;
+														int dragY = rt4.amilious.input.InputManager.getCursorY() - InterfaceList.clickedInventoryComponentY;
 
 														if (dragY < 5 && dragY > -5) {
 															dragY = 0;
@@ -1357,12 +1357,12 @@ public class Cs1ScriptRunner {
 		InterfaceList.redraw(aClass13_14);
 		anInt4851++;
 		if (InterfaceList.aBoolean83 && InterfaceList.aBoolean174) {
-			@Pc(30) int local30 = Mouse.lastMouseX;
+			@Pc(30) int local30 = rt4.amilious.input.InputManager.getCursorX();
 			local30 -= anInt5388;
 			if (anInt2225 > local30) {
 				local30 = anInt2225;
 			}
-			@Pc(41) int local41 = Mouse.lastMouseY;
+			@Pc(41) int local41 = rt4.amilious.input.InputManager.getCursorY();
 			if (anInt2225 + aClass13_1.width < local30 - -aClass13_14.width) {
 				local30 = anInt2225 + aClass13_1.width - aClass13_14.width;
 			}

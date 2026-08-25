@@ -1407,11 +1407,11 @@ public class LoginManager {
 				ScriptRunner.anInt3751 = Mouse.anInt5850;
 				ScriptRunner.anInt1892 = Mouse.anInt5895;
 			} else if (Mouse.clickButton == 0) {
-				ScriptRunner.anInt3751 = Mouse.lastMouseX;
-				ScriptRunner.anInt1892 = Mouse.lastMouseY;
+				ScriptRunner.anInt3751 = rt4.amilious.input.InputManager.getCursorX();
+				ScriptRunner.anInt1892 = rt4.amilious.input.InputManager.getCursorY();
 			} else {
-				ScriptRunner.anInt3751 = Mouse.clickX;
-				ScriptRunner.anInt1892 = Mouse.clickY;
+				ScriptRunner.anInt3751 = rt4.amilious.input.InputManager.getLastClickX();
+				ScriptRunner.anInt1892 = rt4.amilious.input.InputManager.getLastClickY();
 			}
 			MiniMenu.size = 1;
 			MiniMenu.ops[0] = LocalizedText.CANCEL;

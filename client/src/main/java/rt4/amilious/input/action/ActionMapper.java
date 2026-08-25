@@ -58,21 +58,35 @@ public final class ActionMapper {
         bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.A, InputMode.WORLD);
         bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.D, InputMode.WORLD);
 
+        // Gamepad left stick camera control (WORLD only)
+        bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.GP_LSTICK_UP, InputMode.WORLD);
+        bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.GP_LSTICK_DOWN, InputMode.WORLD);
+        bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.GP_LSTICK_LEFT, InputMode.WORLD);
+        bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.GP_LSTICK_RIGHT, InputMode.WORLD);
+
         // Camera in CHAT mode (arrows only, NOT WASD) - GameShell.java:608-611
         bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.UP, InputMode.CHAT);
         bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.DOWN, InputMode.CHAT);
         bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.LEFT, InputMode.CHAT);
         bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.RIGHT, InputMode.CHAT);
 
-        // Map panning (MAP mode) - MapController.java:123-126
+        // Gamepad left stick camera control in CHAT mode
+        bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.GP_LSTICK_UP, InputMode.CHAT);
+        bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.GP_LSTICK_DOWN, InputMode.CHAT);
+        bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.GP_LSTICK_LEFT, InputMode.CHAT);
+        bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.GP_LSTICK_RIGHT, InputMode.CHAT);
+
+        // Map panning (MAP mode) - arrows and gamepad only, NOT WASD (need WASD for search field typing)
         bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.UP, InputMode.MAP);
         bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.DOWN, InputMode.MAP);
         bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.LEFT, InputMode.MAP);
         bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.RIGHT, InputMode.MAP);
-        bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.W, InputMode.MAP);
-        bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.S, InputMode.MAP);
-        bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.A, InputMode.MAP);
-        bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.D, InputMode.MAP);
+
+        // Gamepad left stick camera control in MAP mode
+        bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.GP_LSTICK_UP, InputMode.MAP);
+        bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.GP_LSTICK_DOWN, InputMode.MAP);
+        bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.GP_LSTICK_LEFT, InputMode.MAP);
+        bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.GP_LSTICK_RIGHT, InputMode.MAP);
 
         // Modifier keys (no mode filter - work everywhere)
         bind(Action.MODIFIER_CTRL, rt4.amilious.input.state.InputButtons.KB_CTRL);
@@ -93,6 +107,25 @@ public final class ActionMapper {
         bind(Action.HOTKEY_8, rt4.amilious.input.state.InputButtons.DIGIT_8, InputMode.WORLD);
         bind(Action.HOTKEY_9, rt4.amilious.input.state.InputButtons.DIGIT_9, InputMode.WORLD);
         bind(Action.HOTKEY_0, rt4.amilious.input.state.InputButtons.DIGIT_0, InputMode.WORLD);
+
+        // Menu tab selection (F-keys, WORLD only)
+        bind(Action.TAB_COMBAT, rt4.amilious.input.state.InputButtons.F1, InputMode.WORLD);
+        bind(Action.TAB_SKILLS, rt4.amilious.input.state.InputButtons.F2, InputMode.WORLD);
+        bind(Action.TAB_QUEST, rt4.amilious.input.state.InputButtons.F3, InputMode.WORLD);
+        bind(Action.TAB_INVENTORY, rt4.amilious.input.state.InputButtons.F4, InputMode.WORLD);
+        bind(Action.TAB_EQUIPMENT, rt4.amilious.input.state.InputButtons.F5, InputMode.WORLD);
+        bind(Action.TAB_PRAYER, rt4.amilious.input.state.InputButtons.F6, InputMode.WORLD);
+        bind(Action.TAB_MAGIC, rt4.amilious.input.state.InputButtons.F7, InputMode.WORLD);
+        bind(Action.TAB_CLAN, rt4.amilious.input.state.InputButtons.F8, InputMode.WORLD);
+        bind(Action.TAB_FRIENDS, rt4.amilious.input.state.InputButtons.F9, InputMode.WORLD);
+        bind(Action.TAB_IGNORE, rt4.amilious.input.state.InputButtons.F10, InputMode.WORLD);
+        bind(Action.TAB_LOGOUT, rt4.amilious.input.state.InputButtons.F11, InputMode.WORLD);
+        bind(Action.TAB_OPTIONS, rt4.amilious.input.state.InputButtons.F12, InputMode.WORLD);
+
+        // Gamepad tab selection (D-pad + face buttons, WORLD only)
+        // LB + D-pad Up = Combat, LB + D-pad Down = Skills, etc.
+        // LB + A = Inventory, LB + B = Equipment, LB + X = Prayer, LB + Y = Magic
+        // This gives quick access to most-used tabs with gamepad
     }
 
     public void update(InputFrame frame, InputMode mode) {

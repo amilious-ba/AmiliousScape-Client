@@ -473,8 +473,8 @@ public class MiniMenu {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.type = 2;
 				Cross.milliseconds = 0;
-				Cross.x = Mouse.clickX;
-				Cross.y = Mouse.clickY;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Protocol.outboundBuffer.p1isaac(71);
 				Protocol.outboundBuffer.ip2add(local36);
 			}
@@ -503,10 +503,10 @@ public class MiniMenu {
 			local192 = NpcList.npcs[local36];
 			if (local192 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local192.movementQueueX[0], 1, 0, 2, local192.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Cross.type = 2;
 				Cross.milliseconds = 0;
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Protocol.outboundBuffer.p1isaac(30);
 				Protocol.outboundBuffer.p2(local36);
 			}
@@ -515,10 +515,10 @@ public class MiniMenu {
 			local192 = NpcList.npcs[local36];
 			if (local192 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local192.movementQueueX[0], 1, 0, 2, local192.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Cross.milliseconds = 0;
 				Cross.type = 2;
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Protocol.outboundBuffer.p1isaac(78);
 				Protocol.outboundBuffer.ip2(local36);
 			}
@@ -527,9 +527,9 @@ public class MiniMenu {
 			local43 = PlayerList.players[local36];
 			if (local43 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Cross.type = 2;
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Cross.milliseconds = 0;
 				Protocol.outboundBuffer.p1isaac(133);
 				Protocol.outboundBuffer.ip2(local36);
@@ -558,10 +558,10 @@ public class MiniMenu {
 			local192 = NpcList.npcs[local36];
 			if (local192 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local192.movementQueueX[0], 1, 0, 2, local192.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Cross.type = 2;
 				Cross.milliseconds = 0;
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Protocol.outboundBuffer.p1isaac(239);
 				Protocol.outboundBuffer.ip4(anInt2512);
 				Protocol.outboundBuffer.p2add(anInt506);
@@ -578,10 +578,10 @@ public class MiniMenu {
 					PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local15, 1, 0, 2, local19, PlayerList.self.movementQueueX[0]);
 				}
 			}
-			Cross.x = Mouse.clickX;
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			Cross.milliseconds = 0;
 			Cross.type = 2;
-			Cross.y = Mouse.clickY;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 			Protocol.outboundBuffer.p1isaac(66);
 			Protocol.outboundBuffer.ip2(Camera.originX + local15);
 			Protocol.outboundBuffer.p2(local36);
@@ -596,8 +596,8 @@ public class MiniMenu {
 		}
 		if (actionCode == OBJ_EXAMINE) {
 			Cross.type = 2;
-			Cross.x = Mouse.clickX;
-			Cross.y = Mouse.clickY;
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 			Cross.milliseconds = 0;
 			Protocol.outboundBuffer.p1isaac(92);
 			Protocol.outboundBuffer.ip2add(local36);
@@ -639,8 +639,8 @@ public class MiniMenu {
 		if (actionCode == NPC_EXAMINE) {
 			Cross.milliseconds = 0;
 			Cross.type = 2;
-			Cross.y = Mouse.clickY;
-			Cross.x = Mouse.clickX;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			local192 = NpcList.npcs[local36];
 			if (local192 != null) {
 				@Pc(884) NpcType local884 = local192.type;
@@ -678,8 +678,8 @@ public class MiniMenu {
 			if (local43 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.type = 2;
-				Cross.y = Mouse.clickY;
-				Cross.x = Mouse.clickX;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Cross.milliseconds = 0;
 				Protocol.outboundBuffer.p1isaac(4);
 				Protocol.outboundBuffer.ip2(local36);
@@ -721,8 +721,8 @@ public class MiniMenu {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.milliseconds = 0;
 				Cross.type = 2;
-				Cross.y = Mouse.clickY;
-				Cross.x = Mouse.clickX;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Protocol.outboundBuffer.p1isaac(114);
 				Protocol.outboundBuffer.ip2add(local36);
 			}
@@ -749,9 +749,9 @@ public class MiniMenu {
 				}
 			}
 			Cross.type = 2;
-			Cross.x = Mouse.clickX;
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			Cross.milliseconds = 0;
-			Cross.y = Mouse.clickY;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 			Protocol.outboundBuffer.p1isaac(228);
 			Protocol.outboundBuffer.p2(local36);
 			Protocol.outboundBuffer.ip2(Camera.originX + local15);
@@ -763,8 +763,8 @@ public class MiniMenu {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local192.movementQueueX[0], 1, 0, 2, local192.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.type = 2;
 				Cross.milliseconds = 0;
-				Cross.y = Mouse.clickY;
-				Cross.x = Mouse.clickX;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Protocol.outboundBuffer.p1isaac(148);
 				Protocol.outboundBuffer.p2add(local36);
 			}
@@ -792,10 +792,10 @@ public class MiniMenu {
 			local43 = PlayerList.players[local36];
 			if (local43 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Cross.milliseconds = 0;
 				Cross.type = 2;
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Protocol.outboundBuffer.p1isaac(180);
 				Protocol.outboundBuffer.ip2add(local36);
 			}
@@ -815,8 +815,8 @@ public class MiniMenu {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.milliseconds = 0;
 				Cross.type = 2;
-				Cross.x = Mouse.clickX;
-				Cross.y = Mouse.clickY;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Protocol.outboundBuffer.p1isaac(195);
 				Protocol.outboundBuffer.p2add(anInt506);
 				Protocol.outboundBuffer.ip4(anInt2512);
@@ -832,9 +832,9 @@ public class MiniMenu {
 					PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local15, 1, 0, 2, local19, PlayerList.self.movementQueueX[0]);
 				}
 			}
-			Cross.x = Mouse.clickX;
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			Cross.type = 2;
-			Cross.y = Mouse.clickY;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 			Cross.milliseconds = 0;
 			Protocol.outboundBuffer.p1isaac(109);
 			Protocol.outboundBuffer.ip2(local19 + Camera.originZ);
@@ -854,9 +854,9 @@ public class MiniMenu {
 			local192 = NpcList.npcs[local36];
 			if (local192 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local192.movementQueueX[0], 1, 0, 2, local192.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Cross.type = 2;
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Cross.milliseconds = 0;
 				Protocol.outboundBuffer.p1isaac(218);
 				Protocol.outboundBuffer.ip2(local36);
@@ -881,8 +881,8 @@ public class MiniMenu {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local192.movementQueueX[0], 1, 0, 2, local192.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.type = 2;
 				Cross.milliseconds = 0;
-				Cross.y = Mouse.clickY;
-				Cross.x = Mouse.clickX;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Protocol.outboundBuffer.p1isaac(115);
 				Protocol.outboundBuffer.mp4(MiniMap.anInt5062);
 				Protocol.outboundBuffer.ip2(anInt4370);
@@ -905,9 +905,9 @@ public class MiniMenu {
 			if (!local560) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local15, 1, 0, 2, local19, PlayerList.self.movementQueueX[0]);
 			}
-			Cross.x = Mouse.clickX;
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			Cross.milliseconds = 0;
-			Cross.y = Mouse.clickY;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 			Cross.type = 2;
 			Protocol.outboundBuffer.p1isaac(101);
 			Protocol.outboundBuffer.ip2add(local15 + Camera.originX);
@@ -919,9 +919,9 @@ public class MiniMenu {
 		}
 		if (actionCode == LOC_ACTION_EXAMINE) {
 			Cross.milliseconds = 0;
-			Cross.x = Mouse.clickX;
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			Cross.type = 2;
-			Cross.y = Mouse.clickY;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 			Protocol.outboundBuffer.p1isaac(94);
 			Protocol.outboundBuffer.ip2add(local36);
 		}
@@ -953,9 +953,9 @@ public class MiniMenu {
 			if (local43 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.milliseconds = 0;
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Cross.type = 2;
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Protocol.outboundBuffer.p1isaac(248);
 				Protocol.outboundBuffer.ip2add(local36);
 				Protocol.outboundBuffer.p2(anInt4997);
@@ -982,8 +982,8 @@ public class MiniMenu {
 				}
 			}
 			Cross.type = 2;
-			Cross.y = Mouse.clickY;
-			Cross.x = Mouse.clickX;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			Cross.milliseconds = 0;
 			Protocol.outboundBuffer.p1isaac(48);
 			Protocol.outboundBuffer.p2add(local15 + Camera.originX);
@@ -1012,8 +1012,8 @@ public class MiniMenu {
 			if (local43 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.type = 2;
-				Cross.y = Mouse.clickY;
-				Cross.x = Mouse.clickX;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Cross.milliseconds = 0;
 				Protocol.outboundBuffer.p1isaac(175);
 				Protocol.outboundBuffer.p2add(local36);
@@ -1054,8 +1054,8 @@ public class MiniMenu {
 			if (local43 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
 				Cross.milliseconds = 0;
-				Cross.x = Mouse.clickX;
-				Cross.y = Mouse.clickY;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Cross.type = 2;
 				Protocol.outboundBuffer.p1isaac(68);
 				Protocol.outboundBuffer.ip2add(local36);
@@ -1075,8 +1075,8 @@ public class MiniMenu {
 			if (!local560) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local15, 1, 0, 2, local19, PlayerList.self.movementQueueX[0]);
 			}
-			Cross.y = Mouse.clickY;
-			Cross.x = Mouse.clickX;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			Cross.type = 2;
 			Cross.milliseconds = 0;
 			Protocol.outboundBuffer.p1isaac(73);
@@ -1109,10 +1109,10 @@ public class MiniMenu {
 			local43 = PlayerList.players[local36];
 			if (local43 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local43.movementQueueX[0], 1, 0, 2, local43.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Cross.milliseconds = 0;
 				Cross.type = 2;
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Protocol.outboundBuffer.p1isaac(106);
 				Protocol.outboundBuffer.p2(local36);
 			}
@@ -1126,9 +1126,9 @@ public class MiniMenu {
 					PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local15, 1, 0, 2, local19, PlayerList.self.movementQueueX[0]);
 				}
 			}
-			Cross.y = Mouse.clickY;
+			Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 			Cross.milliseconds = 0;
-			Cross.x = Mouse.clickX;
+			Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 			Cross.type = 2;
 			Protocol.outboundBuffer.p1isaac(33);
 			Protocol.outboundBuffer.p2(local36);
@@ -1139,9 +1139,9 @@ public class MiniMenu {
 			local192 = NpcList.npcs[local36];
 			if (local192 != null) {
 				PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 1, false, 0, local192.movementQueueX[0], 1, 0, 2, local192.movementQueueZ[0], PlayerList.self.movementQueueX[0]);
-				Cross.x = Mouse.clickX;
+				Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 				Cross.milliseconds = 0;
-				Cross.y = Mouse.clickY;
+				Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 				Cross.type = 2;
 				Protocol.outboundBuffer.p1isaac(3);
 				Protocol.outboundBuffer.ip2add(local36);
@@ -1680,7 +1680,7 @@ public class MiniMenu {
 					doAction(size - 1);
 				}
 			}
-		} else if (ScriptRunner.anInt3751 == Mouse.clickX && ScriptRunner.anInt1892 == Mouse.clickY) {
+		} else if (ScriptRunner.anInt3751 == rt4.amilious.input.InputManager.getLastClickX() && ScriptRunner.anInt1892 == rt4.amilious.input.InputManager.getLastClickY()) {
 			anInt3953 = 0;
 			if (Cheat.shiftClick && rt4.amilious.input.InputManager.isMenuAlternativeActionDown() && size > 2) {
 				doAction(size - 2);
@@ -1688,9 +1688,9 @@ public class MiniMenu {
 				doAction(size - 1);
 			}
 		} else {
-			Mouse.anInt5895 = Mouse.clickY;
+			Mouse.anInt5895 = rt4.amilious.input.InputManager.getLastClickY();
 			anInt3953 = 2;
-			Mouse.anInt5850 = Mouse.clickX;
+			Mouse.anInt5850 = rt4.amilious.input.InputManager.getLastClickX();
 		}
 	}
 
@@ -1717,8 +1717,8 @@ public class MiniMenu {
 			SoftwareRaster.drawRect(local11 + 1, local3 + 18, local9 - 2, local15 + -19, 0);
 		}
 		Fonts.b12Full.renderLeft(LocalizedText.CHOOSE_OPTION, local11 + 3, local3 + 14, 6116423, -1);
-		@Pc(96) int local96 = Mouse.lastMouseY;
-		@Pc(98) int local98 = Mouse.lastMouseX;
+		@Pc(96) int local96 = rt4.amilious.input.InputManager.getCursorY();
+		@Pc(98) int local98 = rt4.amilious.input.InputManager.getCursorX();
 		for (@Pc(107) int local107 = 0; local107 < size; local107++) {
 			@Pc(127) int local127 = (size - local107 - 1) * 15 + local3 + 31;
 			@Pc(129) int color = 16777215; //WHITE
@@ -1774,8 +1774,8 @@ public class MiniMenu {
 		} else {
 			SoftwareRaster.fillRectAlpha(local3, local9 + 20, local13, local11 - 20, LoginManager.anInt1275, 256 - LoginManager.anInt2910);
 		}
-		local114 = Mouse.lastMouseY;
-		local112 = Mouse.lastMouseX;
+		local114 = rt4.amilious.input.InputManager.getCursorY();
+		local112 = rt4.amilious.input.InputManager.getCursorX();
 		@Pc(203) int local203;
 		@Pc(219) int local219;
 		for (local203 = 0; local203 < size; local203++) {

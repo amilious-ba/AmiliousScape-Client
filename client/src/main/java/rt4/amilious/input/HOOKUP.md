@@ -164,24 +164,42 @@ Tracked: `previousMode`, optional `ModeListener`, log via `InputManager.setLogMo
 - If mouse position matches virtual cursor, it's our synthetic event → ignore
 - If mouse position differs, it's real mouse input → switch to arrow cursor
 - Gamepad has 15% deadzone to filter stick drift
+- **Quadratic curve** applied to right stick for better precision (50% stick = 25% cursor speed)
 - Virtual cursor clamped to `GameShell.canvasWidth/Height` bounds
+
+### Gamepad Left Stick Camera Control
+
+- [x] **Left stick camera movement** — Axis-to-button conversion for analog stick input
+- [x] **Virtual buttons** — `GP_LSTICK_UP/DOWN/LEFT/RIGHT` converted from axes (0.5 threshold)
+- [x] **Action bindings** — Left stick bound to `CAMERA_*` actions in WORLD, CHAT, MAP modes
+- [x] **Unified with keyboard** — Works same as arrow keys and WASD
+
+### Action System Expansion
+
+- [x] **Mouse migration complete** — 132 sites migrated to `InputManager.getCursorX/Y()`, `getLastClickX/Y()`
+- [x] **Tab Actions added** — `TAB_COMBAT` through `TAB_MUSIC` for F1-F12 menu tab selection
+- [x] **F-key bindings** — F1-F12 bound to tab actions in WORLD mode
+- [x] **Number hotkeys** — `HOTKEY_0` through `HOTKEY_9` bound to digit keys in WORLD mode
+- [x] **ESC key bug fixed** — `InputManager.isRawKeyPressed()` now correctly reads `Keyboard.pressedKeys[]` instead of `buttonDown[]`
 
 ---
 
 ## Not done / partial
 
 - [x] **KeyboardDevice fully implemented** — all 100+ keys mapped from Keyboard.CODE_MAP, idle tracking
-- [x] **MouseDevice implemented** — position, buttons (1/2/3), wheel, click timing, idle tracking from Mouse.java + MouseWheel.java
+- [x] **MouseDevice fully migrated** — 132 sites now use InputManager instead of Mouse.java direct access
 - [x] **GamepadDevice implemented** — JInput-based native controller support (Steam Input, XInput, DirectInput, PS/Xbox controllers)
 - [x] **BotInputDevice implemented** — keyboard + mouse simulation for automation (polls last, can override)
 - [x] **Idle tracking** — InputDevice.getIdleLoops() for keyboard/mouse AFK detection (Protocol opcode 245)
-- [ ] Full **ActionMapper** driving camera / binds (vanilla Keyboard + InputController still primary)
+- [x] **Action system foundation** — Camera, modifiers, hotkeys, tabs defined and bound
+- [ ] **Migrate InterfaceList F-key checks** — Component hotkeys still use raw key codes, need to use Actions
+- [ ] **Add gamepad tab combos** — LB + D-pad/buttons for tab selection
 - [ ] Gate all chat script input solely via shouldSendKeyToChat inside every path (Protocol accept + onKey Enter is main)
 - [ ] Name / string dialogs same as amount (hooks exist; ids TBD)
 - [ ] Remove ChatController entirely
 - [ ] Plugin API for modes / key intercept
-- [ ] Migrate direct `Keyboard.pressedKeys[]` access (~40 sites) to InputManager
-- [ ] Migrate direct `Mouse` access (~90 sites) to InputManager
+- [ ] Migrate remaining `Keyboard.pressedKeys[]` access (~20 sites) to Actions
+- [ ] Remove `Keyboard.java` and `Mouse.java` entirely once migration complete
 
 ---
 

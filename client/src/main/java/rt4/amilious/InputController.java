@@ -73,10 +73,9 @@ public final class InputController {
                 case KeyEvent.VK_ESCAPE:
                     if (MapController.isOpen()) //close map
                         MapController.close();
-                    else if(ModalTools.hasModalOpen()) { //close modal
+                    else if(ModalTools.hasModalOpen()) //close modal
                         ModalTools.closeOpenModalNextUpdate();
-                        break;
-                    }else //open the close game window
+                    else //open the close game window
                         ClientProt.method4512(JagString.EMPTY, -1, 1, 48889868);
                     break;
             }

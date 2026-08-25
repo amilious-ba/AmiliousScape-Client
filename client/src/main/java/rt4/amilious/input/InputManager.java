@@ -127,6 +127,9 @@ public final class InputManager {
             }
         }
 
+        // Convert left stick axes to virtual buttons BEFORE computing edges
+        convertLeftStickToButtons(currentFrame);
+
         currentFrame.computeEdges(previousFrame);
 
         // Apply gamepad mouse control (right stick → cursor movement, triggers → clicks)
@@ -192,6 +195,25 @@ public final class InputManager {
             init();
         }
         applyMode(deriveMode());
+    }
+
+    /**
+     * Convert left stick axes to virtual buttons for camera control.
+     * This allows the Action system to treat analog stick input like button presses.
+     * Uses a threshold of 0.5 to trigger the virtual buttons.
+     */
+    private static void convertLeftStickToButtons(InputFrame frame) {
+        float leftX = frame.axes[InputButtons.AXIS_LEFT_X];
+        float leftY = frame.axes[InputButtons.AXIS_LEFT_Y];
+        float threshold = 0.5f;
+
+        // Y axis: negative = up, positive = down
+        frame.buttonDown[InputButtons.GP_LSTICK_UP] = leftY < -threshold;
+        frame.buttonDown[InputButtons.GP_LSTICK_DOWN] = leftY > threshold;
+
+        // X axis: negative = left, positive = right
+        frame.buttonDown[InputButtons.GP_LSTICK_LEFT] = leftX < -threshold;
+        frame.buttonDown[InputButtons.GP_LSTICK_RIGHT] = leftX > threshold;
     }
 
     // -------------------------------------------------------------------------
@@ -428,7 +450,8 @@ public final class InputManager {
         return m == InputMode.CHAT
                 || m == InputMode.CHATBOX_MODAL
                 || m == InputMode.SPECIAL_MODAL
-                || m == InputMode.MAIN_MENU;
+                || m == InputMode.MAIN_MENU
+                || m == InputMode.MAP; // Allow typing in map search field
     }
 
     /** Skip Enter for QC only in WORLD/MAP (not amount / report / chat). */
@@ -467,6 +490,47 @@ public final class InputManager {
 
     public static boolean isActionReleased(Action action) {
         return mapper.isReleased(action);
+    }
+
+    // -------------------------------------------------------------------------
+    // Consumption API
+    // -------------------------------------------------------------------------
+
+    /**
+     * Mark a button as consumed (handled by UI/interface).
+     * Consumed buttons won't trigger world actions.
+     */
+    public static void consumeButton(int buttonId) {
+        if (currentFrame != null && buttonId >= 0 && buttonId < currentFrame.buttonConsumed.length) {
+            currentFrame.buttonConsumed[buttonId] = true;
+        }
+    }
+
+    /**
+     * Mark mouse click as consumed (interface click handled, don't walk).
+     */
+    public static void consumeMouseClick() {
+        consumeButton(InputButtons.MOUSE_CLICK);
+        consumeButton(InputButtons.MOUSE_BUTTON_1);
+        consumeButton(InputButtons.MOUSE_BUTTON_2);
+        consumeButton(InputButtons.MOUSE_BUTTON_3);
+    }
+
+    /**
+     * Check if a button has been consumed this frame.
+     */
+    public static boolean isButtonConsumed(int buttonId) {
+        if (currentFrame == null || buttonId < 0 || buttonId >= currentFrame.buttonConsumed.length) {
+            return false;
+        }
+        return currentFrame.buttonConsumed[buttonId];
+    }
+
+    /**
+     * Check if mouse click has been consumed (don't send world clicks).
+     */
+    public static boolean isMouseClickConsumed() {
+        return isButtonConsumed(InputButtons.MOUSE_CLICK);
     }
 
     public static ActionMapper getMapper() {
@@ -529,10 +593,12 @@ public final class InputManager {
      * @return true if the key is currently pressed
      */
     public static boolean isRawKeyPressed(int keyCode) {
-        if (keyCode < 0 || keyCode >= currentFrame.buttonDown.length) {
+        // Must check Keyboard.pressedKeys directly, NOT buttonDown array
+        // buttonDown is indexed by InputButtons constants, not raw key codes
+        if (rt4.Keyboard.pressedKeys == null || keyCode < 0 || keyCode >= rt4.Keyboard.pressedKeys.length) {
             return false;
         }
-        return currentFrame.buttonDown[keyCode];
+        return rt4.Keyboard.pressedKeys[keyCode];
     }
 
     public static KeyboardDevice getKeyboardDevice() {

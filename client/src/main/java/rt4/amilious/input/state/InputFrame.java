@@ -11,6 +11,7 @@ public final class InputFrame {
     public final boolean[] buttonDown;
     public final boolean[] buttonPressed;
     public final boolean[] buttonReleased;
+    public final boolean[] buttonConsumed;  // Consumed by UI/interface this frame
     public final float[] axes;
 
     // Mouse state (from MouseDevice)
@@ -30,6 +31,7 @@ public final class InputFrame {
         buttonDown = new boolean[buttonCount];
         buttonPressed = new boolean[buttonCount];
         buttonReleased = new boolean[buttonCount];
+        buttonConsumed = new boolean[buttonCount];
         axes = new float[axisCount];
     }
 
@@ -37,6 +39,7 @@ public final class InputFrame {
         Arrays.fill(buttonDown, false);
         Arrays.fill(buttonPressed, false);
         Arrays.fill(buttonReleased, false);
+        Arrays.fill(buttonConsumed, false);
         Arrays.fill(axes, 0f);
         mouseX = 0;
         mouseY = 0;

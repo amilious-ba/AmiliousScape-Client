@@ -149,6 +149,12 @@ public final class InputButtons {
     public static final int GP_DPAD_LEFT = 210;
     public static final int GP_DPAD_RIGHT = 211;
 
+    // Virtual buttons for analog stick directions (converted from axes)
+    public static final int GP_LSTICK_UP = 212;
+    public static final int GP_LSTICK_DOWN = 213;
+    public static final int GP_LSTICK_LEFT = 214;
+    public static final int GP_LSTICK_RIGHT = 215;
+
     // Total button count (must be large enough for all buttons)
     public static final int BUTTON_COUNT = 256;
 

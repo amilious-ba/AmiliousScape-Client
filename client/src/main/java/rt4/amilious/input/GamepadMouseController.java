@@ -68,12 +68,18 @@ public final class GamepadMouseController {
         // Skip only during text input modes (CHAT, SPECIAL_MODAL, CHATBOX_MODAL)
         // to avoid interference with typing
         if (mode == InputMode.CHAT || mode == InputMode.SPECIAL_MODAL || mode == InputMode.CHATBOX_MODAL) {
+            // Reset trigger states when disabled to prevent stuck buttons
+            wasLTPressed = false;
+            wasRTPressed = false;
             return;
         }
         // Active in: WORLD, MAP, MAIN_MENU (login screen)
 
         // GameShell.canvas might be null during initialization
         if (GameShell.canvas == null) {
+            // Reset trigger states when disabled
+            wasLTPressed = false;
+            wasRTPressed = false;
             return;
         }
 
@@ -130,8 +136,12 @@ public final class GamepadMouseController {
             lastMovementWasMouse = true;
         } else if (gamepadMovedThisFrame) {
             // Gamepad moved - apply movement and switch to gamepad mode
-            int deltaX = (int) (rightX * sensitivity);
-            int deltaY = (int) (rightY * sensitivity);
+            // Apply quadratic curve for better precision at low values
+            float curvedX = applyCurve(rightX);
+            float curvedY = applyCurve(rightY);
+            
+            int deltaX = (int) (curvedX * sensitivity);
+            int deltaY = (int) (curvedY * sensitivity);
 
             virtualX += deltaX;
             virtualY += deltaY;
@@ -174,6 +184,19 @@ public final class GamepadMouseController {
     }
 
     /**
+     * Apply quadratic curve to analog stick input for better precision.
+     * Small movements remain small, but large movements get amplified.
+     * @param value Raw stick input (-1.0 to 1.0)
+     * @return Curved value (-1.0 to 1.0)
+     */
+    private static float applyCurve(float value) {
+        // Preserve sign, apply quadratic curve to magnitude
+        float sign = value < 0 ? -1.0f : 1.0f;
+        float magnitude = Math.abs(value);
+        return sign * (magnitude * magnitude);
+    }
+
+    /**
      * Process LT/RT triggers for left/right clicking.
      */
     private static void processClicks(InputFrame frame) {
@@ -191,19 +214,15 @@ public final class GamepadMouseController {
 
         // RT = left click (primary action)
         if (rtPressed && !wasRTPressed) {
-            // Just pressed
             dispatchMousePress(virtualX, virtualY, MouseEvent.BUTTON1);
         } else if (!rtPressed && wasRTPressed) {
-            // Just released
             dispatchMouseRelease(virtualX, virtualY, MouseEvent.BUTTON1);
         }
 
         // LT = right click (secondary action)
         if (ltPressed && !wasLTPressed) {
-            // Just pressed
             dispatchMousePress(virtualX, virtualY, MouseEvent.BUTTON3);
         } else if (!ltPressed && wasLTPressed) {
-            // Just released
             dispatchMouseRelease(virtualX, virtualY, MouseEvent.BUTTON3);
         }
 

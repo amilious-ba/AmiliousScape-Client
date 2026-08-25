@@ -119,5 +119,50 @@ public enum Action {
     HOTKEY_9,
 
     /** Hotkey 0 (digit 0 in WORLD mode) */
-    HOTKEY_0
+    HOTKEY_0,
+
+    // ===== Menu Tab Selection (F-keys) =====
+    // Used for selecting main game interface tabs
+
+    /** Select Combat tab (F1) */
+    TAB_COMBAT,
+
+    /** Select Skills tab (F2) */
+    TAB_SKILLS,
+
+    /** Select Quest tab (F3) */
+    TAB_QUEST,
+
+    /** Select Inventory tab (F4) */
+    TAB_INVENTORY,
+
+    /** Select Equipment tab (F5) */
+    TAB_EQUIPMENT,
+
+    /** Select Prayer tab (F6) */
+    TAB_PRAYER,
+
+    /** Select Magic tab (F7) */
+    TAB_MAGIC,
+
+    /** Select Clan tab (F8) */
+    TAB_CLAN,
+
+    /** Select Friends tab (F9) */
+    TAB_FRIENDS,
+
+    /** Select Ignore tab (F10) */
+    TAB_IGNORE,
+
+    /** Select Logout tab (F11) */
+    TAB_LOGOUT,
+
+    /** Select Options tab (F12) */
+    TAB_OPTIONS,
+
+    /** Select Emotes tab */
+    TAB_EMOTES,
+
+    /** Select Music tab */
+    TAB_MUSIC
 }

@@ -652,7 +652,7 @@ public class InterfaceList {
 						if (!component.if3 && method947(component) && aClass13_22 != component) {
 							continue;
 						}
-						if (component.noClickThrough && Mouse.lastMouseX >= local61 && Mouse.lastMouseY >= local63 && Mouse.lastMouseX < local65 && Mouse.lastMouseY < local67) {
+						if (component.noClickThrough && rt4.amilious.input.InputManager.getCursorX() >= local61 && rt4.amilious.input.InputManager.getCursorY() >= local63 && rt4.amilious.input.InputManager.getCursorX() < local65 && rt4.amilious.input.InputManager.getCursorY() < local67) {
 							for (@Pc(164) HookRequest local164 = (HookRequest) lowPriorityRequests.head(); local164 != null; local164 = (HookRequest) lowPriorityRequests.next()) {
 								if (local164.aBoolean158) {
 									local164.unlink();
@@ -668,7 +668,7 @@ public class InterfaceList {
 					}
 					if (component.if3) {
 						@Pc(207) boolean local207;
-						local207 = Mouse.lastMouseX >= local61 && Mouse.lastMouseY >= local63 && Mouse.lastMouseX < local65 && Mouse.lastMouseY < local67;
+						local207 = rt4.amilious.input.InputManager.getCursorX() >= local61 && rt4.amilious.input.InputManager.getCursorY() >= local63 && rt4.amilious.input.InputManager.getCursorX() < local65 && rt4.amilious.input.InputManager.getCursorY() < local67;
 						@Pc(212) boolean local212 = Mouse.pressedButton == 1 && local207;
 						@Pc(221) boolean local221 = Mouse.clickButton == 1 && Mouse.clickX >= local61 && Mouse.clickY >= local63 && Mouse.clickX < local65 && Mouse.clickY < local67;
 						@Pc(243) int i;
@@ -698,6 +698,8 @@ public class InterfaceList {
 						}
 						if (local221) {
 							Cs1ScriptRunner.method1015(Mouse.clickY - local55, Mouse.clickX - local50, component);
+							// Consume click - interface handled it, don't send to world
+							rt4.amilious.input.InputManager.consumeMouseClick();
 						}
 						if (Cs1ScriptRunner.aClass13_14 != null && Cs1ScriptRunner.aClass13_14 != component && local207 && getServerActiveProperties(component).isDragTarget()) {
 							aClass13_12 = component;
@@ -731,8 +733,8 @@ public class InterfaceList {
 								}
 								if (component.clientCode == 1338) {
 									if (local221) {
-										anInt5 = Mouse.clickX - local50;
-										MiniMenu.anInt2878 = Mouse.clickY - local55;
+										anInt5 = rt4.amilious.input.InputManager.getLastClickX() - local50;
+										MiniMenu.anInt2878 = rt4.amilious.input.InputManager.getLastClickY() - local55;
 									}
 									continue;
 								}
@@ -740,8 +742,8 @@ public class InterfaceList {
 									WorldMap.component = component;
 									if (local221) {
 										if (rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL) && LoginManager.staffModLevel > 0) {
-											i = (int) ((double) (Mouse.clickX - local50 - component.width / 2) * 2.0D / (double) WorldMap.zoom);
-											skill = (int) ((double) (Mouse.clickY - local55 - component.height / 2) * 2.0D / (double) WorldMap.zoom);
+											i = (int) ((double) (rt4.amilious.input.InputManager.getLastClickX() - local50 - component.width / 2) * 2.0D / (double) WorldMap.zoom);
+											skill = (int) ((double) (rt4.amilious.input.InputManager.getLastClickY() - local55 - component.height / 2) * 2.0D / (double) WorldMap.zoom);
 											k = WorldMap.anInt435 + i;
 											@Pc(516) int local516 = WorldMap.anInt919 + skill;
 											@Pc(520) int local520 = k + WorldMap.originX;
@@ -751,19 +753,19 @@ public class InterfaceList {
 											continue;
 										}
 										anInt3337 = 1;
-										Cs1ScriptRunner.anInt5388 = Mouse.lastMouseX;
-										Cs1ScriptRunner.anInt4035 = Mouse.lastMouseY;
+										Cs1ScriptRunner.anInt5388 = rt4.amilious.input.InputManager.getCursorX();
+										Cs1ScriptRunner.anInt4035 = rt4.amilious.input.InputManager.getCursorY();
 										continue;
 									}
 									if (local212 && anInt3337 > 0) {
-										if (anInt3337 == 1 && (Cs1ScriptRunner.anInt5388 != Mouse.lastMouseX || Cs1ScriptRunner.anInt4035 != Mouse.lastMouseY)) {
+										if (anInt3337 == 1 && (Cs1ScriptRunner.anInt5388 != rt4.amilious.input.InputManager.getCursorX() || Cs1ScriptRunner.anInt4035 != rt4.amilious.input.InputManager.getCursorY())) {
 											anInt4620 = WorldMap.anInt435;
 											anInt1885 = WorldMap.anInt919;
 											anInt3337 = 2;
 										}
 										if (anInt3337 == 2) {
-											WorldMap.method1964(anInt4620 + (int) ((double) (Cs1ScriptRunner.anInt5388 - Mouse.lastMouseX) * 2.0D / (double) WorldMap.targetZoom));
-											WorldMap.method4641(anInt1885 + (int) ((double) (Cs1ScriptRunner.anInt4035 - Mouse.lastMouseY) * 2.0D / (double) WorldMap.targetZoom));
+											WorldMap.method1964(anInt4620 + (int) ((double) (Cs1ScriptRunner.anInt5388 - rt4.amilious.input.InputManager.getCursorX()) * 2.0D / (double) WorldMap.targetZoom));
+											WorldMap.method4641(anInt1885 + (int) ((double) (Cs1ScriptRunner.anInt4035 - rt4.amilious.input.InputManager.getCursorY()) * 2.0D / (double) WorldMap.targetZoom));
 										}
 										continue;
 									}
@@ -772,7 +774,7 @@ public class InterfaceList {
 								}
 								if (component.clientCode == 1401) {
 									if (local212) {
-										WorldMap.method2387(component.width, Mouse.lastMouseY - local55, Mouse.lastMouseX - local50, component.height);
+										WorldMap.method2387(component.width, rt4.amilious.input.InputManager.getCursorY() - local55, rt4.amilious.input.InputManager.getCursorX() - local50, component.height);
 									}
 									continue;
 								}
@@ -793,8 +795,8 @@ public class InterfaceList {
 									request = new HookRequest();
 									request.aBoolean158 = true;
 									request.source = component;
-									request.mouseX = Mouse.clickX - local50;
-									request.mouseY = Mouse.clickY - local55;
+									request.mouseX = rt4.amilious.input.InputManager.getLastClickX() - local50;
+									request.mouseY = rt4.amilious.input.InputManager.getLastClickY() - local55;
 									request.arguments = component.onClickRepeat;
 									lowPriorityRequests.addTail(request);
 								}
@@ -803,8 +805,8 @@ public class InterfaceList {
 								request = new HookRequest();
 								request.aBoolean158 = true;
 								request.source = component;
-								request.mouseX = Mouse.lastMouseX - local50;
-								request.mouseY = Mouse.lastMouseY - local55;
+								request.mouseX = rt4.amilious.input.InputManager.getCursorX() - local50;
+								request.mouseY = rt4.amilious.input.InputManager.getCursorY() - local55;
 								request.arguments = component.onDrag;
 								lowPriorityRequests.addTail(request);
 							}
@@ -814,8 +816,8 @@ public class InterfaceList {
 									request = new HookRequest();
 									request.aBoolean158 = true;
 									request.source = component;
-									request.mouseX = Mouse.lastMouseX - local50;
-									request.mouseY = Mouse.lastMouseY - local55;
+									request.mouseX = rt4.amilious.input.InputManager.getCursorX() - local50;
+									request.mouseY = rt4.amilious.input.InputManager.getCursorY() - local55;
 									request.arguments = component.onRelease;
 									mediumPriorityRequests.addTail(request);
 								}
@@ -824,8 +826,8 @@ public class InterfaceList {
 								request = new HookRequest();
 								request.aBoolean158 = true;
 								request.source = component;
-								request.mouseX = Mouse.lastMouseX - local50;
-								request.mouseY = Mouse.lastMouseY - local55;
+								request.mouseX = rt4.amilious.input.InputManager.getCursorX() - local50;
+								request.mouseY = rt4.amilious.input.InputManager.getCursorY() - local55;
 								request.arguments = component.onHold;
 								lowPriorityRequests.addTail(request);
 							}
@@ -835,8 +837,8 @@ public class InterfaceList {
 									request = new HookRequest();
 									request.aBoolean158 = true;
 									request.source = component;
-									request.mouseX = Mouse.lastMouseX - local50;
-									request.mouseY = Mouse.lastMouseY - local55;
+									request.mouseX = rt4.amilious.input.InputManager.getCursorX() - local50;
+									request.mouseY = rt4.amilious.input.InputManager.getCursorY() - local55;
 									request.arguments = component.onMouseOver;
 									lowPriorityRequests.addTail(request);
 								}
@@ -845,8 +847,8 @@ public class InterfaceList {
 								request = new HookRequest();
 								request.aBoolean158 = true;
 								request.source = component;
-								request.mouseX = Mouse.lastMouseX - local50;
-								request.mouseY = Mouse.lastMouseY - local55;
+								request.mouseX = rt4.amilious.input.InputManager.getCursorX() - local50;
+								request.mouseY = rt4.amilious.input.InputManager.getCursorY() - local55;
 								request.arguments = component.onMouseRepeat;
 								lowPriorityRequests.addTail(request);
 							}
@@ -856,8 +858,8 @@ public class InterfaceList {
 									request = new HookRequest();
 									request.aBoolean158 = true;
 									request.source = component;
-									request.mouseX = Mouse.lastMouseX - local50;
-									request.mouseY = Mouse.lastMouseY - local55;
+									request.mouseX = rt4.amilious.input.InputManager.getCursorX() - local50;
+									request.mouseY = rt4.amilious.input.InputManager.getCursorY() - local55;
 									request.arguments = component.onMouseLeave;
 									mediumPriorityRequests.addTail(request);
 								}
@@ -1039,18 +1041,18 @@ public class InterfaceList {
 						}
 					}
 					if (!component.if3 && Cs1ScriptRunner.aClass13_14 == null && clickedInventoryComponent == null && !Cs1ScriptRunner.aBoolean108) {
-						if ((component.anInt470 >= 0 || component.overColor != 0) && Mouse.lastMouseX >= local61 && Mouse.lastMouseY >= local63 && Mouse.lastMouseX < local65 && Mouse.lastMouseY < local67) {
+						if ((component.anInt470 >= 0 || component.overColor != 0) && rt4.amilious.input.InputManager.getCursorX() >= local61 && rt4.amilious.input.InputManager.getCursorY() >= local63 && rt4.amilious.input.InputManager.getCursorX() < local65 && rt4.amilious.input.InputManager.getCursorY() < local67) {
 							if (component.anInt470 >= 0) {
 								aClass13_22 = arg0[component.anInt470];
 							} else {
 								aClass13_22 = component;
 							}
 						}
-						if (component.type == 8 && Mouse.lastMouseX >= local61 && Mouse.lastMouseY >= local63 && Mouse.lastMouseX < local65 && Mouse.lastMouseY < local67) {
+						if (component.type == 8 && rt4.amilious.input.InputManager.getCursorX() >= local61 && rt4.amilious.input.InputManager.getCursorY() >= local63 && rt4.amilious.input.InputManager.getCursorX() < local65 && rt4.amilious.input.InputManager.getCursorY() < local67) {
 							Protocol.aClass13_11 = component;
 						}
 						if (component.scrollMaxV > component.height) {
-							method4049(Mouse.lastMouseY, component.height, component, Mouse.lastMouseX, local50 + component.width, local55, component.scrollMaxV);
+							method4049(rt4.amilious.input.InputManager.getCursorY(), component.height, component, rt4.amilious.input.InputManager.getCursorX(), local50 + component.width, local55, component.scrollMaxV);
 						}
 					}
 					if (component.type == 0) {

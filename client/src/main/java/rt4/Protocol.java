@@ -2541,7 +2541,7 @@ public class Protocol {
 					break;
 				}
 			}
-		} else if (Keyboard.pressedKeys[Keyboard.KEY_LEFT] || Keyboard.pressedKeys[Keyboard.KEY_RIGHT] || Keyboard.pressedKeys[Keyboard.KEY_UP] || Keyboard.pressedKeys[Keyboard.KEY_DOWN]) {
+		} else if (rt4.amilious.input.InputManager.isAnyCameraKeyDown()) {
 			aBoolean228 = true;
 		}
 		if (aBoolean228 && anInt551 <= 0) {
@@ -2843,7 +2843,7 @@ public class Protocol {
 											if (Cs1ScriptRunner.aClass13_14 != null) {
 												Cs1ScriptRunner.method28();
 											}
-											if (LoginManager.staffModLevel > 0 && Keyboard.pressedKeys[Keyboard.KEY_CTRL] && Keyboard.pressedKeys[Keyboard.KEY_SHIFT] && MouseWheel.wheelRotation != 0) {
+											if (LoginManager.staffModLevel > 0 && rt4.amilious.input.InputManager.isCheatTeleportModifierDown() && MouseWheel.wheelRotation != 0) {
 												y = Player.plane - MouseWheel.wheelRotation;
 												if (y < 0) {
 													y = 0;
@@ -2853,7 +2853,7 @@ public class Protocol {
 												// Cheat
 												Cheat.teleport(PlayerList.self.movementQueueX[0] + Camera.originX, PlayerList.self.movementQueueZ[0] + Camera.originZ, y);
 											}
-											if (LoginManager.staffModLevel > 0 && Keyboard.pressedKeys[Keyboard.KEY_CTRL] && Keyboard.pressedKeys[Keyboard.KEY_SHIFT]) {
+											if (LoginManager.staffModLevel > 0 && rt4.amilious.input.InputManager.isCheatTeleportModifierDown()) {
 												if (MiniMenu.anInt1742 != -1) {
 													Cheat.teleport(Camera.originX + MiniMenu.anInt1742, Camera.originZ - -MiniMenu.anInt2954, Player.plane);
 												}

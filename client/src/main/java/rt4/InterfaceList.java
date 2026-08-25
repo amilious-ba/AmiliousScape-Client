@@ -675,10 +675,10 @@ public class InterfaceList {
 						@Pc(322) int k;
 						if (component.aByteArray8 != null) {
 							for (i = 0; i < component.aByteArray8.length; i++) {
-								if (Keyboard.pressedKeys[component.aByteArray8[i]]) {
+								if (rt4.amilious.input.InputManager.isRawKeyPressed(component.aByteArray8[i])) {
 									if (component.anIntArray49 == null || client.loop >= component.anIntArray49[i]) {
 										@Pc(279) byte local279 = component.aByteArray7[i];
-										if (local279 == 0 || ((local279 & 0x2) == 0 || Keyboard.pressedKeys[Keyboard.KEY_ALT]) && ((local279 & 0x1) == 0 || Keyboard.pressedKeys[Keyboard.KEY_CTRL]) && ((local279 & 0x4) == 0 || Keyboard.pressedKeys[Keyboard.KEY_SHIFT])) {
+										if (local279 == 0 || ((local279 & 0x2) == 0 || rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_ALT)) && ((local279 & 0x1) == 0 || rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL)) && ((local279 & 0x4) == 0 || rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_SHIFT))) {
 											ClientProt.method4512(JagString.EMPTY, -1, i + 1, component.id);
 											k = component.anIntArray46[i];
 											if (component.anIntArray49 == null) {
@@ -739,7 +739,7 @@ public class InterfaceList {
 								if (component.clientCode == 1400) {
 									WorldMap.component = component;
 									if (local221) {
-										if (Keyboard.pressedKeys[Keyboard.KEY_CTRL] && LoginManager.staffModLevel > 0) {
+										if (rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL) && LoginManager.staffModLevel > 0) {
 											i = (int) ((double) (Mouse.clickX - local50 - component.width / 2) * 2.0D / (double) WorldMap.zoom);
 											skill = (int) ((double) (Mouse.clickY - local55 - component.height / 2) * 2.0D / (double) WorldMap.zoom);
 											k = WorldMap.anInt435 + i;

@@ -619,7 +619,7 @@ public class MiniMenu {
 			if (local36 == 0) {
 				method3556(Player.plane, local15, local19);
 			} else if (local36 == 1) {
-				if (LoginManager.staffModLevel > 0 && Keyboard.pressedKeys[Keyboard.KEY_CTRL] && Keyboard.pressedKeys[Keyboard.KEY_SHIFT]) {
+				if (LoginManager.staffModLevel > 0 && rt4.amilious.input.InputManager.isCheatTeleportModifierDown()) {
 					Cheat.teleport(Camera.originX + local15, Camera.originZ + local19, Player.plane);
 				} else if (PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 0, true, 0, local15, 0, 0, 1, local19, PlayerList.self.movementQueueX[0])) {
 					Protocol.outboundBuffer.p1(InterfaceList.anInt5);
@@ -1097,7 +1097,7 @@ public class MiniMenu {
 			if (local36 == 0) {
 				Protocol.anInt4422 = 1;
 				method3556(Player.plane, local15, local19);
-			} else if (LoginManager.staffModLevel > 0 && Keyboard.pressedKeys[Keyboard.KEY_CTRL] && Keyboard.pressedKeys[Keyboard.KEY_SHIFT]) {
+			} else if (LoginManager.staffModLevel > 0 && rt4.amilious.input.InputManager.isCheatTeleportModifierDown()) {
 				Cheat.teleport(local15 + Camera.originX, Camera.originZ - -local19, Player.plane);
 			} else {
 				Protocol.outboundBuffer.p1isaac(179);
@@ -1389,7 +1389,7 @@ public class MiniMenu {
 			local32 = JagString.concatenate(new JagString[]{LocalizedText.USE, LocalizedText.MINISEPARATOR, aClass100_203, aClass100_961});
 		} else if (aBoolean302 && size < 2) {
 			local32 = JagString.concatenate(new JagString[]{aClass100_545, LocalizedText.MINISEPARATOR, aClass100_466, aClass100_961});
-		} else if (Cheat.shiftClick && Keyboard.pressedKeys[Keyboard.KEY_SHIFT] && size > 2) {
+		} else if (Cheat.shiftClick && rt4.amilious.input.InputManager.isMenuAlternativeActionDown() && size > 2) {
 			local32 = getOp(size - 2);
 		} else {
 			local32 = getOp(size - 1);
@@ -1674,7 +1674,7 @@ public class MiniMenu {
 		if (anInt3953 == 2) {
 			if (ScriptRunner.anInt3751 == Mouse.anInt5850 && ScriptRunner.anInt1892 == Mouse.anInt5895) {
 				anInt3953 = 0;
-				if (Cheat.shiftClick && Keyboard.pressedKeys[Keyboard.KEY_SHIFT] && size > 2) {
+				if (Cheat.shiftClick && rt4.amilious.input.InputManager.isMenuAlternativeActionDown() && size > 2) {
 					doAction(size - 2);
 				} else {
 					doAction(size - 1);
@@ -1682,7 +1682,7 @@ public class MiniMenu {
 			}
 		} else if (ScriptRunner.anInt3751 == Mouse.clickX && ScriptRunner.anInt1892 == Mouse.clickY) {
 			anInt3953 = 0;
-			if (Cheat.shiftClick && Keyboard.pressedKeys[Keyboard.KEY_SHIFT] && size > 2) {
+			if (Cheat.shiftClick && rt4.amilious.input.InputManager.isMenuAlternativeActionDown() && size > 2) {
 				doAction(size - 2);
 			} else {
 				doAction(size - 1);

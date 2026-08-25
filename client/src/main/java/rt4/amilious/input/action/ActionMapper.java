@@ -58,6 +58,14 @@ public final class ActionMapper {
         bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.A, InputMode.WORLD);
         bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.D, InputMode.WORLD);
 
+        // Modifier keys (no mode filter - work everywhere)
+        bind(Action.MODIFIER_CTRL, rt4.amilious.input.state.InputButtons.KB_CTRL);
+        bind(Action.MODIFIER_ALT, rt4.amilious.input.state.InputButtons.KB_ALT);
+        bind(Action.MODIFIER_SHIFT, rt4.amilious.input.state.InputButtons.KB_SHIFT);
+
+        // Menu alternative action (WORLD only - shift-click)
+        bind(Action.MENU_ALTERNATIVE_ACTION, rt4.amilious.input.state.InputButtons.KB_SHIFT, InputMode.WORLD);
+
         // Digit hotkeys (WORLD)
         bind(Action.HOTKEY_1, rt4.amilious.input.state.InputButtons.DIGIT_1, InputMode.WORLD);
         bind(Action.HOTKEY_2, rt4.amilious.input.state.InputButtons.DIGIT_2, InputMode.WORLD);

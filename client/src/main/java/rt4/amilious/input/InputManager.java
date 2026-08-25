@@ -103,10 +103,16 @@ public final class InputManager {
         consumeEnterThisFrame = false;
         submittedThisFrame = false;
 
+        // IMPORTANT: We swap previous/current frames BEFORE clearing.
+        // This keeps currentFrame valid throughout the entire game loop,
+        // including event handlers that fire AFTER tick() completes.
+        // We only clear current when we're about to poll fresh data.
         previousFrame.copyDownFrom(currentFrame);
-        currentFrame.clear();
 
         if (pollDevices) {
+            // Clear current frame JUST before polling new data
+            currentFrame.clear();
+
             for (int i = 0; i < devices.size(); i++) {
                 InputDevice d = devices.get(i);
                 if (d.isConnected()) {
@@ -466,6 +472,64 @@ public final class InputManager {
 
     public static InputFrame getCurrentFrame() {
         return currentFrame;
+    }
+
+    // ===== Convenience Methods for Common Patterns =====
+
+    /**
+     * Check if Ctrl+Shift are both held (for staff teleport cheats).
+     * This is a composite check - both MODIFIER_CTRL and MODIFIER_SHIFT must be down.
+     *
+     * Only functional when LoginManager.staffModLevel > 0.
+     *
+     * Usage locations:
+     * - Protocol.java:2846 (mouse wheel plane change)
+     * - Protocol.java:2856 (click teleport)
+     * - MiniMenu.java:622 (walk-here teleport)
+     * - MiniMenu.java:1100 (examine teleport)
+     *
+     * Replaces: Keyboard.pressedKeys[KEY_CTRL] && Keyboard.pressedKeys[KEY_SHIFT]
+     */
+    public static boolean isCheatTeleportModifierDown() {
+        return isActionDown(Action.MODIFIER_CTRL) && isActionDown(Action.MODIFIER_SHIFT);
+    }
+
+    /**
+     * Check if Shift is held (for alternative menu actions).
+     *
+     * Replaces: Keyboard.pressedKeys[KEY_SHIFT]
+     */
+    public static boolean isMenuAlternativeActionDown() {
+        // Use MENU_ALTERNATIVE_ACTION which is bound to Shift in WORLD mode.
+        // For compatibility with non-WORLD modes where modifier keys should still work,
+        // we check the raw MODIFIER_SHIFT action which has no mode filter.
+        return isActionDown(Action.MODIFIER_SHIFT);
+    }
+
+    /**
+     * Check if any camera arrow key is pressed.
+     * Replaces: Keyboard.pressedKeys[KEY_LEFT] || Keyboard.pressedKeys[KEY_RIGHT] || ...
+     */
+    public static boolean isAnyCameraKeyDown() {
+        return isActionDown(Action.CAMERA_UP) ||
+               isActionDown(Action.CAMERA_DOWN) ||
+               isActionDown(Action.CAMERA_LEFT) ||
+               isActionDown(Action.CAMERA_RIGHT);
+    }
+
+    /**
+     * Check if a raw key code is pressed (for interface hotkeys).
+     * This is a direct pass-through to the current input frame for interface components
+     * that have custom key bindings stored in their data.
+     *
+     * @param keyCode Keyboard key code from Keyboard.CODE_MAP
+     * @return true if the key is currently pressed
+     */
+    public static boolean isRawKeyPressed(int keyCode) {
+        if (keyCode < 0 || keyCode >= currentFrame.buttonDown.length) {
+            return false;
+        }
+        return currentFrame.buttonDown[keyCode];
     }
 
     public static KeyboardDevice getKeyboardDevice() {

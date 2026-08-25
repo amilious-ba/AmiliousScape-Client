@@ -1507,7 +1507,7 @@ public class LoginManager {
 
 	@OriginalMember(owner = "client!tb", name = "h", descriptor = "(I)I")
 	public static int method4044() {
-		return Cheat.shiftClick && Keyboard.pressedKeys[Keyboard.KEY_SHIFT] && MiniMenu.size > 2 ? MiniMenu.cursors[MiniMenu.size - 2] : MiniMenu.cursors[MiniMenu.size - 1];
+		return Cheat.shiftClick && rt4.amilious.input.InputManager.isMenuAlternativeActionDown() && MiniMenu.size > 2 ? MiniMenu.cursors[MiniMenu.size - 2] : MiniMenu.cursors[MiniMenu.size - 1];
 	}
 
 	@OriginalMember(owner = "client!gn", name = "a", descriptor = "(ZI)V")

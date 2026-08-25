@@ -34,13 +34,23 @@ public class BotInputDevice implements InputDevice {
 
     @Override
     public void poll(InputFrame out) {
-        // Copy all simulated button states into the output frame
-        System.arraycopy(simulatedButtons, 0, out.buttonDown, 0, InputButtons.BUTTON_COUNT);
+        // IMPORTANT: OR our simulated buttons with existing frame data.
+        // Don't use System.arraycopy() as it overwrites real keyboard/mouse input!
+        // Multiple devices contribute to the same frame, so we merge inputs.
+        for (int i = 0; i < InputButtons.BUTTON_COUNT && i < simulatedButtons.length; i++) {
+            if (simulatedButtons[i]) {
+                out.buttonDown[i] = true;
+            }
+        }
 
-        // Override mouse position and wheel
-        out.mouseX = mouseX;
-        out.mouseY = mouseY;
-        out.mouseWheel = mouseWheel;
+        // Only override mouse if we have non-zero values (bot is actively controlling mouse)
+        if (mouseX != 0 || mouseY != 0) {
+            out.mouseX = mouseX;
+            out.mouseY = mouseY;
+        }
+        if (mouseWheel != 0) {
+            out.mouseWheel = mouseWheel;
+        }
     }
 
     // ===== Button Control =====

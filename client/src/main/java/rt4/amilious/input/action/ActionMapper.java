@@ -42,11 +42,17 @@ public final class ActionMapper {
     public void installDefaultKeyboardBindings() {
         clearBindings();
 
+        // Map toggle
+        bind(Action.TOGGLE_MAP, rt4.amilious.input.state.InputButtons.KB_M, InputMode.WORLD);
+        bind(Action.TOGGLE_MAP, rt4.amilious.input.state.InputButtons.GP_BACK);           // Select — any mode so it can close while MAP
+
         // Chat / system — mode filtered where it matters
         bind(Action.OPEN_CHAT, rt4.amilious.input.state.InputButtons.ENTER, InputMode.WORLD);
         bind(Action.SUBMIT_CHAT, rt4.amilious.input.state.InputButtons.ENTER, InputMode.CHAT);
         bind(Action.CLOSE_CHAT, rt4.amilious.input.state.InputButtons.ESCAPE, InputMode.CHAT);
+        bind(Action.CLOSE_CHAT, rt4.amilious.input.state.InputButtons.GP_B, InputMode.CHAT);
         bind(Action.ESCAPE, rt4.amilious.input.state.InputButtons.ESCAPE);
+        bind(Action.ESCAPE, rt4.amilious.input.state.InputButtons.GP_B);
 
         // Optional key-camera (WORLD only)
         bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.UP, InputMode.WORLD);

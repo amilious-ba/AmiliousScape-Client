@@ -96,6 +96,7 @@ public final class AmiliousClient {
             ModalController.tick();
         }
         InputManager.tick();
+        InputController.pollSystemActions();  //maybe move to the inputmanager
         InputController.pollCommandBinds(); // AFTER InputManager.tick() so Actions are ready
         ModalTools.update();
         MapController.tickInput();

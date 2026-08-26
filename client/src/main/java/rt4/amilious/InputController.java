@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 public final class InputController {
 
     private static final KeyAdapter LISTENER = new KeyAdapter() {
+
         @Override
         public void keyPressed(KeyEvent e) {
             if(e.getKeyCode() == KeyEvent.VK_END) TouchKeyboard.show(true);
@@ -25,20 +26,10 @@ public final class InputController {
                     if (MapController.isOpen()) MapController.zoomIn();
                     else MenuTabCycle.next();
                     return;
-                case KeyEvent.VK_INSERT:
-                    MapController.toggle();
-                    return;
                 case KeyEvent.VK_HOME:
                     RunToggler.toggle();
                     return;
-                case KeyEvent.VK_ESCAPE:
-                    if (MapController.isOpen()) //close map
-                        MapController.close();
-                    else if(ModalTools.hasModalOpen()) //close modal
-                        ModalTools.closeOpenModalNextUpdate();
-                    else //open the close game window
-                        ClientProt.method4512(JagString.EMPTY, -1, 1, 48889868);
-                    return;
+
             }
         }
     };
@@ -80,6 +71,29 @@ public final class InputController {
             CommandBinds.run(9);
         }
     }
+
+
+    public static void pollSystemActions() {
+        if (client.gameState != 30) return;
+
+        if (InputManager.isActionPressed(Action.TOGGLE_MAP)) {
+            MapController.toggle();
+            return;
+        }
+
+        if (InputManager.isActionPressed(Action.ESCAPE)) {
+            if (MapController.isOpen()) {
+                MapController.close();
+            } else if (ModalTools.hasModalOpen()) {
+                ModalTools.closeOpenModalNextUpdate();
+            } else if (InputManager.isChatMode()) {
+                InputManager.enterWorldMode(); // or leave to processChatArming
+            } else {
+                ClientProt.method4512(JagString.EMPTY, -1, 1, 48889868);
+            }
+        }
+    }
+
 
     public static void register() {
         if (GameShell.canvas == null) {

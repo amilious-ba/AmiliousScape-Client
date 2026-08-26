@@ -7,6 +7,10 @@ package rt4.amilious.input.action;
  * No MOVE_* — RuneScape is click-to-walk. Camera is primarily mouse.
  */
 public enum Action {
+
+    TOGGLE_MAP,
+
+
     // ===== Chat =====
 
     /** Open chat input (Enter in WORLD mode) */

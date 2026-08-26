@@ -157,6 +157,19 @@ public final class InputManager {
         }
 
         applyMode(deriveMode());
+
+        // Only inject when this A-press should act like Enter *in* a text context —
+        // NOT when it was the WORLD → CHAT arm (consumeEnterThisFrame is set then).
+        if (processModeKeys && currentFrame.buttonPressed[InputButtons.GP_A]) {
+            if (client.gameState != 30) {
+                // Login / pre-game: A = Enter (submit username/password)
+                pendingInjectEnter = true;
+            } else if (!consumeEnterThisFrame && shouldAcceptTextInput()) {
+                // In-game text contexts only — not the WORLD→CHAT arm (avoids QC)
+                pendingInjectEnter = true;
+            }
+        }
+
         mapper.update(currentFrame, mode);
 
         rt4.amilious.InputController.pollSystemActions();
@@ -484,6 +497,9 @@ public final class InputManager {
     public static boolean shouldBlockQuickChat() {
         if (!InputConfig.INSTANCE.enabled) {
             return false;
+        }
+        if (client.gameState != 30) {
+            return false; // login / create account need Enter
         }
         if (!InputConfig.INSTANCE.allowQuickChatOnEmptyEnter) {
             return true;

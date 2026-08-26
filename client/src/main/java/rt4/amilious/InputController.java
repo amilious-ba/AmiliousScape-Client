@@ -25,11 +25,6 @@ public final class InputController {
                 case KeyEvent.VK_PAGE_DOWN:
                     if (MapController.isOpen()) MapController.zoomIn();
                     else MenuTabCycle.next();
-                    return;
-                case KeyEvent.VK_HOME:
-                    RunToggler.toggle();
-                    return;
-
             }
         }
     };

@@ -47,7 +47,7 @@ public final class ActionMapper {
         bind(Action.TOGGLE_MAP, rt4.amilious.input.state.InputButtons.GP_BACK);           // Select — any mode so it can close while MAP
 
         // Run
-        bind(Action.TOGGLE_RUN, rt4.amilious.input.state.InputButtons.GP_LB, InputMode.WORLD);
+        bind(Action.TOGGLE_RUN, rt4.amilious.input.state.InputButtons.GP_L3, InputMode.WORLD);
 
         // Chat / system — mode filtered where it matters
         bind(Action.OPEN_CHAT, rt4.amilious.input.state.InputButtons.ENTER, InputMode.WORLD);

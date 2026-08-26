@@ -1060,6 +1060,19 @@ public final class client extends GameShell {
 			InterfaceList.keyChars[InterfaceList.keyQueueSize] = Keyboard.keyChar;
 		}
 
+		// GP_A → Enter on login / create account screens
+		if (rt4.amilious.input.InputManager.consumePendingInjectEnter()
+				&& InterfaceList.keyQueueSize < 128) {
+			InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.KEY_ENTER;
+			InterfaceList.keyChars[InterfaceList.keyQueueSize] = -1;
+			InterfaceList.keyQueueSize++;
+			if (InterfaceList.keyQueueSize < 128) {
+				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = -1;
+				InterfaceList.keyChars[InterfaceList.keyQueueSize] = 10;
+				InterfaceList.keyQueueSize++;
+			}
+		}
+
 		Protocol.sceneDelta++;
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method1320(0, 0, 0, GameShell.canvasWidth, InterfaceList.topLevelInterface, 0, GameShell.canvasHeight);

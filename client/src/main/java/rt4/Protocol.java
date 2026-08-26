@@ -3634,7 +3634,11 @@ public class Protocol {
 		if (local20 != 1) {
 			local93 = rt4.amilious.input.InputManager.getCursorY();
 			local204 = rt4.amilious.input.InputManager.getCursorX();
-			if (local204 < InterfaceList.anInt4271 - 10 || local204 > InterfaceList.anInt761 + InterfaceList.anInt4271 + 10 || InterfaceList.anInt5138 - 10 > local93 || local93 > InterfaceList.anInt436 + InterfaceList.anInt5138 + 10) {
+			if (!rt4.amilious.MiniMenuDrawer.enabled
+					&& (local204 < InterfaceList.anInt4271 - 10
+					|| local204 > InterfaceList.anInt761 + InterfaceList.anInt4271 + 10
+					|| InterfaceList.anInt5138 - 10 > local93
+					|| local93 > InterfaceList.anInt436 + InterfaceList.anInt5138 + 10)) {
 				Cs1ScriptRunner.aBoolean108 = false;
 				InterfaceList.redrawScreen(InterfaceList.anInt4271, InterfaceList.anInt761, InterfaceList.anInt5138, InterfaceList.anInt436);
 			}

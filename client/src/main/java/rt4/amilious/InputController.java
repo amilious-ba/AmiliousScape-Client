@@ -3,10 +3,10 @@ package rt4.amilious;
 import rt4.*;
 import rt4.amilious.input.GamepadMouseController;
 import rt4.amilious.input.InputManager;
+import rt4.amilious.input.RunToggler;
+import rt4.amilious.input.TouchKeyboard;
 import rt4.amilious.input.action.Action;
-
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import rt4.amilious.menutab.MenuTabCycle;
 
 public final class InputController {
 

@@ -1,4 +1,4 @@
-package rt4.amilious;
+package rt4.amilious.input;
 
 import java.io.File;
 import java.util.Locale;

@@ -42,6 +42,17 @@ public final class ActionMapper {
     public void installDefaultKeyboardBindings() {
         clearBindings();
 
+        //Mini Menu Control
+        bind(Action.MENU_UP, rt4.amilious.input.state.InputButtons.UP, InputMode.MINI_MENU);
+        bind(Action.MENU_DOWN, rt4.amilious.input.state.InputButtons.DOWN, InputMode.MINI_MENU);
+        bind(Action.MENU_CONFIRM, rt4.amilious.input.state.InputButtons.ENTER, InputMode.MINI_MENU);
+        bind(Action.MENU_CANCEL, rt4.amilious.input.state.InputButtons.ESCAPE, InputMode.MINI_MENU);
+
+        bind(Action.MENU_UP, rt4.amilious.input.state.InputButtons.GP_DPAD_UP, InputMode.MINI_MENU);
+        bind(Action.MENU_DOWN, rt4.amilious.input.state.InputButtons.GP_DPAD_DOWN, InputMode.MINI_MENU);
+        bind(Action.MENU_CONFIRM, rt4.amilious.input.state.InputButtons.GP_A, InputMode.MINI_MENU);
+        bind(Action.MENU_CANCEL, rt4.amilious.input.state.InputButtons.GP_B, InputMode.MINI_MENU);
+
         // Map toggle
         bind(Action.TOGGLE_MAP, rt4.amilious.input.state.InputButtons.KB_M, InputMode.WORLD);
         bind(Action.TOGGLE_MAP, rt4.amilious.input.state.InputButtons.GP_BACK);           // Select — any mode so it can close while MAP

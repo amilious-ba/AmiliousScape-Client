@@ -4,12 +4,11 @@ import rt4.*;
 import java.util.ArrayList;
 import plugin.PluginRepository;
 import rt4.amilious.Commands.DumpNames_Command;
+import rt4.amilious.menutab.MenuTab;
 import rt4.amilious.voice.ChatHeadReader;
 import rt4.amilious.input.InputManager;
 import rt4.amilious.Commands.Bind_Command;
 import rt4.amilious.Commands.ICommand;
-import rt4.amilious.voice.NarratorReader;
-import rt4.amilious.voice.TutorialGuideReader;
 import rt4.amilious.voice.Voiceover;
 
 /**

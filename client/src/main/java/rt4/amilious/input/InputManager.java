@@ -171,6 +171,7 @@ public final class InputManager {
         }
 
         mapper.update(currentFrame, mode);
+        pollMiniMenuActions();
 
         rt4.amilious.InputController.pollSystemActions();
         rt4.amilious.InputController.pollCommandBinds();
@@ -352,7 +353,8 @@ public final class InputManager {
         if (client.gameState != 30
                 || MapController.isOpen()
                 || SpecialModalRegistry.isActive()
-                || ChatBoxModalRegistry.isActive()) {
+                || ChatBoxModalRegistry.isActive()
+                || (rt4.amilious.MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108)) {
             chatArmed = false;
             disarmChatIfNoSubmit = false;
             submittedSinceArmEnter = false;
@@ -397,6 +399,11 @@ public final class InputManager {
         if (MapController.isOpen()) {
             chatArmed = false;
             return InputMode.MAP;
+        }
+
+        if (rt4.amilious.MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108) {
+            chatArmed = false;
+            return InputMode.MINI_MENU;
         }
 
         if (SpecialModalRegistry.isActive()) {
@@ -446,6 +453,10 @@ public final class InputManager {
 
     public static boolean isMapMode() {
         return getMode() == InputMode.MAP;
+    }
+
+    public static boolean isMiniMenuMode() {
+        return getMode() == InputMode.MINI_MENU;
     }
 
     public static boolean isMainMenuMode() {
@@ -724,11 +735,35 @@ public final class InputManager {
         if (ChatBoxModalRegistry.isActive()) {
             return;
         }
+        if (rt4.amilious.MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108) {
+            return;
+        }
         if (InputConfig.INSTANCE.forceWorldWhenChatHidden && ChatboxState.isCollapsed()) {
             return;
         }
         chatArmed = true;
         applyMode(deriveMode());
+    }
+
+    private static void pollMiniMenuActions() {
+        if (mode != InputMode.MINI_MENU) {
+            return;
+        }
+        if (!rt4.amilious.MiniMenuDrawer.enabled) {
+            return;
+        }
+        if (mapper.isPressed(Action.MENU_UP)) {
+            rt4.amilious.MiniMenuDrawer.moveUp();
+        }
+        if (mapper.isPressed(Action.MENU_DOWN)) {
+            rt4.amilious.MiniMenuDrawer.moveDown();
+        }
+        if (mapper.isPressed(Action.MENU_CONFIRM)) {
+            rt4.amilious.MiniMenuDrawer.confirm();
+        }
+        if (mapper.isPressed(Action.MENU_CANCEL)) {
+            rt4.amilious.MiniMenuDrawer.cancel();
+        }
     }
 
     public static void enterWorldMode() {

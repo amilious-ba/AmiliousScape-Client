@@ -1453,13 +1453,10 @@ public class LoginManager {
 		}
 		MiniMenu.sort();
 		if (Cs1ScriptRunner.aBoolean108) {
-			// right-click menu open — same gate as vanilla drawA/drawB
 			rt4.amilious.MiniMenuDrawer.onOpenFrame();
 			if (rt4.amilious.MiniMenuDrawer.enabled) {
 				rt4.amilious.MiniMenuDrawer.draw();
-			}
-			//draw new and old to see both
-			if (InterfaceList.aBoolean298) {
+			} else if (InterfaceList.aBoolean298) {
 				MiniMenu.drawB();
 			} else {
 				MiniMenu.drawA();

@@ -18,6 +18,12 @@ public enum Action {
     CHEAT_TELEPORT,
 
 
+    MENU_UP,
+    MENU_DOWN,
+    MENU_CONFIRM,
+    MENU_CANCEL,
+
+
     // ===== Chat =====
 
     /** Open chat input (Enter in WORLD mode) */

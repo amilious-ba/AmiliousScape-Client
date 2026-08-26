@@ -155,6 +155,10 @@ public final class InputButtons {
     public static final int GP_LSTICK_LEFT = 214;
     public static final int GP_LSTICK_RIGHT = 215;
 
+    //analog stick click
+    public static final int GP_L3 = 216;
+    public static final int GP_R3 = 217;
+
     // Total button count (must be large enough for all buttons)
     public static final int BUTTON_COUNT = 256;
 

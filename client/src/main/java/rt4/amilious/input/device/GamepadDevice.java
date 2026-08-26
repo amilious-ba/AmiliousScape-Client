@@ -134,6 +134,8 @@ public final class GamepadDevice implements InputDevice {
         pollButton(out, InputButtons.GP_RB, 5);
         pollButton(out, InputButtons.GP_BACK, 6);
         pollButton(out, InputButtons.GP_START, 7);
+        pollButton(out, InputButtons.GP_L3, 8);
+        pollButton(out, InputButtons.GP_R3, 9);
         pollButton(out, InputButtons.GP_DPAD_UP, 10);
         pollButton(out, InputButtons.GP_DPAD_DOWN, 11);
         pollButton(out, InputButtons.GP_DPAD_LEFT, 12);

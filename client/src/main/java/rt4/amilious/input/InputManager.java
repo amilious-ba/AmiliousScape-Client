@@ -56,6 +56,7 @@ public final class InputManager {
 
     private static boolean consumeEnterThisFrame;
     private static boolean submittedThisFrame;
+    private static boolean pendingInjectEnter;
 
     private static boolean pollDevices = false;
     private static boolean processModeKeys = false;
@@ -104,6 +105,7 @@ public final class InputManager {
         }
 
         consumeEnterThisFrame = false;
+        pendingInjectEnter = false;
         submittedThisFrame = false;
 
         // IMPORTANT: We swap previous/current frames BEFORE clearing.
@@ -139,9 +141,16 @@ public final class InputManager {
         GamepadMouseController.tick(currentFrame, mode);
 
         if (processModeKeys) {
-            boolean enterDown = currentFrame.buttonDown[InputButtons.ENTER];
-            boolean escapeDown = currentFrame.buttonDown[InputButtons.ESCAPE];
+            boolean enterDown = currentFrame.buttonDown[InputButtons.ENTER]
+                    || currentFrame.buttonDown[InputButtons.GP_A];
+            boolean escapeDown = currentFrame.buttonDown[InputButtons.ESCAPE]
+                    || currentFrame.buttonDown[InputButtons.GP_B];
             processChatArming(enterDown, escapeDown);
+
+            // GP_A edge → same as physical Enter for CS2 key queue (chat/modals)
+            if (currentFrame.buttonPressed[InputButtons.GP_A]) {
+                pendingInjectEnter = true;
+            }
         } else {
             prevEnter = false;
             prevEscape = false;
@@ -149,6 +158,9 @@ public final class InputManager {
 
         applyMode(deriveMode());
         mapper.update(currentFrame, mode);
+
+        rt4.amilious.InputController.pollSystemActions();
+        rt4.amilious.InputController.pollCommandBinds();
     }
 
     public static void beginFrame(boolean enterDown, boolean escapeDown) {
@@ -815,4 +827,14 @@ public final class InputManager {
         }
         return currentFrame.buttonReleased[button];
     }
+
+    /** Protocol key drain: if true, push Enter into keyQueue once. */
+    public static boolean consumePendingInjectEnter() {
+        if (!pendingInjectEnter) {
+            return false;
+        }
+        pendingInjectEnter = false;
+        return true;
+    }
+
 }

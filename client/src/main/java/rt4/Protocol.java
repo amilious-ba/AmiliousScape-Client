@@ -2817,6 +2817,20 @@ public class Protocol {
 			}
 		}
 
+		// GP_A / synthetic Enter (chat + text modals)
+		if (acceptKeys
+				&& rt4.amilious.input.InputManager.consumePendingInjectEnter()
+				&& InterfaceList.keyQueueSize < 128) {
+			InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.KEY_ENTER;
+			InterfaceList.keyChars[InterfaceList.keyQueueSize] = -1;
+			InterfaceList.keyQueueSize++;
+			if (InterfaceList.keyQueueSize < 128) {
+				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = -1;
+				InterfaceList.keyChars[InterfaceList.keyQueueSize] = 10;
+				InterfaceList.keyQueueSize++;
+			}
+		}
+
 
 		// Update chat focus state AFTER keyboard processing (only in-game)
 		if (client.gameState == 30) {

@@ -81,6 +81,11 @@ public final class InputController {
             return;
         }
 
+        if (InputManager.isActionPressed(Action.TOGGLE_RUN)) {
+            RunToggler.toggle();
+            return;
+        }
+
         if (InputManager.isActionPressed(Action.ESCAPE)) {
             if (MapController.isOpen()) {
                 MapController.close();

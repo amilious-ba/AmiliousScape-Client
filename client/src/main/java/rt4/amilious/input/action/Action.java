@@ -9,6 +9,7 @@ package rt4.amilious.input.action;
 public enum Action {
 
     TOGGLE_MAP,
+    TOGGLE_RUN,
 
 
     // ===== Chat =====

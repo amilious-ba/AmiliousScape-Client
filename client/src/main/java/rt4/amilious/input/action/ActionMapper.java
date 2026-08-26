@@ -130,6 +130,13 @@ public final class ActionMapper {
         bind(Action.HOTKEY_9, rt4.amilious.input.state.InputButtons.DIGIT_9, InputMode.WORLD);
         bind(Action.HOTKEY_0, rt4.amilious.input.state.InputButtons.DIGIT_0, InputMode.WORLD);
 
+        // Staff teleport hold (any in-game mode is fine; gate is staffModLevel in Protocol/MiniMenu)
+        bind(Action.CHEAT_TELEPORT, rt4.amilious.input.state.InputButtons.GP_R3);
+
+        // Face buttons → hotkeys
+        bind(Action.HOTKEY_4, rt4.amilious.input.state.InputButtons.GP_X, InputMode.WORLD);
+        bind(Action.HOTKEY_5, rt4.amilious.input.state.InputButtons.GP_Y, InputMode.WORLD);
+
         // D-pad → hotkeys 1–3
         bind(Action.HOTKEY_1, rt4.amilious.input.state.InputButtons.GP_DPAD_LEFT, InputMode.WORLD);
         bind(Action.HOTKEY_2, rt4.amilious.input.state.InputButtons.GP_DPAD_DOWN, InputMode.WORLD);

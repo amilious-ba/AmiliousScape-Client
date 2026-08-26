@@ -1,6 +1,7 @@
 package rt4.amilious;
 
 import rt4.*;
+import rt4.amilious.input.GamepadMouseController;
 import rt4.amilious.input.InputManager;
 import rt4.amilious.input.action.Action;
 
@@ -53,6 +54,10 @@ public final class InputController {
         // Touch keyboard can work on login too
         if (InputManager.isActionPressed(Action.TOUCH_KEYBOARD)) {
             TouchKeyboard.show(true);
+        }
+
+        if(LoginManager.staffModLevel > 0  && InputManager.isActionPressed(Action.CHEAT_TELEPORT)) {
+            GamepadMouseController.syntheticLeftClick();
         }
 
         if (client.gameState != 30) {

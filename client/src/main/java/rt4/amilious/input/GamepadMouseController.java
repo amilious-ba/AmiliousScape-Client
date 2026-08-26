@@ -57,27 +57,73 @@ public final class GamepadMouseController {
      * Process gamepad input and generate mouse events.
      * Call this every frame from InputManager.tick() AFTER device polling.
      *
-     * @param frame Current input frame with gamepad axis data
-     * @param mode Current input mode
+     * Priority:
+     *   - Physical mouse move → system cursor
+     *   - Gamepad stick (or still in gamepad mode after stick stops) → blank cursor + crosshair
+     *   - Synthetic moves from this controller must NOT look like physical mouse
      */
     public static void tick(InputFrame frame, InputMode mode) {
         if (!enabled) {
             return;
         }
-
-        // GameShell.canvas might be null during initialization
         if (GameShell.canvas == null) {
             return;
         }
 
-        // Check if we're in a text input mode
         boolean textMode = mode == InputMode.CHAT
                 || mode == InputMode.SPECIAL_MODAL
                 || mode == InputMode.CHATBOX_MODAL;
 
-        // Always keep virtual cursor aligned with real mouse (FIX: don't freeze cursor in modals)
-        // This ensures menu building + hover detection work correctly even in text modes
-        if (!ignorePhysicalMouse && frame != null) {
+        // Right stick
+        float rightX = 0.0f;
+        float rightY = 0.0f;
+        if (frame != null && frame.axes != null && frame.axes.length > InputButtons.AXIS_RIGHT_Y) {
+            rightX = frame.axes[InputButtons.AXIS_RIGHT_X];
+            rightY = frame.axes[InputButtons.AXIS_RIGHT_Y];
+        }
+
+        float gamepadDeadzone = 0.15f;
+        boolean gamepadMovedThisFrame =
+                Math.abs(rightX) > gamepadDeadzone || Math.abs(rightY) > gamepadDeadzone;
+
+        boolean botMovedThisFrame = false;
+        if (ignorePhysicalMouse && frame != null && (frame.mouseX > 0 || frame.mouseY > 0)) {
+            if (frame.mouseX != lastMouseX || frame.mouseY != lastMouseY) {
+                botMovedThisFrame = true;
+            }
+        }
+
+        // --- Stick / bot first (gamepad priority) ---
+        if (gamepadMovedThisFrame) {
+            float curvedX = applyCurve(rightX);
+            float curvedY = applyCurve(rightY);
+
+            virtualX += (int) (curvedX * sensitivity);
+            virtualY += (int) (curvedY * sensitivity);
+
+            int canvasWidth = Math.max(1, GameShell.canvasWidth);
+            int canvasHeight = Math.max(1, GameShell.canvasHeight);
+            virtualX = Math.max(0, Math.min(canvasWidth - 1, virtualX));
+            virtualY = Math.max(0, Math.min(canvasHeight - 1, virtualY));
+
+            lastMovementWasMouse = false;
+
+            // Absorb this position so the synthetic mouse event is not
+            // treated as physical mouse next frame
+            lastMouseX = virtualX;
+            lastMouseY = virtualY;
+
+            if (dispatchEvents) {
+                dispatchMouseMove(virtualX, virtualY);
+            }
+        } else if (botMovedThisFrame && frame != null) {
+            virtualX = frame.mouseX;
+            virtualY = frame.mouseY;
+            lastMouseX = frame.mouseX;
+            lastMouseY = frame.mouseY;
+            lastMovementWasMouse = false;
+        } else if (!ignorePhysicalMouse && frame != null) {
+            // Real mouse only when stick/bot did not move this frame
             if (frame.mouseX != lastMouseX || frame.mouseY != lastMouseY) {
                 lastMouseX = frame.mouseX;
                 lastMouseY = frame.mouseY;
@@ -87,91 +133,22 @@ public final class GamepadMouseController {
             }
         }
 
-        // No gamepad cursor/buttons while typing / special text UIs
+        // Text modes: no stick cursor / triggers, but keep virtual pos synced above
         if (textMode) {
-            // Reset trigger states when disabled to prevent stuck buttons
             wasLTPressed = false;
             wasRTPressed = false;
+            // Prefer system cursor while typing
+            restoreSystemCursor();
             return;
         }
 
-        // Active in: WORLD, MAP, MAIN_MENU (login screen)
-
-        // Read right stick axes
-        float rightX = 0.0f;
-        float rightY = 0.0f;
-        if (frame.axes != null && frame.axes.length > InputButtons.AXIS_RIGHT_Y) {
-            rightX = frame.axes[InputButtons.AXIS_RIGHT_X]; // -1.0 to 1.0
-            rightY = frame.axes[InputButtons.AXIS_RIGHT_Y]; // -1.0 to 1.0
-        }
-
-        // Check for actual movement from each input source
-        boolean gamepadMovedThisFrame = false;
-        boolean botMovedThisFrame = false;
-
-        // NOTE: Physical mouse movement already handled above (before textMode check)
-        // to keep virtual cursor synced even in modals
-
-        // Detect gamepad stick movement (with deadzone to ignore drift)
-        float gamepadDeadzone = 0.15f;
-        if (Math.abs(rightX) > gamepadDeadzone || Math.abs(rightY) > gamepadDeadzone) {
-            gamepadMovedThisFrame = true;
-        }
-
-        // Detect bot movement (mouse position changed but physical mouse didn't move)
-        if (ignorePhysicalMouse && (frame.mouseX > 0 || frame.mouseY > 0)) {
-            if (frame.mouseX != lastMouseX || frame.mouseY != lastMouseY) {
-                botMovedThisFrame = true;
-                lastMouseX = frame.mouseX;
-                lastMouseY = frame.mouseY;
-            }
-        }
-
-        // Update cursor position based on which input moved
-        if (gamepadMovedThisFrame) {
-            // Gamepad moved - apply movement and switch to gamepad mode
-            // Apply quadratic curve for better precision at low values
-            float curvedX = applyCurve(rightX);
-            float curvedY = applyCurve(rightY);
-            
-            int deltaX = (int) (curvedX * sensitivity);
-            int deltaY = (int) (curvedY * sensitivity);
-
-            virtualX += deltaX;
-            virtualY += deltaY;
-
-            // Clamp to canvas bounds
-            int canvasWidth = Math.max(1, GameShell.canvasWidth);
-            int canvasHeight = Math.max(1, GameShell.canvasHeight);
-            virtualX = Math.max(0, Math.min(canvasWidth - 1, virtualX));
-            virtualY = Math.max(0, Math.min(canvasHeight - 1, virtualY));
-
-            lastMovementWasMouse = false;
-        } else if (botMovedThisFrame) {
-            // Bot moved - update position and mark as last input
-            virtualX = frame.mouseX;
-            virtualY = frame.mouseY;
-            lastMovementWasMouse = false;
-        }
-
-        // Update cursor visibility based on last movement source
+        // Visibility from last winning source (stick idle stays gamepad mode)
         if (lastMovementWasMouse) {
-            // Last movement was physical mouse - show system cursor
             restoreSystemCursor();
         } else {
-            // Last movement was gamepad/bot - hide system cursor, show crosshair
             ensureBlankCursor();
         }
 
-        // Dispatch synthetic mouse events for gamepad movement
-        boolean hasMoved = gamepadMovedThisFrame;
-
-        // Generate mouse movement event (only if event dispatch is enabled)
-        if (hasMoved && dispatchEvents) {
-            dispatchMouseMove(virtualX, virtualY);
-        }
-
-        // Handle trigger-based clicking (only if event dispatch is enabled)
         if (dispatchEvents) {
             processClicks(frame);
         }
@@ -239,6 +216,15 @@ public final class GamepadMouseController {
                 false // not popup trigger
         );
         GameShell.canvas.dispatchEvent(event);
+    }
+
+    /** Left click at current virtual cursor (press + release). */
+    public static void syntheticLeftClick() {
+        if (GameShell.canvas == null) {
+            return;
+        }
+        dispatchMousePress(virtualX, virtualY, MouseEvent.BUTTON1);
+        dispatchMouseRelease(virtualX, virtualY, MouseEvent.BUTTON1);
     }
 
     /**

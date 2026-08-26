@@ -499,12 +499,20 @@ public final class InputManager {
             return false;
         }
         if (client.gameState != 30) {
-            return false; // login / create account need Enter
+            return false;
+        }
+        InputMode m = getMode();
+        // Map search, amount, report abuse, etc. need Enter
+        if (m == InputMode.MAP
+                || m == InputMode.SPECIAL_MODAL
+                || m == InputMode.CHATBOX_MODAL
+                || m == InputMode.MAIN_MENU) {
+            return false;
         }
         if (!InputConfig.INSTANCE.allowQuickChatOnEmptyEnter) {
-            return true;
+            return true; // WORLD + CHAT (empty handled below in InterfaceList)
         }
-        return getMode() != InputMode.CHAT;
+        return m != InputMode.CHAT;
     }
 
     public static int getMouseWheelDelta() {
@@ -593,6 +601,9 @@ public final class InputManager {
      * Replaces: Keyboard.pressedKeys[KEY_CTRL] && Keyboard.pressedKeys[KEY_SHIFT]
      */
     public static boolean isCheatTeleportModifierDown() {
+        if (isActionDown(Action.CHEAT_TELEPORT)) {
+            return true;
+        }
         return isActionDown(Action.MODIFIER_CTRL) && isActionDown(Action.MODIFIER_SHIFT);
     }
 

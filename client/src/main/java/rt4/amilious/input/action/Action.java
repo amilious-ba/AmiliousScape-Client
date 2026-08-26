@@ -15,6 +15,7 @@ public enum Action {
     MAP_ZOOM_IN,
     MAP_ZOOM_OUT,
     TOUCH_KEYBOARD,
+    CHEAT_TELEPORT,
 
 
     // ===== Chat =====

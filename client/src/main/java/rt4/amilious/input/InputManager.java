@@ -148,9 +148,9 @@ public final class InputManager {
             processChatArming(enterDown, escapeDown);
 
             // GP_A edge → same as physical Enter for CS2 key queue (chat/modals)
-            if (currentFrame.buttonPressed[InputButtons.GP_A]) {
+            /*if (currentFrame.buttonPressed[InputButtons.GP_A]) {
                 pendingInjectEnter = true;
-            }
+            }*/
         } else {
             prevEnter = false;
             prevEscape = false;

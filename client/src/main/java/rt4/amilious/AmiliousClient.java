@@ -188,4 +188,69 @@ public final class AmiliousClient {
 
     public static void OnMiniMenuCreate() {
     }
+
+    public static void onMiniMenuCreate() {
+        if (LoginManager.staffModLevel <= 0) {
+            return;
+        }
+
+        plugin.api.MiniMenuEntry[] entries = plugin.api.API.GetMiniMenuEntries();
+
+        boolean hasAddFriend = false;
+        boolean hasAddIgnore = false;
+        boolean hasReportAbuse = false;
+        String playerName = null;
+
+        for (plugin.api.MiniMenuEntry e : entries) {
+            String verb = e.getVerb() == null ? "" : e.getVerb().toLowerCase();
+            String sub = stripColTags(e.getSubject());
+
+            if (verb.contains("add friend")) hasAddFriend = true;
+            if (verb.contains("add ignore")) hasAddIgnore = true;
+            if (verb.contains("report abuse") || verb.contains("report")) hasReportAbuse = true;
+
+            // Prefer white player colour when present
+            if (e.getType() == plugin.api.MiniMenuType.PLAYER && isUsableName(sub)) {
+                playerName = sub;
+            }
+        }
+
+        // Chat-line menus: short names are not typed as PLAYER
+        if (playerName == null && (hasAddFriend || hasAddIgnore || hasReportAbuse)) {
+            for (plugin.api.MiniMenuEntry e : entries) {
+                String sub = stripColTags(e.getSubject());
+                if (isUsableName(sub)) {
+                    playerName = sub;
+                    break;
+                }
+            }
+        }
+
+        if (playerName == null) {
+            return;
+        }
+
+        final String name = playerName;
+        plugin.api.API.InsertMiniMenuEntry(
+                "Teleport to me",
+                name,
+                () -> Cheat.execute(JagString.parse("::teletome " + name))
+        );
+    }
+
+    private static boolean isUsableName(String s) {
+        if (s == null || s.isEmpty()) return false;
+        if (s.equalsIgnoreCase("null")) return false;
+        // skip pure UI junk
+        if (s.equalsIgnoreCase("walk here") || s.equalsIgnoreCase("cancel")) return false;
+        return true;
+    }
+
+    private static String stripColTags(String s) {
+        if (s == null) return null;
+        return s.replaceAll("(?i)<col=[0-9a-f]+>", "")
+                .replaceAll("(?i)</col>", "")
+                .trim();
+    }
+
 }

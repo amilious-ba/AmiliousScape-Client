@@ -1449,6 +1449,7 @@ public class LoginManager {
 		}
 		if (!Cs1ScriptRunner.aBoolean108) {
 			PluginRepository.OnMiniMenuCreate();
+			rt4.amilious.AmiliousClient.onMiniMenuCreate();
 		}
 		MiniMenu.sort();
 		if (Cs1ScriptRunner.aBoolean108) {

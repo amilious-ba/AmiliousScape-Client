@@ -10,6 +10,11 @@ public enum Action {
 
     TOGGLE_MAP,
     TOGGLE_RUN,
+    TAB_NEXT,
+    TAB_PREV,
+    MAP_ZOOM_IN,
+    MAP_ZOOM_OUT,
+    TOUCH_KEYBOARD,
 
 
     // ===== Chat =====

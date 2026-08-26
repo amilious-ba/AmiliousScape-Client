@@ -59,6 +59,17 @@ public final class ActionMapper {
         bind(Action.ESCAPE, rt4.amilious.input.state.InputButtons.ESCAPE);
         bind(Action.ESCAPE, rt4.amilious.input.state.InputButtons.GP_B);
 
+        // Tab cycle / map zoom (same dual behavior as old Page Up/Down)
+        bind(Action.TAB_PREV, rt4.amilious.input.state.InputButtons.GP_LB, InputMode.WORLD);
+        bind(Action.TAB_NEXT, rt4.amilious.input.state.InputButtons.GP_RB, InputMode.WORLD);
+
+        // Map zoom when in MAP mode (shoulders still useful on map)
+        bind(Action.MAP_ZOOM_OUT, rt4.amilious.input.state.InputButtons.GP_LB, InputMode.MAP);
+        bind(Action.MAP_ZOOM_IN, rt4.amilious.input.state.InputButtons.GP_RB, InputMode.MAP);
+
+        // Touch keyboard
+        bind(Action.TOUCH_KEYBOARD, rt4.amilious.input.state.InputButtons.GP_DPAD_UP);
+
         // Optional key-camera (WORLD only)
         bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.UP, InputMode.WORLD);
         bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.DOWN, InputMode.WORLD);
@@ -118,6 +129,11 @@ public final class ActionMapper {
         bind(Action.HOTKEY_8, rt4.amilious.input.state.InputButtons.DIGIT_8, InputMode.WORLD);
         bind(Action.HOTKEY_9, rt4.amilious.input.state.InputButtons.DIGIT_9, InputMode.WORLD);
         bind(Action.HOTKEY_0, rt4.amilious.input.state.InputButtons.DIGIT_0, InputMode.WORLD);
+
+        // D-pad → hotkeys 1–3
+        bind(Action.HOTKEY_1, rt4.amilious.input.state.InputButtons.GP_DPAD_LEFT, InputMode.WORLD);
+        bind(Action.HOTKEY_2, rt4.amilious.input.state.InputButtons.GP_DPAD_DOWN, InputMode.WORLD);
+        bind(Action.HOTKEY_3, rt4.amilious.input.state.InputButtons.GP_DPAD_RIGHT, InputMode.WORLD);
 
         // Menu tab selection (F-keys, WORLD only)
         bind(Action.TAB_COMBAT, rt4.amilious.input.state.InputButtons.F1, InputMode.WORLD);

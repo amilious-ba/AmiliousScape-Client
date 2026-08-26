@@ -9,26 +9,6 @@ import java.awt.event.KeyEvent;
 
 public final class InputController {
 
-    private static final KeyAdapter LISTENER = new KeyAdapter() {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if(e.getKeyCode() == KeyEvent.VK_END) TouchKeyboard.show(true);
-            if (client.gameState != 30) {return; }
-
-            // Non-gameplay system keys (work in all modes)
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_PAGE_UP:
-                    if (MapController.isOpen()) MapController.zoomOut();
-                    else MenuTabCycle.previous();
-                    return;
-                case KeyEvent.VK_PAGE_DOWN:
-                    if (MapController.isOpen()) MapController.zoomIn();
-                    else MenuTabCycle.next();
-            }
-        }
-    };
-
     /**
      * Poll command binds using Actions. Call this from Protocol or game loop.
      * MUST be called after InputManager.tick() so Actions are up to date.
@@ -68,8 +48,16 @@ public final class InputController {
     }
 
 
+    /** Called from InputManager.tick() after mapper.update(). */
     public static void pollSystemActions() {
-        if (client.gameState != 30) return;
+        // Touch keyboard can work on login too
+        if (InputManager.isActionPressed(Action.TOUCH_KEYBOARD)) {
+            TouchKeyboard.show(true);
+        }
+
+        if (client.gameState != 30) {
+            return;
+        }
 
         if (InputManager.isActionPressed(Action.TOGGLE_MAP)) {
             MapController.toggle();
@@ -81,25 +69,54 @@ public final class InputController {
             return;
         }
 
+        // Map zoom (MAP mode binds)
+        if (InputManager.isActionPressed(Action.MAP_ZOOM_OUT)) {
+            MapController.zoomOut();
+            return;
+        }
+        if (InputManager.isActionPressed(Action.MAP_ZOOM_IN)) {
+            MapController.zoomIn();
+            return;
+        }
+
+        // Page Up / LB / wheel — dual: zoom on map, else tab cycle
+        if (InputManager.isActionPressed(Action.TAB_PREV) || wheelPrev()) {
+            if (MapController.isOpen()) {
+                MapController.zoomOut();
+            } else {
+                MenuTabCycle.previous();
+            }
+            return;
+        }
+        if (InputManager.isActionPressed(Action.TAB_NEXT) || wheelNext()) {
+            if (MapController.isOpen()) {
+                MapController.zoomIn();
+            } else {
+                MenuTabCycle.next();
+            }
+            return;
+        }
+
         if (InputManager.isActionPressed(Action.ESCAPE)) {
             if (MapController.isOpen()) {
                 MapController.close();
             } else if (ModalTools.hasModalOpen()) {
                 ModalTools.closeOpenModalNextUpdate();
             } else if (InputManager.isChatMode()) {
-                InputManager.enterWorldMode(); // or leave to processChatArming
+                InputManager.enterWorldMode();
             } else {
                 ClientProt.method4512(JagString.EMPTY, -1, 1, 48889868);
             }
         }
     }
 
-
-    public static void register() {
-        if (GameShell.canvas == null) {
-            return;
-        }
-        GameShell.canvas.removeKeyListener(LISTENER);
-        GameShell.canvas.addKeyListener(LISTENER);
+    private static boolean wheelPrev() {
+        return InputManager.getMouseWheelDelta() > 0;
     }
+
+    private static boolean wheelNext() {
+        return InputManager.getMouseWheelDelta() < 0;
+    }
+
+    public static void register() {  }
 }

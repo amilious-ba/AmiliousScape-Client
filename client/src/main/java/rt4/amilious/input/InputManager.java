@@ -507,6 +507,10 @@ public final class InputManager {
         return getMode() != InputMode.CHAT;
     }
 
+    public static int getMouseWheelDelta() {
+        return currentFrame != null ? currentFrame.mouseWheel : 0;
+    }
+
     public static boolean didSubmitThisFrame() {
         return submittedThisFrame;
     }

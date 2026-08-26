@@ -27,8 +27,6 @@ public final class AmiliousClient {
         DebugConsole.log("AmiliousScape client initializing...");
         initialized = true;
 
-        InputController.register(); // canvas may already exist
-
         if (GlobalJsonConfig.instance != null && GlobalJsonConfig.instance.enableAmiliousDebugAtStart) {
             DebugConsole.enabled = true;
             DebugConsole.log("debug enabled at start");
@@ -76,7 +74,7 @@ public final class AmiliousClient {
 
     /** Call at end of GameShell.addCanvas() — survives canvas replace. */
     public static void onCanvas() {
-        InputController.register();
+
     }
 
     /** Call at start of ClientProt.method4512. */

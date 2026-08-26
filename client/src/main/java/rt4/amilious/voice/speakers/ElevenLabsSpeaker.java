@@ -2,6 +2,7 @@ package rt4.amilious.voice.speakers;
 
 import rt4.amilious.Gender;
 import rt4.amilious.voice.TtsCache;
+import rt4.amilious.voice.TtsMp3Player;
 import rt4.amilious.voice.VoiceAssignment;
 import rt4.amilious.voice.speakers.ITextSpeaker;
 
@@ -101,18 +102,7 @@ public final class ElevenLabsSpeaker implements ITextSpeaker {
         }, "elevenlabs-speak").start();
     }
 
-    @Override
-    public void stop() {
-        gen.incrementAndGet();
-        Process p = playProcess;
-        playProcess = null;
-        if (p != null) {
-            try {
-                p.destroy();
-            } catch (Exception ignored) {
-            }
-        }
-    }
+
 
     private byte[] synthesize(String text, String voiceId) throws Exception {
         URL url = new URL(API + voiceId);
@@ -152,44 +142,37 @@ public final class ElevenLabsSpeaker implements ITextSpeaker {
     }
 
     private void playMp3(byte[] mp3, int g) throws Exception {
-        java.io.File tmp = java.io.File.createTempFile("amilious-tts-", ".mp3");
-        tmp.deleteOnExit();
-        java.io.FileOutputStream fos = new java.io.FileOutputStream(tmp);
-        fos.write(mp3);
-        fos.close();
-
         if (g != gen.get()) {
             return;
         }
-
-        String os = System.getProperty("os.name", "").toLowerCase();
-        String[] cmd;
-        if (os.contains("win")) {
-            if (onPath("ffplay")) {
-                cmd = new String[] {
-                        "ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", tmp.getAbsolutePath()
-                };
-            } else {
-                // SoundPlayer is WAV-only — needs ffplay for real mp3, or convert first
-                disable("Install ffplay (ffmpeg) to play ElevenLabs mp3 on Windows");
-                return;
-            }
-        } else if (os.contains("mac")) {
-            cmd = new String[] { "afplay", tmp.getAbsolutePath() };
-        } else if (onPath("ffplay")) {
-            cmd = new String[] {
-                    "ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", tmp.getAbsolutePath()
-            };
-        } else if (onPath("mpg123")) {
-            cmd = new String[] { "mpg123", "-q", tmp.getAbsolutePath() };
-        } else {
-            disable("No mp3 player (ffplay/mpg123). Install ffmpeg or mpg123.");
+        playProcess = TtsMp3Player.start(mp3);
+        if (g != gen.get()) {
+            TtsMp3Player.stop();
+            playProcess = null;
             return;
         }
-
-        playProcess = new ProcessBuilder(cmd).redirectErrorStream(true).start();
-        playProcess.waitFor();
+        if (playProcess == null) {
+            if (!TtsMp3Player.canPlay()) {
+                disable("No ffplay (tools/ffplay or PATH) / mpg123 / afplay");
+            }
+            return;
+        }
+        try {
+            playProcess.waitFor();
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        } finally {
+            playProcess = null;
+        }
     }
+
+    @Override
+    public void stop() {
+        gen.incrementAndGet();
+        playProcess = null;
+        TtsMp3Player.stop();
+    }
+
 
     private void disable(String msg) {
         disabled = true;

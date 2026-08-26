@@ -18,6 +18,7 @@ public final class Voiceover {
     private static boolean initialized;
     private static volatile boolean speaking;
     private static Runnable pendingComplete;
+    private static boolean shutdownHookAdded;
 
     private Voiceover() {
     }
@@ -102,6 +103,15 @@ public final class Voiceover {
             }
         }
 
+        if (!shutdownHookAdded) {
+            shutdownHookAdded = true;
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                public void run() {
+                    Voiceover.stop();
+                }
+            }, "tts-shutdown"));
+        }
+
         backend = chosen != null ? chosen : new DisabledSpeaker();
         enabled = !(backend instanceof DisabledSpeaker);
         System.out.println("[voiceover] speaker=" + type + " enabled=" + enabled);
@@ -171,9 +181,6 @@ public final class Voiceover {
 
     public static void speak(String speaker, String text, Runnable onComplete) {
         if (!enabled || backend == null || text == null || text.isEmpty()) {
-            if (onComplete != null) {
-                onComplete.run();
-            }
             return;
         }
 
@@ -203,6 +210,7 @@ public final class Voiceover {
         if (backend != null) {
             backend.stop(); // if your backend has this
         }
+        TtsMp3Player.stop();
         speaking = false;
         pendingComplete = null;
     }

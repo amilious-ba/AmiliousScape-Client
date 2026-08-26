@@ -298,6 +298,7 @@ public abstract class GameShell extends Applet implements Runnable, FocusListene
 	@OriginalMember(owner = "client!rc", name = "windowClosing", descriptor = "(Ljava/awt/event/WindowEvent;)V")
 	@Override
 	public final void windowClosing(@OriginalArg(0) WindowEvent event) {
+		rt4.amilious.voice.Voiceover.stop();
 		this.destroy();
 	}
 

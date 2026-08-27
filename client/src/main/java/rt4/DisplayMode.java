@@ -853,14 +853,14 @@ public final class DisplayMode {
 		// (peer rebuild causes component state to reset)
 		if (newMode == 3 || currentMode == 3) {
 			if (InterfaceList.topLevelInterface != -1) {
-				InterfaceList.method1626(InterfaceList.topLevelInterface);
+				InterfaceList.runOpenInterfaceScripts(InterfaceList.topLevelInterface);
 			}
 
 			if (InterfaceList.openInterfaces != null) {
 				for (rt4.ComponentPointer p = (rt4.ComponentPointer) InterfaceList.openInterfaces.head();
 					 p != null;
 					 p = (rt4.ComponentPointer) InterfaceList.openInterfaces.next()) {
-					InterfaceList.method1626(p.interfaceId);
+					InterfaceList.runOpenInterfaceScripts(p.interfaceId);
 				}
 			}
 

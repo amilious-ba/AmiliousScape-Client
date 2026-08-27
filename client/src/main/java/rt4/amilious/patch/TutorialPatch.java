@@ -27,7 +27,7 @@ public final class TutorialPatch {
     private TutorialPatch() {
     }
 
-    /** After InterfaceList.method1626(arg0) in Protocol.method1148. */
+    /** After InterfaceList.runOpenInterfaceScripts(arg0) in Protocol.openInterface. */
     public static void onInterfaceOpen(int interfaceId, int parentId) {
         if (interfaceId != 371) {
             return;

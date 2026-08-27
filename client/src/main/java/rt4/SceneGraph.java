@@ -3912,8 +3912,8 @@ public class SceneGraph {
 		@Pc(475) int local475;
 		if ((local307 - local323) * (local299 - local331) - (local315 - local331) * (local291 - local323) > 0) {
 			if (MiniMenu.aBoolean187 && method583(MiniMenu.anInt2388 + Rasteriser.centerX, MiniMenu.anInt3259 + Rasteriser.centerY, local315, local331, local299, local307, local323, local291)) {
-				MiniMenu.anInt1742 = arg6;
-				MiniMenu.anInt2954 = arg7;
+				MiniMenu.clickedTileX = arg6;
+				MiniMenu.clickedTileZ = arg7;
 			}
 			if (!GlRenderer.enabled && !arg8) {
 				Rasteriser.testX = local307 < 0 || local323 < 0 || local291 < 0 || local307 > Rasteriser.width || local323 > Rasteriser.width || local291 > Rasteriser.width;
@@ -3935,8 +3935,8 @@ public class SceneGraph {
 			return;
 		}
 		if (MiniMenu.aBoolean187 && method583(MiniMenu.anInt2388 + Rasteriser.centerX, MiniMenu.anInt3259 + Rasteriser.centerY, local283, local299, local331, local275, local291, local323)) {
-			MiniMenu.anInt1742 = arg6;
-			MiniMenu.anInt2954 = arg7;
+			MiniMenu.clickedTileX = arg6;
+			MiniMenu.clickedTileZ = arg7;
 		}
 		if (GlRenderer.enabled || arg8) {
 			return;
@@ -4265,8 +4265,8 @@ public class SceneGraph {
 			@Pc(164) int local164 = anIntArray164[local29];
 			if ((local39 - local148) * (local164 - local160) - (local156 - local160) * (local152 - local148) > 0) {
 				if (MiniMenu.aBoolean187 && method583(MiniMenu.anInt2388 + Rasteriser.centerX, MiniMenu.anInt3259 + Rasteriser.centerY, local156, local160, local164, local39, local148, local152)) {
-					MiniMenu.anInt1742 = arg5;
-					MiniMenu.anInt2954 = arg6;
+					MiniMenu.clickedTileX = arg5;
+					MiniMenu.clickedTileZ = arg6;
 				}
 				if (!GlRenderer.enabled && !arg7) {
 					Rasteriser.testX = local39 < 0 || local148 < 0 || local152 < 0 || local39 > Rasteriser.width || local148 > Rasteriser.width || local152 > Rasteriser.width;

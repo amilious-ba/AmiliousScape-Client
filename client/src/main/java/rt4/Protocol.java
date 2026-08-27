@@ -1282,7 +1282,7 @@ public class Protocol {
 			InterfaceList.topLevelInterface = parent;
 			InterfaceList.method1753(parent);
 			InterfaceList.method3712(false);
-			InterfaceList.method1626(InterfaceList.topLevelInterface);
+			InterfaceList.runOpenInterfaceScripts(InterfaceList.topLevelInterface);
 			for (int i = 0; i < 100; i++) {
 				InterfaceList.aBooleanArray100[i] = true;
 			}
@@ -1863,7 +1863,7 @@ public class Protocol {
 			if (ptr != null) {
 				InterfaceList.closeInterface(ptr.interfaceId != component, ptr);
 			}
-			method1148(component, pointer, type);
+			openInterface(component, pointer, type);
 			opcode = -1;
 			return true;
 		} else if (opcode == ServerProt.RESET_ANIMS) {
@@ -2837,7 +2837,7 @@ public class Protocol {
 		}
 		WorldMap.component = null;
 		if (InterfaceList.topLevelInterface != -1) {
-			InterfaceList.method1320(0, 0, 0, GameShell.canvasWidth, InterfaceList.topLevelInterface, 0, GameShell.canvasHeight);
+			InterfaceList.processOpenInterfaceAt(0, 0, 0, GameShell.canvasWidth, InterfaceList.topLevelInterface, 0, GameShell.canvasHeight);
 		}
 		InterfaceList.transmitTimer++;
 		while (true) {
@@ -2872,18 +2872,18 @@ public class Protocol {
 												Cheat.teleport(PlayerList.self.movementQueueX[0] + Camera.originX, PlayerList.self.movementQueueZ[0] + Camera.originZ, y);
 											}
 											if (LoginManager.staffModLevel > 0 && rt4.amilious.input.InputManager.isCheatTeleportModifierDown()) {
-												if (MiniMenu.anInt1742 != -1) {
-													Cheat.teleport(Camera.originX + MiniMenu.anInt1742, Camera.originZ - -MiniMenu.anInt2954, Player.plane);
+												if (MiniMenu.clickedTileX != -1) {
+													Cheat.teleport(Camera.originX + MiniMenu.clickedTileX, Camera.originZ - -MiniMenu.clickedTileZ, Player.plane);
 												}
 												anInt4422 = 0;
 												MiniMenu.anInt3096 = 0;
 											} else if (MiniMenu.anInt3096 == 2) {
-												if (MiniMenu.anInt1742 != -1) {
+												if (MiniMenu.clickedTileX != -1) {
 													outboundBuffer.p1isaac(131);
 													outboundBuffer.mp4(MiniMenu.anInt2512);
-													outboundBuffer.p2add(Camera.originX + MiniMenu.anInt1742);
+													outboundBuffer.p2add(Camera.originX + MiniMenu.clickedTileX);
 													outboundBuffer.ip2add(MiniMenu.anInt506);
-													outboundBuffer.p2add(MiniMenu.anInt2954 + Camera.originZ);
+													outboundBuffer.p2add(MiniMenu.clickedTileZ + Camera.originZ);
 													Cross.type = 1;
 													Cross.milliseconds = 0;
 													Cross.y = rt4.amilious.input.InputManager.getLastClickY();
@@ -2891,21 +2891,21 @@ public class Protocol {
 												}
 												MiniMenu.anInt3096 = 0;
 											} else if (anInt4422 == 2) {
-												if (MiniMenu.anInt1742 != -1) {
+												if (MiniMenu.clickedTileX != -1) {
 													outboundBuffer.p1isaac(179);
-													outboundBuffer.p2(Camera.originZ + MiniMenu.anInt2954);
-													outboundBuffer.p2(MiniMenu.anInt1742 + Camera.originX);
+													outboundBuffer.p2(Camera.originZ + MiniMenu.clickedTileZ);
+													outboundBuffer.p2(MiniMenu.clickedTileX + Camera.originX);
 													Cross.milliseconds = 0;
 													Cross.type = 1;
 													Cross.x = rt4.amilious.input.InputManager.getLastClickX();
 													Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 												}
 												anInt4422 = 0;
-											} else if (MiniMenu.anInt1742 != -1 && MiniMenu.anInt3096 == 0 && anInt4422 == 0) {
+											} else if (MiniMenu.clickedTileX != -1 && MiniMenu.anInt3096 == 0 && anInt4422 == 0) {
 												// FIX: Don't walk through modals
 												if (!rt4.amilious.input.InputManager.isSpecialModalMode()
 														&& !rt4.amilious.input.InputManager.isChatBoxModalMode()) {
-													@Pc(1871) boolean local1871 = PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 0, true, 0, MiniMenu.anInt1742, 0, 0, 0, MiniMenu.anInt2954, PlayerList.self.movementQueueX[0]);
+													@Pc(1871) boolean local1871 = PathFinder.findPath(PlayerList.self.movementQueueZ[0], 0, 0, true, 0, MiniMenu.clickedTileX, 0, 0, 0, MiniMenu.clickedTileZ, PlayerList.self.movementQueueX[0]);
 													if (local1871) {
 														Cross.y = rt4.amilious.input.InputManager.getLastClickY();
 														Cross.milliseconds = 0;
@@ -2914,7 +2914,7 @@ public class Protocol {
 													}
 												}
 											}
-											MiniMenu.anInt1742 = -1;
+											MiniMenu.clickedTileX = -1;
 											method843();
 											if (InterfaceList.aClass13_22 != component) {
 												if (component != null) {
@@ -3533,7 +3533,7 @@ public class Protocol {
 	}
 
 	@OriginalMember(owner = "client!dh", name = "a", descriptor = "(IIII)Lclient!wk;")
-	public static ComponentPointer method1148(@OriginalArg(1) int arg0, @OriginalArg(2) int arg1, @OriginalArg(3) int arg2) {
+	public static ComponentPointer openInterface(@OriginalArg(1) int arg0, @OriginalArg(2) int arg1, @OriginalArg(3) int arg2) { // was method1148
 		@Pc(9) ComponentPointer local9 = new ComponentPointer();
 		local9.anInt5879 = arg2;
 		local9.interfaceId = arg0;
@@ -3572,7 +3572,7 @@ public class Protocol {
 		if (local28 != null) {
 			InterfaceList.method531(local28, false);
 		}
-		InterfaceList.method1626(arg0);
+		InterfaceList.runOpenInterfaceScripts(arg0);
 
 		// Amilious tutorial progress
 		TutorialPatch.onInterfaceOpen(arg0, arg1);

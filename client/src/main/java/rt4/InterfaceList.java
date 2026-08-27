@@ -349,7 +349,7 @@ public class InterfaceList {
 	}
 
 	@OriginalMember(owner = "client!fn", name = "c", descriptor = "(II)V")
-	public static void method1626(@OriginalArg(0) int arg0) {
+	public static void runOpenInterfaceScripts(@OriginalArg(0) int arg0) { // was method1626
 		if (arg0 == -1 || !load(arg0)) {
 			return;
 		}
@@ -608,14 +608,14 @@ public class InterfaceList {
 	}
 
 	@OriginalMember(owner = "client!eg", name = "a", descriptor = "(IIIIIIII)V")
-	public static void method1320(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(3) int arg2, @OriginalArg(4) int arg3, @OriginalArg(5) int arg4, @OriginalArg(6) int arg5, @OriginalArg(7) int arg6) {
+	public static void processOpenInterfaceAt(@OriginalArg(0) int arg0, @OriginalArg(1) int arg1, @OriginalArg(3) int arg2, @OriginalArg(4) int arg3, @OriginalArg(5) int arg4, @OriginalArg(6) int arg5, @OriginalArg(7) int arg6) { // was method1320
 		if (load(arg4)) {
-			method946(components[arg4], -1, arg5, arg1, arg3, arg6, arg0, arg2);
+			processInterfaceInput(components[arg4], -1, arg5, arg1, arg3, arg6, arg0, arg2);
 		}
 	}
 
 	@OriginalMember(owner = "client!client", name = "a", descriptor = "([Lclient!be;IIIIIII)V")
-	public static void method946(@OriginalArg(0) Component[] arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) int arg6, @OriginalArg(7) int arg7) {
+	public static void processInterfaceInput(@OriginalArg(0) Component[] arg0, @OriginalArg(1) int arg1, @OriginalArg(2) int arg2, @OriginalArg(3) int arg3, @OriginalArg(4) int arg4, @OriginalArg(5) int arg5, @OriginalArg(6) int arg6, @OriginalArg(7) int arg7) { // was method946
 		for (@Pc(1) int local1 = 0; local1 < arg0.length; local1++) {
 			@Pc(9) Component component = arg0[local1];
 			if (component != null && component.overlayer == arg1 && (!component.if3 || component.type == 0 || component.aBoolean25 || getServerActiveProperties(component).events != 0 || component == Cs1ScriptRunner.aClass13_1 || component.clientCode == 1338) && (!component.if3 || !method947(component))) {
@@ -1079,13 +1079,13 @@ public class InterfaceList {
 						}
 					}
 					if (component.type == 0) {
-						method946(arg0, component.id, local61, local63, local65, local67, local50 - component.scrollX, local55 - component.scrollY);
+						processInterfaceInput(arg0, component.id, local61, local63, local65, local67, local50 - component.scrollX, local55 - component.scrollY);
 						if (component.createdComponents != null) {
-							method946(component.createdComponents, component.id, local61, local63, local65, local67, local50 - component.scrollX, local55 - component.scrollY);
+							processInterfaceInput(component.createdComponents, component.id, local61, local63, local65, local67, local50 - component.scrollX, local55 - component.scrollY);
 						}
 						@Pc(1595) ComponentPointer local1595 = (ComponentPointer) openInterfaces.get(component.id);
 						if (local1595 != null) {
-							method1320(local50, local63, local55, local65, local1595.interfaceId, local61, local67);
+							processOpenInterfaceAt(local50, local63, local55, local65, local1595.interfaceId, local61, local67);
 						}
 					}
 				}
@@ -1121,7 +1121,7 @@ public class InterfaceList {
 			topLevelInterface = LoginManager.loginScreenId;
 			method3712(false);
 			ScriptRunner.method1807();
-			method1626(topLevelInterface);
+			runOpenInterfaceScripts(topLevelInterface);
 		}
 		MiniMenu.anInt1092 = -1;
 		method1750(ScriptRunner.anInt5794);

@@ -111,9 +111,9 @@ public class MiniMenu {
 	@OriginalMember(owner = "client!kd", name = "zb", descriptor = "I")
 	public static int anInt3259 = 0;
 	@OriginalMember(owner = "client!ef", name = "g", descriptor = "I")
-	public static int anInt1742 = -1;
+	public static int clickedTileX = -1; // was clickedTileX
 	@OriginalMember(owner = "client!jb", name = "p", descriptor = "I")
-	public static int anInt2954 = -1;
+	public static int clickedTileZ = -1; // was clickedTileZ
 	@OriginalMember(owner = "client!id", name = "k", descriptor = "I")
 	public static int anInt2878;
 	@OriginalMember(owner = "client!u", name = "i", descriptor = "I")
@@ -1588,8 +1588,8 @@ public class MiniMenu {
 		anInt3902 = arg0;
 		anInt2388 = arg1;
 		anInt3259 = arg2;
-		anInt1742 = -1;
-		anInt2954 = -1;
+		clickedTileX = -1;
+		clickedTileZ = -1;
 	}
 
 	@OriginalMember(owner = "client!wi", name = "c", descriptor = "(II)Z")

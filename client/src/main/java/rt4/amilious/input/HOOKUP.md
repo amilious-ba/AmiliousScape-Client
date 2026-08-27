@@ -210,7 +210,7 @@ Tracked: `previousMode`, optional `ModeListener`, log via `InputManager.setLogMo
 | Key accept / discard | Protocol (~keyQueue fill, ChatController.isFocused / shouldAcceptTextInput) |
 | Enter skip for QC | InterfaceList.method946 onKey loop + shouldConsumeEnter() |
 | setHidden amount | ScriptRunner Cs2Opcodes.setHidden → onComponentHiddenChanged |
-| IF_OPENTOP (logging only) | Protocol.method1148 → onInterfaceOpen |
+| IF_OPENTOP (logging only) | Protocol.openInterface → onInterfaceOpen |
 | Menu X backup | MiniMenu.doAction → onMiniMenuAction |
 | Amount submit | ScriptRunner sendIntegerInput / RESUME_P_COUNTDIALOG |
 | Mode tick | AmiliousClient.update → InputManager.tick |
@@ -253,7 +253,7 @@ Optional later: mirror into GlobalJsonConfig.
 | [Keyboard.keyTyped] | Keyboard |
 | [onKey] | InterfaceList.method946 |
 | [keys] | client.mainUpdate |
-| [IF_OPENTOP] | Protocol.method1148 |
+| [IF_OPENTOP] | Protocol.openInterface |
 | [modal] amount option… | ModalController |
 | [input] mode … | InputManager — setLogModeChanges(false) to silence |
 

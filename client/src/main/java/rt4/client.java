@@ -1075,7 +1075,7 @@ public final class client extends GameShell {
 
 		Protocol.sceneDelta++;
 		if (InterfaceList.topLevelInterface != -1) {
-			InterfaceList.method1320(0, 0, 0, GameShell.canvasWidth, InterfaceList.topLevelInterface, 0, GameShell.canvasHeight);
+			InterfaceList.processOpenInterfaceAt(0, 0, 0, GameShell.canvasWidth, InterfaceList.topLevelInterface, 0, GameShell.canvasHeight);
 		}
 		InterfaceList.transmitTimer++;
 		if (GlRenderer.enabled) {

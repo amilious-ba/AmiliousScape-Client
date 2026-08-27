@@ -125,6 +125,12 @@ public final class DialogueController {
     }
 
     public static void reset() {
+        for (int i = 0; i < optionCount; i++) {
+            Component c = safeGet(OPTION_IDS[i]);
+            if (c != null && OPTION_COLORS[i] != COLOR_HIGHLIGHT) {
+                c.color = OPTION_COLORS[i];
+            }
+        }
         optionCount = 0;
         selected = 0;
         activeIface = -1;
@@ -146,10 +152,10 @@ public final class DialogueController {
             if (iface < 0 || iface >= InterfaceList.components.length) {
                 continue;
             }
-            Component[] list = InterfaceList.components[iface];
             if (!isIfaceOpen(iface)) {
                 continue;
             }
+            Component[] list = InterfaceList.components[iface];
             if (list == null) {
                 continue;
             }
@@ -173,8 +179,9 @@ public final class DialogueController {
         }
 
         Component[] list = InterfaceList.components[foundIface];
+        int[] foundIds = new int[OPTION_IDS.length];
         int n = 0;
-        for (int i = 0; i < list.length && n < OPTION_IDS.length; i++) {
+        for (int i = 0; i < list.length && n < foundIds.length; i++) {
             Component c = list[i];
             if (c == null || c.hidden || c.text == null) {
                 continue;
@@ -199,7 +206,7 @@ public final class DialogueController {
                     continue;
                 }
             }
-            OPTION_IDS[n] = c.id;
+            foundIds[n] = c.id;
             n++;
         }
 
@@ -210,20 +217,40 @@ public final class DialogueController {
             return;
         }
 
-        boolean newlyOpen = foundIface != activeIface || !open;
+        boolean samePage = open && foundIface == activeIface && n == optionCount;
+        if (samePage) {
+            for (int i = 0; i < n; i++) {
+                if (foundIds[i] != OPTION_IDS[i]) {
+                    samePage = false;
+                    break;
+                }
+            }
+        }
+
+        boolean newlyOpen = !samePage;
         if (newlyOpen) {
+            reset();
             selected = 0;
             for (int i = 0; i < n; i++) {
-                Component c = safeGet(OPTION_IDS[i]);
-                OPTION_COLORS[i] = (c != null) ? c.color : 0;
+                OPTION_IDS[i] = foundIds[i];
+                Component c = safeGet(foundIds[i]);
+                int col = (c != null) ? c.color : 0;
+                if (col == COLOR_HIGHLIGHT) {
+                    col = 0x000000;
+                }
+                OPTION_COLORS[i] = col;
             }
             System.out.println("[dialogue] open iface=" + foundIface
                     + " options=" + n + " continue=" + foundContinue);
         }
+
+        optionCount = n;
+        for (int i = 0; i < n; i++) {
+            OPTION_IDS[i] = foundIds[i];
+        }
         if (selected >= n) {
             selected = n - 1;
         }
-        optionCount = n;
         activeIface = foundIface;
         continueOnly = foundContinue;
         open = true;

@@ -85,6 +85,9 @@ public final class AmiliousClient {
         rt4.amilious.input.ChatboxState.onChatTabClicked(componentId);
         if(DebugConsole.showInteractions)DebugConsole.log(option.toString() + " " + child + " " + button + " " + componentId);
         ChatHeadReader.onInterfaceButton(option, child, button, componentId);
+        if (rt4.amilious.DialogueController.isOpen()) {
+            rt4.amilious.DialogueController.reset();
+        }
     }
 
     /** call after PluginRepository.Update(); in client.mainLoop */

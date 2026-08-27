@@ -3630,6 +3630,13 @@ public class Protocol {
 			}
 			return;
 		}
+
+		// Custom drawer already selected / consumed this click in InputManager.tick()
+		if (rt4.amilious.MiniMenuDrawer.enabled
+				&& rt4.amilious.input.InputManager.isMouseClickConsumed()) {
+			return;
+		}
+
 		@Pc(204) int local204;
 		if (local20 != 1) {
 			local93 = rt4.amilious.input.InputManager.getCursorY();
@@ -3646,26 +3653,32 @@ public class Protocol {
 		if (local20 != 1) {
 			return;
 		}
+
 		local204 = InterfaceList.anInt4271;
 		local93 = InterfaceList.anInt5138;
 		local99 = InterfaceList.anInt761;
 		@Pc(265) int local265 = rt4.amilious.input.InputManager.getLastClickX();
 		@Pc(267) int local267 = rt4.amilious.input.InputManager.getLastClickY();
 		@Pc(269) int local269 = -1;
-		for (@Pc(271) int local271 = 0; local271 < MiniMenu.size; local271++) {
-			@Pc(289) int local289;
-			if (InterfaceList.aBoolean298) {
-				local289 = (MiniMenu.size - local271 - 1) * 15 + local93 + 35;
-			} else {
-				local289 = (MiniMenu.size - local271 - 1) * 15 + local93 + 31;
+
+		if (!rt4.amilious.MiniMenuDrawer.enabled) {
+			for (@Pc(271) int local271 = 0; local271 < MiniMenu.size; local271++) {
+				@Pc(289) int local289;
+				if (InterfaceList.aBoolean298) {
+					local289 = (MiniMenu.size - local271 - 1) * 15 + local93 + 35;
+				} else {
+					local289 = (MiniMenu.size - local271 - 1) * 15 + local93 + 31;
+				}
+				if (local265 > local204 && local204 + local99 > local265
+						&& local289 - 13 < local267 && local289 + 3 > local267) {
+					local269 = local271;
+				}
 			}
-			if (local265 > local204 && local204 + local99 > local265 && local289 - 13 < local267 && local289 + 3 > local267) {
-				local269 = local271;
+			if (local269 != -1) {
+				MiniMenu.doAction(local269);
 			}
 		}
-		if (local269 != -1) {
-			MiniMenu.doAction(local269);
-		}
+
 		Cs1ScriptRunner.aBoolean108 = false;
 		InterfaceList.redrawScreen(InterfaceList.anInt4271, InterfaceList.anInt761, InterfaceList.anInt5138, InterfaceList.anInt436);
 	}

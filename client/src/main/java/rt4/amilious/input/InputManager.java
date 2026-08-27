@@ -1,6 +1,7 @@
 package rt4.amilious.input;
 
 import rt4.amilious.MapController;
+import rt4.amilious.MiniMenuDrawer;
 import rt4.amilious.input.action.Action;
 import rt4.amilious.input.action.ActionMapper;
 import rt4.amilious.input.device.BotInputDevice;
@@ -171,6 +172,9 @@ public final class InputManager {
         }
 
         mapper.update(currentFrame, mode);
+        if (isMouseButtonPressed(InputButtons.MOUSE_BUTTON_1)) {
+            MiniMenuDrawer.handleClick(getLastClickX(), getLastClickY());
+        }
         pollMiniMenuActions();
 
         rt4.amilious.InputController.pollSystemActions();

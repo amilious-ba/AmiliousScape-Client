@@ -208,6 +208,67 @@ public final class MiniMenuDrawer {
         InterfaceList.forceRedrawScreen(x, y, h, w);
     }
 
+    /** Packed index, or -1 if not on a row. */
+    public static int hitTest(int px, int py) {
+        if (!enabled || MiniMenu.size <= 0) {
+            return -1;
+        }
+        int x = InterfaceList.anInt4271;
+        int y = InterfaceList.anInt5138;
+        int w = InterfaceList.anInt761;
+        int visible = MiniMenu.size < MAX_VISIBLE ? MiniMenu.size : MAX_VISIBLE;
+
+        if (px <= x || px >= x + w) {
+            return -1;
+        }
+
+        int start = MiniMenu.size - 1 - scrollOffset;
+        int drawn = 0;
+        for (int i = start; i >= 0 && drawn < visible; i--) {
+            int rowTop = y + HEADER_H + drawn * ROW_H;
+            if (py >= rowTop && py < rowTop + ROW_H) {
+                return i;
+            }
+            drawn++;
+        }
+        return -1;
+    }
+
+    /** True if this click belongs to the panel (consume + maybe select). */
+    public static boolean handleClick(int px, int py) {
+        if (!enabled || !Cs1ScriptRunner.aBoolean108 || MiniMenu.size <= 0) {
+            return false;
+        }
+        if (!contains(px, py)) {
+            return false;
+        }
+
+        rt4.amilious.input.InputManager.consumeMouseClick();
+
+        int index = hitTest(px, py);
+        if (index != -1) {
+            MiniMenu.doAction(index);
+        }
+
+        Cs1ScriptRunner.aBoolean108 = false;
+        InterfaceList.redrawScreen(
+                InterfaceList.anInt4271, InterfaceList.anInt761,
+                InterfaceList.anInt5138, InterfaceList.anInt436);
+        onClosed();
+        return true;
+    }
+
+    public static boolean contains(int px, int py) {
+        if (!enabled) {
+            return false;
+        }
+        int x = InterfaceList.anInt4271;
+        int y = InterfaceList.anInt5138;
+        int w = InterfaceList.anInt761;
+        int h = InterfaceList.anInt436;
+        return px >= x && px < x + w && py >= y && py < y + h;
+    }
+
     private static void ensureSelectedVisible() {
         int visible = MiniMenu.size < MAX_VISIBLE ? MiniMenu.size : MAX_VISIBLE;
         int topIndex = MiniMenu.size - 1 - scrollOffset;

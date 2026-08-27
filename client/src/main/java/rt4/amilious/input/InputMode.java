@@ -2,7 +2,7 @@ package rt4.amilious.input;
 
 /**
  * Priority (highest first):
- * MAIN_MENU → MAP → SPECIAL_MODAL → MINI_MENU → CHATBOX_MODAL → CHAT → WORLD
+ * MAIN_MENU → MAP → SPECIAL_MODAL → MINI_MENU → DIALOGUE → CHATBOX_MODAL → CHAT → WORLD
  */
 public enum InputMode {
     /** Not in game world (gameState != 30). */
@@ -15,6 +15,8 @@ public enum InputMode {
     SPECIAL_MODAL,
 
     MINI_MENU,
+
+    DIALOGUE,
 
     /** Over-chat prompts (amount X, shared iface 752 chrome). */
     CHATBOX_MODAL,

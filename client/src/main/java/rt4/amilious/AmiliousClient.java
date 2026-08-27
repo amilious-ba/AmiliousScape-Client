@@ -42,6 +42,7 @@ public final class AmiliousClient {
 
         // Special text modals (amount dialog iface 752, etc.)
         ModalController.init();
+        DialogueController.init();
 
         DebugConsole.Init();
         Voiceover.init();
@@ -88,9 +89,9 @@ public final class AmiliousClient {
 
     /** call after PluginRepository.Update(); in client.mainLoop */
     public static void update() {
-
         if (rt4.client.gameState == 30) {
             ModalController.tick();
+            DialogueController.tick();
         }
         InputManager.tick();
         ModalTools.update();
@@ -108,6 +109,7 @@ public final class AmiliousClient {
     /** Call after MiniMenu/tooltips are drawn - for overlays that should be on top. */
     public static void onDrawOverlay() {
         // Draw gamepad virtual cursor (always enabled for now so we can see it)
+        DialogueController.applyHighlight();
         rt4.amilious.input.GamepadMouseController.drawVirtualCursor(true);
     }
 

@@ -1,10 +1,7 @@
 package rt4.amilious;
 
 import rt4.*;
-import rt4.amilious.input.GamepadMouseController;
-import rt4.amilious.input.InputManager;
-import rt4.amilious.input.RunToggler;
-import rt4.amilious.input.TouchKeyboard;
+import rt4.amilious.input.*;
 import rt4.amilious.input.action.Action;
 import rt4.amilious.menutab.MenuTabCycle;
 
@@ -52,7 +49,8 @@ public final class InputController {
     /** Called from InputManager.tick() after mapper.update(). */
     public static void pollSystemActions() {
         // Touch keyboard can work on login too
-        if (InputManager.isActionPressed(Action.TOUCH_KEYBOARD)) {
+        if (InputManager.getMode() != InputMode.MINI_MENU &&
+                InputManager.isActionPressed(Action.TOUCH_KEYBOARD)) {
             TouchKeyboard.show(true);
         }
 

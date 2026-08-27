@@ -234,8 +234,33 @@ public final class MiniMenuDrawer {
         return -1;
     }
 
-    /** True if this click belongs to the panel (consume + maybe select). */
+
     public static boolean handleClick(int px, int py) {
+        if (!enabled || !Cs1ScriptRunner.aBoolean108) {
+            return false;
+        }
+
+        // Temp: this click belongs to the menu, not the world
+        rt4.amilious.input.InputManager.consumeMouseClick();
+        rt4.Mouse.clickButton = 0;
+
+        if (MiniMenu.size > 0 && contains(px, py)) {
+            int index = hitTest(px, py);
+            if (index != -1) {
+                MiniMenu.doAction(index);
+            }
+        }
+
+        Cs1ScriptRunner.aBoolean108 = false;
+        InterfaceList.redrawScreen(
+                InterfaceList.anInt4271, InterfaceList.anInt761,
+                InterfaceList.anInt5138, InterfaceList.anInt436);
+        onClosed();
+        return true;
+    }
+
+    /** True if this click belongs to the panel (consume + maybe select). */
+    /*public static boolean handleClick(int px, int py) {
         if (!enabled || !Cs1ScriptRunner.aBoolean108 || MiniMenu.size <= 0) {
             return false;
         }
@@ -256,7 +281,7 @@ public final class MiniMenuDrawer {
                 InterfaceList.anInt5138, InterfaceList.anInt436);
         onClosed();
         return true;
-    }
+    }*/
 
     public static boolean contains(int px, int py) {
         if (!enabled) {

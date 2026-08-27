@@ -172,10 +172,11 @@ public final class InputManager {
         }
 
         mapper.update(currentFrame, mode);
-        if (isMouseButtonPressed(InputButtons.MOUSE_BUTTON_1)) {
+        if (rt4.Mouse.clickButton == 1 || isMouseButtonPressed(InputButtons.MOUSE_BUTTON_1)) {
             MiniMenuDrawer.handleClick(getLastClickX(), getLastClickY());
         }
         pollMiniMenuActions();
+        pollDialogueActions();
 
         rt4.amilious.InputController.pollSystemActions();
         rt4.amilious.InputController.pollCommandBinds();
@@ -367,6 +368,13 @@ public final class InputManager {
             return;
         }
 
+        if (rt4.amilious.DialogueController.isOpen()) {
+            chatArmed = false;
+            prevEnter = enterDown;
+            prevEscape = escapeDown;
+            return;
+        }
+
         if (escapePressed && cfg.escapeClosesChat && chatArmed) {
             chatArmed = false;
             disarmChatIfNoSubmit = false;
@@ -387,6 +395,10 @@ public final class InputManager {
         prevEscape = escapeDown;
     }
 
+    public static boolean isDialogueMode() {
+        return getMode() == InputMode.DIALOGUE;
+    }
+
     /**
      * Priority: MAIN_MENU → MAP → SPECIAL_MODAL → CHATBOX_MODAL → CHAT → WORLD
      */
@@ -395,21 +407,21 @@ public final class InputManager {
         if (!cfg.enabled) {
             return InputMode.CHAT;
         }
-
         if (client.gameState != 30) {
             return InputMode.MAIN_MENU;
         }
-
         if (MapController.isOpen()) {
             chatArmed = false;
             return InputMode.MAP;
         }
-
         if (rt4.amilious.MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108) {
             chatArmed = false;
             return InputMode.MINI_MENU;
         }
-
+        if (rt4.amilious.DialogueController.isOpen()) {
+            chatArmed = false;
+            return InputMode.DIALOGUE;
+        }
         if (SpecialModalRegistry.isActive()) {
             chatArmed = false;
             return InputMode.SPECIAL_MODAL;
@@ -767,6 +779,21 @@ public final class InputManager {
         }
         if (mapper.isPressed(Action.MENU_CANCEL)) {
             rt4.amilious.MiniMenuDrawer.cancel();
+        }
+    }
+
+    private static void pollDialogueActions() {
+        if (mode != InputMode.DIALOGUE) {
+            return;
+        }
+        if (mapper.isPressed(Action.MENU_UP)) {
+            rt4.amilious.DialogueController.moveUp();
+        }
+        if (mapper.isPressed(Action.MENU_DOWN)) {
+            rt4.amilious.DialogueController.moveDown();
+        }
+        if (mapper.isPressed(Action.MENU_CONFIRM)) {
+            rt4.amilious.DialogueController.confirm();
         }
     }
 

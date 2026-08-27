@@ -1,13 +1,6 @@
 package rt4.amilious.draw;
 
-import rt4.Cs1ScriptRunner;
-import rt4.Fonts;
-import rt4.GameShell;
-import rt4.GlRaster;
-import rt4.GlRenderer;
-import rt4.InterfaceList;
-import rt4.MiniMenu;
-import rt4.SoftwareRaster;
+import rt4.*;
 import rt4.amilious.input.InputManager;
 
 /**
@@ -138,13 +131,22 @@ public final class MiniMenuDrawer {
             visible = MAX_VISIBLE;
         }
 
+
         int w = Fonts.b12Full.getStringWidth(rt4.LocalizedText.CHOOSE_OPTION) + PAD_X * 2 + 8;
+        for (int i = 0; i < MiniMenu.size; i++) {
+            int ow = Fonts.b12Full.getStringWidth(MiniMenu.getOp(i))
+                    + PAD_X * 2 + 8 + MiniMenuIcons.SLOT;
+            if (ow > w) {
+                w = ow;
+            }
+        }
+        /*int w = Fonts.b12Full.getStringWidth(rt4.LocalizedText.CHOOSE_OPTION) + PAD_X * 2 + 8;
         for (int i = 0; i < MiniMenu.size; i++) {
             int ow = Fonts.b12Full.getStringWidth(MiniMenu.getOp(i)) + PAD_X * 2 + 8;
             if (ow > w) {
                 w = ow;
             }
-        }
+        }*/
 
         int h = HEADER_H + visible * ROW_H + 8;
 
@@ -229,8 +231,18 @@ public final class MiniMenuDrawer {
             }
 
             int color = (i == selectedIndex || hovered) ? COLOR_HOVER : COLOR_TEXT;
+            Sprite icon = MiniMenuIcons.forIndex(i);
+            if (icon != null) {
+                MiniMenuIcons.render(icon, x + 3, rowTop, ROW_H);
+            }
+            int textX = x + PAD_X + MiniMenuIcons.SLOT;
+            Fonts.b12Full.renderLeft(MiniMenu.getOp(i), textX, baseline, color, 0);
+            /*int color = (i == selectedIndex || hovered) ? COLOR_HOVER : COLOR_TEXT;
             Fonts.b12Full.renderLeft(MiniMenu.getOp(i), x + PAD_X, baseline, color, 0);
+            */
+
             drawn++;
+
         }
 
         InterfaceList.forceRedrawScreen(x, y, h, w);

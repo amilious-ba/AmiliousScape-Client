@@ -1,7 +1,7 @@
 package rt4.amilious.menutab;
 
 import rt4.*;
-import rt4.amilious.DebugConsole;
+import rt4.amilious.debug.DebugConsole;
 
 public enum MenuTab {
 

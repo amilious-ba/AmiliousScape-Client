@@ -1,7 +1,5 @@
 package rt4.amilious.npc;
 
-import rt4.amilious.Gender;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;

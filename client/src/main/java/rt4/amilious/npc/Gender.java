@@ -1,4 +1,4 @@
-package rt4.amilious;
+package rt4.amilious.npc;
 
 public enum Gender {
     MALE("male"),

@@ -2,7 +2,7 @@ package rt4.amilious.Commands;
 
 import rt4.Chat;
 import rt4.JagString;
-import rt4.amilious.DebugConsole;
+import rt4.amilious.debug.DebugConsole;
 
 public class DebugShowInteractions_Command implements ICommand {
 

@@ -1,7 +1,7 @@
 package rt4.amilious.Commands;
 
 import rt4.amilious.CommandBinds;
-import rt4.amilious.DebugConsole;
+import rt4.amilious.debug.DebugConsole;
 
 /**
  * ::bind <slot> <command>   e.g. ::bind 0 ::bank

@@ -4,6 +4,7 @@ import rt4.*;
 import rt4.amilious.input.*;
 import rt4.amilious.input.action.Action;
 import rt4.amilious.menutab.MenuTabCycle;
+import rt4.amilious.modal.ModalTools;
 
 public final class InputController {
 

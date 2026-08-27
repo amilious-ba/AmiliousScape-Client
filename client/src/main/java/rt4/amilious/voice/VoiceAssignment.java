@@ -2,7 +2,7 @@ package rt4.amilious.voice;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import rt4.amilious.Gender;
+import rt4.amilious.npc.Gender;
 
 import java.io.File;
 import java.io.FileReader;

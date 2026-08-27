@@ -1,6 +1,6 @@
 package rt4.amilious.voice.speakers;
 
-import rt4.amilious.Gender;
+import rt4.amilious.npc.Gender;
 
 /** Linux: espeak or espeak-ng, then spd-say. */
 public final class LinuxEspeakSpeaker extends AbstractProcessSpeaker {

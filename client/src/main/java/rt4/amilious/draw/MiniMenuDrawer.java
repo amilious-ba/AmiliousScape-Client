@@ -1,4 +1,4 @@
-package rt4.amilious;
+package rt4.amilious.draw;
 
 import rt4.Cs1ScriptRunner;
 import rt4.Fonts;
@@ -40,6 +40,9 @@ public final class MiniMenuDrawer {
     private static int selectedIndex = 0;
     private static int scrollOffset = 0;
     private static boolean wasOpen = false;
+
+    private static int lastHoverX = Integer.MIN_VALUE;
+    private static int lastHoverY = Integer.MIN_VALUE;
 
     private MiniMenuDrawer() {
     }
@@ -201,6 +204,9 @@ public final class MiniMenuDrawer {
 
         int mx = InputManager.getCursorX();
         int my = InputManager.getCursorY();
+        boolean mouseMoved = mx != lastHoverX || my != lastHoverY;
+        lastHoverX = mx;
+        lastHoverY = my;
 
         int start = MiniMenu.size - 1 - scrollOffset;
         int drawn = 0;
@@ -210,7 +216,7 @@ public final class MiniMenuDrawer {
 
             boolean hovered = mx > x && mx < x + w
                     && my >= rowTop && my < rowTop + ROW_H;
-            if (hovered) {
+            if (mouseMoved && hovered) {
                 selectedIndex = i;
             }
 

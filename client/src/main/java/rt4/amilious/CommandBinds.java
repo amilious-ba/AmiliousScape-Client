@@ -3,6 +3,7 @@ package rt4.amilious;
 import rt4.Chat;
 import rt4.Cheat;
 import rt4.JagString;
+import rt4.amilious.debug.DebugConsole;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

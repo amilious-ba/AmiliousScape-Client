@@ -1,6 +1,6 @@
 package rt4.amilious.voice.speakers;
 
-import rt4.amilious.Gender;
+import rt4.amilious.npc.Gender;
 
 /** macOS: built-in `say`. */
 public final class MacSaySpeaker extends AbstractProcessSpeaker {

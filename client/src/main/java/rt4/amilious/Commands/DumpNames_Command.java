@@ -2,7 +2,7 @@ package rt4.amilious.Commands;
 
 import rt4.NpcType;
 import rt4.NpcTypeList;
-import rt4.amilious.DebugConsole;
+import rt4.amilious.debug.DebugConsole;
 
 public class DumpNames_Command extends AbstractCommand {
 

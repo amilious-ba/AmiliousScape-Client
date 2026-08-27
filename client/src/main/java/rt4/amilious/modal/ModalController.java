@@ -1,4 +1,4 @@
-package rt4.amilious;
+package rt4.amilious.modal;
 
 import rt4.InterfaceList;
 import rt4.JagString;

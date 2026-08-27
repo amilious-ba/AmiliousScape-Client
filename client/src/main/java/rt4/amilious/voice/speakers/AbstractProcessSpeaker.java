@@ -1,6 +1,6 @@
 package rt4.amilious.voice.speakers;
 
-import rt4.amilious.Gender;
+import rt4.amilious.npc.Gender;
 
 /**
  * Base for speakers that run an external process (PowerShell / curl / etc.).

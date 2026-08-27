@@ -678,7 +678,10 @@ public class InterfaceList {
 								if (rt4.amilious.input.InputManager.isRawKeyPressed(component.aByteArray8[i])) {
 									if (component.anIntArray49 == null || client.loop >= component.anIntArray49[i]) {
 										@Pc(279) byte local279 = component.aByteArray7[i];
-										if (local279 == 0 || ((local279 & 0x2) == 0 || rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_ALT)) && ((local279 & 0x1) == 0 || rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL)) && ((local279 & 0x4) == 0 || rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_SHIFT))) {
+										if (local279 == 0 || ((local279 & 0x2) == 0 ||
+												rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_ALT)) && ((local279 & 0x1) == 0 ||
+												rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL)) && ((local279 & 0x4) == 0 ||
+												rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_SHIFT))) {
 											ClientProt.method4512(JagString.EMPTY, -1, i + 1, component.id);
 											k = component.anIntArray46[i];
 											if (component.anIntArray49 == null) {
@@ -741,7 +744,9 @@ public class InterfaceList {
 								if (component.clientCode == 1400) {
 									WorldMap.component = component;
 									if (local221) {
-										if (rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL) && LoginManager.staffModLevel > 0) {
+										if (LoginManager.staffModLevel > 0
+												&& (rt4.amilious.input.InputManager.isActionDown(rt4.amilious.input.action.Action.MODIFIER_CTRL)
+												|| rt4.amilious.input.InputManager.isCheatTeleportModifierDown())) {
 											i = (int) ((double) (rt4.amilious.input.InputManager.getLastClickX() - local50 - component.width / 2) * 2.0D / (double) WorldMap.zoom);
 											skill = (int) ((double) (rt4.amilious.input.InputManager.getLastClickY() - local55 - component.height / 2) * 2.0D / (double) WorldMap.zoom);
 											k = WorldMap.anInt435 + i;

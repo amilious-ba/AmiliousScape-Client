@@ -1,4 +1,4 @@
-package rt4.amilious;
+package rt4.amilious.patch;
 
 import rt4.Component;
 import rt4.ComponentPointer;

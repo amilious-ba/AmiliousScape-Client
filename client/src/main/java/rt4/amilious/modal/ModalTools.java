@@ -1,4 +1,4 @@
-package rt4.amilious;
+package rt4.amilious.modal;
 
 import rt4.ClientProt;
 import rt4.ComponentPointer;

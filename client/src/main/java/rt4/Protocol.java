@@ -6,12 +6,11 @@ import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
 import rt4.amilious.AmiliousClient;
 import rt4.amilious.ChatController;
-import rt4.amilious.DebugConsole;
-import rt4.amilious.TutorialPatch;
+import rt4.amilious.draw.MiniMenuDrawer;
+import rt4.amilious.patch.TutorialPatch;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.DelayQueue;
 
 public class Protocol {
 	@OriginalMember(owner = "client!eg", name = "e", descriptor = "Lclient!i;")
@@ -3576,7 +3575,7 @@ public class Protocol {
 		InterfaceList.method1626(arg0);
 
 		// Amilious tutorial progress
-		rt4.amilious.TutorialPatch.onInterfaceOpen(arg0, arg1);
+		TutorialPatch.onInterfaceOpen(arg0, arg1);
 
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.runScripts(1, InterfaceList.topLevelInterface);
@@ -3632,7 +3631,7 @@ public class Protocol {
 		}
 
 		// Custom drawer already selected / consumed this click in InputManager.tick()
-		if (rt4.amilious.MiniMenuDrawer.enabled
+		if (MiniMenuDrawer.enabled
 				&& rt4.amilious.input.InputManager.isMouseClickConsumed()) {
 			return;
 		}
@@ -3641,7 +3640,7 @@ public class Protocol {
 		if (local20 != 1) {
 			local93 = rt4.amilious.input.InputManager.getCursorY();
 			local204 = rt4.amilious.input.InputManager.getCursorX();
-			if (!rt4.amilious.MiniMenuDrawer.enabled
+			if (!MiniMenuDrawer.enabled
 					&& (local204 < InterfaceList.anInt4271 - 10
 					|| local204 > InterfaceList.anInt761 + InterfaceList.anInt4271 + 10
 					|| InterfaceList.anInt5138 - 10 > local93
@@ -3661,7 +3660,7 @@ public class Protocol {
 		@Pc(267) int local267 = rt4.amilious.input.InputManager.getLastClickY();
 		@Pc(269) int local269 = -1;
 
-		if (!rt4.amilious.MiniMenuDrawer.enabled) {
+		if (!MiniMenuDrawer.enabled) {
 			for (@Pc(271) int local271 = 0; local271 < MiniMenu.size; local271++) {
 				@Pc(289) int local289;
 				if (InterfaceList.aBoolean298) {

@@ -5,6 +5,7 @@ import org.openrs2.deob.annotation.OriginalClass;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
+import rt4.amilious.patch.TutorialPatch;
 
 import java.awt.*;
 
@@ -875,7 +876,7 @@ public final class DisplayMode {
 	 */
 	private static void notifyModeChange() {
 		// Custom patch for tutorial interface positioning
-		rt4.amilious.TutorialPatch.onWindowModeChanged();
+		TutorialPatch.onWindowModeChanged();
 
 		// Send window details to server
 		if (Protocol.socket != null && (client.gameState == 30 || client.gameState == 25)) {

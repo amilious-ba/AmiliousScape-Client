@@ -2,8 +2,7 @@ package rt4.amilious.voice;
 
 import rt4.GlobalJsonConfig;
 import rt4.PlayerList;
-import rt4.amilious.Gender;
-import rt4.amilious.ModalController;
+import rt4.amilious.npc.Gender;
 import rt4.amilious.npc.NpcGenderCatalog;
 import rt4.amilious.voice.speakers.*;
 

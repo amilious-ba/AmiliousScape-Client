@@ -4,8 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
-import rt4.amilious.AmiliousClient;
-import rt4.amilious.MiniMenuDrawer;
+import rt4.amilious.draw.MiniMenuDrawer;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -1454,9 +1453,9 @@ public class LoginManager {
 		}
 		MiniMenu.sort();
 		if (Cs1ScriptRunner.aBoolean108) {
-			rt4.amilious.MiniMenuDrawer.onOpenFrame();
-			if (rt4.amilious.MiniMenuDrawer.enabled) {
-				rt4.amilious.MiniMenuDrawer.draw();
+			MiniMenuDrawer.onOpenFrame();
+			if (MiniMenuDrawer.enabled) {
+				MiniMenuDrawer.draw();
 			} else if (InterfaceList.aBoolean298) {
 				MiniMenu.drawB();
 			} else {
@@ -1464,7 +1463,7 @@ public class LoginManager {
 			}
 		} else {
 			// menu not open (hover rebuild + tooltips)
-			rt4.amilious.MiniMenuDrawer.onClosed();
+			MiniMenuDrawer.onClosed();
 
 			if (aClass13_13 != null) {
 				MiniMenu.method1207(aClass13_13, Cs1ScriptRunner.anInt3484, Cs1ScriptRunner.anInt3260);

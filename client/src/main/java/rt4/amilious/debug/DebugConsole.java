@@ -1,7 +1,8 @@
-package rt4.amilious;
+package rt4.amilious.debug;
 
 import rt4.Fonts;
 import rt4.JagString;
+import rt4.amilious.AmiliousClient;
 import rt4.amilious.Commands.DebugClear_Command;
 import rt4.amilious.Commands.DebugLog_Command;
 import rt4.amilious.Commands.DebugShowInteractions_Command;

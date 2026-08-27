@@ -1,7 +1,7 @@
 package rt4.amilious.input;
 
 import rt4.amilious.MapController;
-import rt4.amilious.MiniMenuDrawer;
+import rt4.amilious.draw.MiniMenuDrawer;
 import rt4.amilious.input.action.Action;
 import rt4.amilious.input.action.ActionMapper;
 import rt4.amilious.input.device.BotInputDevice;
@@ -359,7 +359,7 @@ public final class InputManager {
                 || MapController.isOpen()
                 || SpecialModalRegistry.isActive()
                 || ChatBoxModalRegistry.isActive()
-                || (rt4.amilious.MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108)) {
+                || (MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108)) {
             chatArmed = false;
             disarmChatIfNoSubmit = false;
             submittedSinceArmEnter = false;
@@ -414,7 +414,7 @@ public final class InputManager {
             chatArmed = false;
             return InputMode.MAP;
         }
-        if (rt4.amilious.MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108) {
+        if (MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108) {
             chatArmed = false;
             return InputMode.MINI_MENU;
         }
@@ -751,7 +751,7 @@ public final class InputManager {
         if (ChatBoxModalRegistry.isActive()) {
             return;
         }
-        if (rt4.amilious.MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108) {
+        if (MiniMenuDrawer.enabled && rt4.Cs1ScriptRunner.aBoolean108) {
             return;
         }
         if (InputConfig.INSTANCE.forceWorldWhenChatHidden && ChatboxState.isCollapsed()) {
@@ -765,20 +765,20 @@ public final class InputManager {
         if (mode != InputMode.MINI_MENU) {
             return;
         }
-        if (!rt4.amilious.MiniMenuDrawer.enabled) {
+        if (!MiniMenuDrawer.enabled) {
             return;
         }
         if (mapper.isPressed(Action.MENU_UP)) {
-            rt4.amilious.MiniMenuDrawer.moveUp();
+            MiniMenuDrawer.moveUp();
         }
         if (mapper.isPressed(Action.MENU_DOWN)) {
-            rt4.amilious.MiniMenuDrawer.moveDown();
+            MiniMenuDrawer.moveDown();
         }
         if (mapper.isPressed(Action.MENU_CONFIRM)) {
-            rt4.amilious.MiniMenuDrawer.confirm();
+            MiniMenuDrawer.confirm();
         }
         if (mapper.isPressed(Action.MENU_CANCEL)) {
-            rt4.amilious.MiniMenuDrawer.cancel();
+            MiniMenuDrawer.cancel();
         }
     }
 

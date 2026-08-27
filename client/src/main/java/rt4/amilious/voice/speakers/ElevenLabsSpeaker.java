@@ -1,10 +1,9 @@
 package rt4.amilious.voice.speakers;
 
-import rt4.amilious.Gender;
+import rt4.amilious.npc.Gender;
 import rt4.amilious.voice.TtsCache;
 import rt4.amilious.voice.TtsMp3Player;
 import rt4.amilious.voice.VoiceAssignment;
-import rt4.amilious.voice.speakers.ITextSpeaker;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

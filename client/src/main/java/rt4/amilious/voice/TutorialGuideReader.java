@@ -2,7 +2,7 @@ package rt4.amilious.voice;
 
 import rt4.Component;
 import rt4.InterfaceList;
-import rt4.amilious.DebugConsole;
+import rt4.amilious.debug.DebugConsole;
 
 public final class TutorialGuideReader {
 

@@ -33,6 +33,10 @@ public final class GamepadMouseController {
     private static float sensitivity = 20.0f; // pixels per frame at full stick deflection
     private static float triggerThreshold = 0.3f; // 30% trigger press = click
 
+    private static final float TRIGGER_DOWN = 0.15f;
+    private static final float TRIGGER_UP   = 0.08f;
+
+
     // Virtual cursor state
     private static int virtualX = 400; // Start at reasonable default
     private static int virtualY = 300;
@@ -171,6 +175,32 @@ public final class GamepadMouseController {
      * Process LT/RT triggers for left/right clicking.
      */
     private static void processClicks(InputFrame frame) {
+        if (frame == null || frame.axes == null || frame.axes.length <= InputButtons.AXIS_RT) {
+            return;
+        }
+
+        float lt = Math.max(0f, frame.axes[InputButtons.AXIS_LT]);
+        float rt = Math.max(0f, frame.axes[InputButtons.AXIS_RT]);
+
+        boolean rtPressed = wasRTPressed ? rt > TRIGGER_UP : rt > TRIGGER_DOWN;
+        boolean ltPressed = wasLTPressed ? lt > TRIGGER_UP : lt > TRIGGER_DOWN;
+
+        if (rtPressed && !wasRTPressed) {
+            dispatchMousePress(virtualX, virtualY, MouseEvent.BUTTON1);
+        } else if (!rtPressed && wasRTPressed) {
+            dispatchMouseRelease(virtualX, virtualY, MouseEvent.BUTTON1);
+        }
+
+        if (ltPressed && !wasLTPressed) {
+            dispatchMousePress(virtualX, virtualY, MouseEvent.BUTTON3);
+        } else if (!ltPressed && wasLTPressed) {
+            dispatchMouseRelease(virtualX, virtualY, MouseEvent.BUTTON3);
+        }
+
+        wasLTPressed = ltPressed;
+        wasRTPressed = rtPressed;
+    }
+    /*private static void processClicks(InputFrame frame) {
         if (frame.axes == null || frame.axes.length <= InputButtons.AXIS_RT) {
             return;
         }
@@ -200,7 +230,7 @@ public final class GamepadMouseController {
         // Update previous state
         wasLTPressed = ltPressed;
         wasRTPressed = rtPressed;
-    }
+    }*/
 
     /**
      * Dispatch a synthetic mouse movement event.

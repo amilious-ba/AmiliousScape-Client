@@ -167,8 +167,10 @@ public class XInputGamepadPoller {
             device.setAxis(3, -(gamepad.sThumbRY / STICK_MAX));
 
             // Map triggers (0.0 to 1.0)
-            device.setAxis(4, gamepad.bLeftTrigger / TRIGGER_MAX);
-            device.setAxis(5, gamepad.bRightTrigger / TRIGGER_MAX);
+            //device.setAxis(4, gamepad.bLeftTrigger / TRIGGER_MAX);
+            //device.setAxis(5, gamepad.bRightTrigger / TRIGGER_MAX);
+            device.setAxis(4, (gamepad.bLeftTrigger & 0xFF) / TRIGGER_MAX);
+            device.setAxis(5, (gamepad.bRightTrigger & 0xFF) / TRIGGER_MAX);
 
         } catch (Throwable e) {
             System.err.println("[XInput] Poll error: " + e.getMessage());

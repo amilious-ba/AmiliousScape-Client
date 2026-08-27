@@ -7,14 +7,20 @@ import rt4.JagString;
 import rt4.client;
 
 /**
- * Keyboard / controller highlight on the parchment "Select an Option"
- * (and "Click here to continue"). Does not redraw the interface.
+ * Keyboard / controller highlight on "Select an Option"
+ * and "Click here to continue". Does not redraw the interface.
  */
 public final class DialogueController {
 
     public static boolean enabled = true;
 
     private static final int COLOR_HIGHLIGHT = 0xFFFF00;
+
+    /** 530 option / continue interfaces. Not 137 (chat). */
+    private static final int[] OPTION_IFACES = {
+            140, 228, 229, 230, 231, 232, 233, 234,
+            64, 241, 242, 243, 244, 210, 211
+    };
 
     private static final int[] OPTION_IDS = new int[8];
     private static final int[] OPTION_COLORS = new int[8];
@@ -42,7 +48,10 @@ public final class DialogueController {
         scan();
     }
 
-    /** Call from AmiliousClient.onDrawOverlay() so CS2 color writes do not win. */
+    /**
+     * Call from LoginManager.method1841() immediately before method1949
+     * so the color is set for this frame's interface draw.
+     */
     public static void applyHighlight() {
         if (!open) {
             return;
@@ -85,13 +94,14 @@ public final class DialogueController {
         int id = OPTION_IDS[selected];
         Component c = safeGet(id);
         if (c == null) {
+            System.out.println("[dialogue] confirm missing id=" + id);
             return;
         }
         JagString text = c.text != null ? c.text : JagString.parse("");
-        int child = id & 0xFFFF;
-        ClientProt.method4512(text, child, 1, id);
+        // arg1 must be -1: this is a static child, not createdComponents[n]
+        ClientProt.method4512(text, -1, 1, id);
         System.out.println("[dialogue] confirm iface=" + activeIface
-                + " child=" + child + " continue=" + continueOnly);
+                + " id=" + id + " continue=" + continueOnly);
     }
 
     public static void reset() {
@@ -103,7 +113,7 @@ public final class DialogueController {
     }
 
     private static void scan() {
-        if (InterfaceList.components == null || InterfaceList.openInterfaces == null) {
+        if (InterfaceList.components == null) {
             reset();
             return;
         }
@@ -111,10 +121,8 @@ public final class DialogueController {
         int foundIface = -1;
         boolean foundContinue = false;
 
-        for (rt4.ComponentPointer p = (rt4.ComponentPointer) InterfaceList.openInterfaces.head();
-             p != null;
-             p = (rt4.ComponentPointer) InterfaceList.openInterfaces.next()) {
-            int iface = p.interfaceId;
+        for (int i = 0; i < OPTION_IFACES.length; i++) {
+            int iface = OPTION_IFACES[i];
             if (iface < 0 || iface >= InterfaceList.components.length) {
                 continue;
             }
@@ -122,12 +130,12 @@ public final class DialogueController {
             if (list == null) {
                 continue;
             }
-            if (hasTitle(list, "select an option")) {
+            if (hasVisibleText(list, "select an option")) {
                 foundIface = iface;
                 foundContinue = false;
                 break;
             }
-            if (hasTitle(list, "click here to continue")) {
+            if (hasVisibleText(list, "click here to continue")) {
                 foundIface = iface;
                 foundContinue = true;
                 break;
@@ -153,28 +161,41 @@ public final class DialogueController {
                 continue;
             }
             String low = t.toLowerCase();
-            if (low.contains("select an option")) {
-                continue;
-            }
-            if (!foundContinue && low.contains("click here to continue")) {
-                continue;
-            }
-            // text labels only (type 4). Some option rows are type 0 with a child — still catch type 4.
-            if (c.type != 4 && !foundContinue) {
-                continue;
+            if (foundContinue) {
+                if (!low.contains("click here to continue")) {
+                    continue;
+                }
+            } else {
+                if (low.contains("select an option")) {
+                    continue;
+                }
+                if (low.contains("click here to continue")) {
+                    continue;
+                }
+                if (c.type != 4) {
+                    continue;
+                }
             }
             OPTION_IDS[n] = c.id;
-            OPTION_COLORS[n] = c.color;
             n++;
         }
 
         if (n == 0) {
-            reset();
+            if (open) {
+                reset();
+            }
             return;
         }
 
-        if (foundIface != activeIface) {
+        boolean newlyOpen = foundIface != activeIface || !open;
+        if (newlyOpen) {
             selected = 0;
+            for (int i = 0; i < n; i++) {
+                Component c = safeGet(OPTION_IDS[i]);
+                OPTION_COLORS[i] = (c != null) ? c.color : 0;
+            }
+            System.out.println("[dialogue] open iface=" + foundIface
+                    + " options=" + n + " continue=" + foundContinue);
         }
         if (selected >= n) {
             selected = n - 1;
@@ -185,7 +206,7 @@ public final class DialogueController {
         open = true;
     }
 
-    private static boolean hasTitle(Component[] list, String needle) {
+    private static boolean hasVisibleText(Component[] list, String needle) {
         for (int i = 0; i < list.length; i++) {
             Component c = list[i];
             if (c == null || c.hidden || c.text == null) {

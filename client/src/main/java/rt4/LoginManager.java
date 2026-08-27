@@ -1419,6 +1419,7 @@ public class LoginManager {
 			MiniMenu.actions[0] = 1005;
 			MiniMenu.cursors[0] = MiniMenu.anInt1092;
 		}
+		rt4.amilious.DialogueController.applyHighlight();
 		if (InterfaceList.topLevelInterface != -1) {
 			InterfaceList.method1949(InterfaceList.topLevelInterface);
 		}

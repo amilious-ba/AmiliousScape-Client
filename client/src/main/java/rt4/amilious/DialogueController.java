@@ -30,6 +30,11 @@ public final class DialogueController {
     private static boolean open = false;
     private static boolean continueOnly = false;
 
+    private static boolean waitForPageChange = false;
+    private static int waitIface = -1;
+    private static int waitCount = 0;
+    private static final int[] waitIds = new int[8];
+
     private DialogueController() {
     }
 
@@ -107,6 +112,12 @@ public final class DialogueController {
                 + " slot=" + c.createdComponentId
                 + " text=" + (c.text != null ? c.text : "")
                 + " continue=" + continueOnly);
+        waitForPageChange = true;
+        waitIface = activeIface;
+        waitCount = optionCount;
+        for (int i = 0; i < optionCount; i++) {
+            waitIds[i] = OPTION_IDS[i];
+        }
         reset();
     }
 
@@ -172,6 +183,7 @@ public final class DialogueController {
         }
 
         if (foundIface < 0) {
+            waitForPageChange = false;
             if (open) {
                 reset();
             }
@@ -211,10 +223,27 @@ public final class DialogueController {
         }
 
         if (n == 0) {
+            waitForPageChange = false;
             if (open) {
                 reset();
             }
             return;
+        }
+
+        if (waitForPageChange) {
+            boolean same = foundIface == waitIface && n == waitCount;
+            if (same) {
+                for (int i = 0; i < n; i++) {
+                    if (foundIds[i] != waitIds[i]) {
+                        same = false;
+                        break;
+                    }
+                }
+            }
+            if (same) {
+                return;
+            }
+            waitForPageChange = false;
         }
 
         boolean samePage = open && foundIface == activeIface && n == optionCount;
@@ -227,8 +256,7 @@ public final class DialogueController {
             }
         }
 
-        boolean newlyOpen = !samePage;
-        if (newlyOpen) {
+        if (!samePage) {
             reset();
             selected = 0;
             for (int i = 0; i < n; i++) {

@@ -19,6 +19,8 @@ import rt4.amilious.input.InputManager;
 public final class MiniMenuDrawer {
 
     public static boolean enabled = true;
+    /** true = vanilla: open at cursor, clamp on canvas. false = current chat-reserved corner. */
+    public static boolean anchorAtCursor = true;
 
     private static final int COLOR_PANEL = 0x5D5447;
     private static final int COLOR_HEADER = 0x000000;
@@ -145,13 +147,33 @@ public final class MiniMenuDrawer {
 
         int canvasW = GameShell.canvasWidth;
         int canvasH = GameShell.canvasHeight;
-        int x = MARGIN;
-        int y = canvasH - CHAT_RESERVE - h - MARGIN;
-        if (y < MARGIN) {
-            y = MARGIN;
-        }
-        if (x + w > canvasW - MARGIN) {
-            x = Math.max(MARGIN, canvasW - w - MARGIN);
+        int x;
+        int y;
+
+        if (anchorAtCursor) {
+            x = InputManager.getLastClickX();
+            y = InputManager.getLastClickY();
+            if (x + w > canvasW - MARGIN) {
+                x = canvasW - w - MARGIN;
+            }
+            if (y + h > canvasH - MARGIN) {
+                y = canvasH - h - MARGIN;
+            }
+            if (x < MARGIN) {
+                x = MARGIN;
+            }
+            if (y < MARGIN) {
+                y = MARGIN;
+            }
+        } else {
+            x = MARGIN;
+            y = canvasH - CHAT_RESERVE - h - MARGIN;
+            if (y < MARGIN) {
+                y = MARGIN;
+            }
+            if (x + w > canvasW - MARGIN) {
+                x = Math.max(MARGIN, canvasW - w - MARGIN);
+            }
         }
 
         InterfaceList.anInt4271 = x;

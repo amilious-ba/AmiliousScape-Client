@@ -4,31 +4,50 @@ import rt4.CursorType;
 import rt4.CursorTypeList;
 import rt4.GlRenderer;
 import rt4.GlSprite;
+import rt4.JagString;
+import rt4.Js5;
 import rt4.MiniMenu;
 import rt4.SoftwareSprite;
 import rt4.Sprite;
+import rt4.SpriteLoader;
 import rt4.Sprites;
 
 import java.util.HashMap;
 
-/**
- * Left-of-text icons for MiniMenuDrawer.
- * Prefers the option's cursor sprite (same art the mouse already uses).
- */
 public final class MiniMenuIcons {
 
     public static final int SLOT = 20;
 
     private static final HashMap<Integer, Sprite> cursorCache = new HashMap<Integer, Sprite>();
 
+    private static Sprite[] staticons;
+    private static Sprite[] staticons2;
+
     private MiniMenuIcons() {
+    }
+
+    /** Call once from client mainLoad state 140, BEFORE js5Archive8.discardNames(true). */
+    public static void preload(Js5 archive) {
+        if (archive == null) {
+            return;
+        }
+        try {
+            staticons = loadNamed(archive, "staticons");
+            staticons2 = loadNamed(archive, "staticons2");
+            System.out.println("[menu-icons] staticons="
+                    + (staticons == null ? 0 : staticons.length)
+                    + " staticons2="
+                    + (staticons2 == null ? 0 : staticons2.length));
+        } catch (Exception e) {
+            System.out.println("[menu-icons] preload failed: " + e);
+            e.printStackTrace();
+        }
     }
 
     public static Sprite forIndex(int index) {
         if (index < 0 || index >= MiniMenu.size) {
             return null;
         }
-
         int cursorId = MiniMenu.cursors[index];
         if (cursorId > 0) {
             Sprite fromCursor = spriteForCursor(cursorId);
@@ -36,7 +55,6 @@ public final class MiniMenuIcons {
                 return fromCursor;
             }
         }
-
         return fallbackForText(stripColors(MiniMenu.getOp(index).toString()).toLowerCase());
     }
 
@@ -57,9 +75,7 @@ public final class MiniMenuIcons {
             dw = Math.max(1, (int) (sw * s));
             dh = Math.max(1, (int) (sh * s));
         }
-        int drawX = x + (SLOT - dw) / 2;
-        int drawY = y + (slotH - dh) / 2;
-        sprite.renderResized(drawX, drawY, dw, dh);
+        sprite.renderResized(x + (SLOT - dw) / 2, y + (slotH - dh) / 2, dw, dh);
     }
 
     private static Sprite spriteForCursor(int cursorId) {
@@ -76,12 +92,7 @@ public final class MiniMenuIcons {
             if (raw == null) {
                 return null;
             }
-            Sprite ready;
-            if (GlRenderer.enabled) {
-                ready = new GlSprite(raw);
-            } else {
-                ready = raw;
-            }
+            Sprite ready = GlRenderer.enabled ? new GlSprite(raw) : raw;
             cursorCache.put(cursorId, ready);
             return ready;
         } catch (Exception e) {
@@ -93,25 +104,77 @@ public final class MiniMenuIcons {
         if (op.startsWith("walk here")) {
             return Sprites.mapflags;
         }
-        if (op.startsWith("attack") || op.contains("attack ")) {
-            return first(Sprites.headiconPks);
+        if (op.startsWith("attack")) {
+            return skill(0);
+        }
+        if (op.startsWith("chop") || op.contains("chop down")) {
+            return skill2(1);
+        }
+        if (op.startsWith("mine") || op.startsWith("prospect")) {
+            return skill2(7);
+        }
+        if (op.startsWith("fish") || op.startsWith("bait") || op.startsWith("lure") || op.startsWith("net")) {
+            return skill2(3);
+        }
+        if (op.startsWith("cook")) {
+            return skill2(0);
+        }
+        if (op.startsWith("smith") || op.startsWith("smelt")) {
+            return skill2(6);
+        }
+        if (op.startsWith("craft")) {
+            return skill2(5);
+        }
+        if (op.startsWith("fletch")) {
+            return skill2(2);
+        }
+        if (op.startsWith("steal") || op.startsWith("pickpocket") || op.startsWith("pick-lock")) {
+            return skill2(10);
+        }
+        if (op.startsWith("pray")) {
+            return skill(5);
+        }
+        if (op.startsWith("cast")) {
+            return skill(6);
         }
         if (op.startsWith("talk")) {
             return first(Sprites.headhints);
         }
-        if (op.startsWith("take") || op.startsWith("drop") || op.startsWith("use")) {
-            return first(Sprites.mapdots);
-        }
-        if (op.startsWith("mine") || op.startsWith("prospect")) {
-            return mapfuncOrNull();
-        }
-        if (op.startsWith("chop") || op.contains("chop down")) {
-            return mapfuncOrNull();
-        }
-        if (op.startsWith("fish") || op.startsWith("bait") || op.startsWith("lure") || op.startsWith("net")) {
-            return mapfuncOrNull();
-        }
         return null;
+    }
+
+    private static Sprite skill(int file) {
+        if (staticons == null || file < 0 || file >= staticons.length) {
+            return null;
+        }
+        return staticons[file];
+    }
+
+    private static Sprite skill2(int file) {
+        if (staticons2 == null || file < 0 || file >= staticons2.length) {
+            return null;
+        }
+        return staticons2[file];
+    }
+
+    private static Sprite[] loadNamed(Js5 archive, String name) {
+        int group = archive.getGroupId(JagString.parse(name));
+        System.out.println("[menu-icons] group " + name + "=" + group);
+        if (group < 0) {
+            return null;
+        }
+        SoftwareSprite[] raw = SpriteLoader.loadSoftwareSprites(group, archive);
+        if (raw == null || raw.length == 0) {
+            return null;
+        }
+        Sprite[] out = new Sprite[raw.length];
+        for (int i = 0; i < raw.length; i++) {
+            if (raw[i] == null) {
+                continue;
+            }
+            out[i] = GlRenderer.enabled ? new GlSprite(raw[i]) : raw[i];
+        }
+        return out;
     }
 
     private static Sprite first(Sprite[] arr) {
@@ -121,13 +184,6 @@ public final class MiniMenuIcons {
         return arr[0];
     }
 
-    private static Sprite mapfuncOrNull() {
-        if (Sprites.mapfuncs != null && Sprites.mapfuncs.length > 0) {
-            return Sprites.mapfuncs[0];
-        }
-        return null;
-    }
-
     private static String stripColors(String s) {
         if (s == null) {
             return "";
@@ -135,7 +191,7 @@ public final class MiniMenuIcons {
         StringBuilder out = new StringBuilder(s.length());
         int i = 0;
         while (i < s.length()) {
-            if (s.charAt(i) == '<' ) {
+            if (s.charAt(i) == '<') {
                 int end = s.indexOf('>', i);
                 if (end >= 0) {
                     i = end + 1;

@@ -49,7 +49,8 @@ public final class InputController {
     /** Called from InputManager.tick() after mapper.update(). */
     public static void pollSystemActions() {
         // Touch keyboard can work on login too
-        if (InputManager.getMode() != InputMode.MINI_MENU &&
+        var check = InputManager.getMode() == InputMode.MINI_MENU || InputManager.getMode() == InputMode.DIALOGUE;
+        if (!check &&
                 InputManager.isActionPressed(Action.TOUCH_KEYBOARD)) {
             TouchKeyboard.show(true);
         }

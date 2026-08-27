@@ -97,11 +97,31 @@ public final class DialogueController {
             System.out.println("[dialogue] confirm missing id=" + id);
             return;
         }
-        JagString text = c.text != null ? c.text : JagString.parse("");
-        // arg1 must be -1: this is a static child, not createdComponents[n]
-        ClientProt.method4512(text, -1, 1, id);
-        System.out.println("[dialogue] confirm iface=" + activeIface
-                + " id=" + id + " continue=" + continueOnly);
+
+        // opcode 132 — same family the server uses for dialogue buttons
+        rt4.MiniMenu.method10(c.createdComponentId, id);
+
+        System.out.println("[dialogue] confirm-132 selected=" + selected
+                + " id=" + id
+                + " child=" + (id & 0xFFFF)
+                + " slot=" + c.createdComponentId
+                + " text=" + (c.text != null ? c.text : "")
+                + " continue=" + continueOnly);
+        reset();
+    }
+
+    private static boolean isIfaceOpen(int iface) {
+        if (InterfaceList.openInterfaces == null) {
+            return false;
+        }
+        for (rt4.ComponentPointer p = (rt4.ComponentPointer) InterfaceList.openInterfaces.head();
+             p != null;
+             p = (rt4.ComponentPointer) InterfaceList.openInterfaces.next()) {
+            if (p.interfaceId == iface) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void reset() {
@@ -127,6 +147,9 @@ public final class DialogueController {
                 continue;
             }
             Component[] list = InterfaceList.components[iface];
+            if (!isIfaceOpen(iface)) {
+                continue;
+            }
             if (list == null) {
                 continue;
             }

@@ -109,7 +109,7 @@ public final class AmiliousClient {
     /** Call after MiniMenu/tooltips are drawn - for overlays that should be on top. */
     public static void onDrawOverlay() {
         // Draw gamepad virtual cursor (always enabled for now so we can see it)
-        DialogueController.applyHighlight();
+        //DialogueController.applyHighlight();
         rt4.amilious.input.GamepadMouseController.drawVirtualCursor(true);
     }
 

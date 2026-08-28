@@ -104,6 +104,7 @@ public final class AmiliousClient {
             DialogueController.tick();
         }
         InputManager.tick();
+        CameraController.processActions();
         for (ICommand c : commands) c.processActions();
         ModalTools.update();
         MapController.tickInput();
@@ -136,7 +137,6 @@ public final class AmiliousClient {
         PluginRepository.OnLogin();
         InputManager.onLogin();
         Voiceover.onLogin();
-        System.out.println("[icons] mapfuncs=" + (Sprites.mapfuncs == null ? 0 : Sprites.mapfuncs.length));
     }
 
     public static void onInterfaceOpen(int interfaceId) {

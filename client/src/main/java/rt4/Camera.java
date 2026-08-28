@@ -3,7 +3,6 @@ package rt4;
 import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
-import rt4.amilious.ChatController;
 
 public class Camera {
 	@OriginalMember(owner = "client!id", name = "d", descriptor = "[[[I")
@@ -373,34 +372,6 @@ public class Camera {
 		}
 		if (cameraX != playerX) {
 			cameraX += (playerX - cameraX) / 16;
-		}
-		if (Preferences.aBoolean63) {
-			for (@Pc(93) int local93 = 0; local93 < InterfaceList.keyQueueSize; local93++) {
-				@Pc(104) int code = InterfaceList.keyCodes[local93];
-				// Support arrow keys
-				if (code == Keyboard.KEY_UP) {
-					pitchTarget += 47;
-				} else if (code == Keyboard.KEY_DOWN) {
-					pitchTarget -= 17;
-				} else if (code == Keyboard.KEY_LEFT) {
-					yawTarget -= 65;
-				} else if (code == Keyboard.KEY_RIGHT) {
-					yawTarget += 191;
-				}
-				// Support WASD when ChatController is enabled and chat is not focused
-				else if (ChatController.isEnabled() && !ChatController.isFocused()) {
-					if (code == 33) { // W
-						pitchTarget += 47;
-					} else if (code == 49) { // S
-						pitchTarget -= 17;
-					} else if (code == 48) { // A
-						yawTarget -= 65;
-					} else if (code == 50) { // D
-						yawTarget += 191;
-					}
-				}
-			}
-			clampCameraAngle();
 		}
 	}
 

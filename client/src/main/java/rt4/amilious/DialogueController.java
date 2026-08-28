@@ -1,9 +1,10 @@
 package rt4.amilious;
 
-import rt4.ClientProt;
 import rt4.Component;
 import rt4.InterfaceList;
-import rt4.JagString;
+import rt4.amilious.input.InputManager;
+import rt4.amilious.input.InputMode;
+import rt4.amilious.input.action.Action;
 import rt4.client;
 
 /**
@@ -134,6 +135,15 @@ public final class DialogueController {
         }
         return false;
     }
+
+    public static void processActions() {
+        if(!enabled) return;
+        if (InputManager.getMode() != InputMode.DIALOGUE) return;
+        if (InputManager.isActionPressed(Action.MENU_UP)) moveUp();
+        if (InputManager.isActionPressed(Action.MENU_DOWN)) moveDown();
+        if (InputManager.isActionPressed(Action.MENU_CONFIRM)) confirm();
+    }
+
 
     public static void reset() {
         for (int i = 0; i < optionCount; i++) {

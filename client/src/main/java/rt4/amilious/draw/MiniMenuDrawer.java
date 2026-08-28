@@ -2,6 +2,8 @@ package rt4.amilious.draw;
 
 import rt4.*;
 import rt4.amilious.input.InputManager;
+import rt4.amilious.input.InputMode;
+import rt4.amilious.input.action.Action;
 
 /**
  * Larger "Choose Option" panel for mouse + controller.
@@ -327,6 +329,16 @@ public final class MiniMenuDrawer {
         int w = InterfaceList.anInt761;
         int h = InterfaceList.anInt436;
         return px >= x && px < x + w && py >= y && py < y + h;
+    }
+
+    public static void processActions() {
+        finishRetargetIfReady();
+        if (!enabled) return;
+        if (InputManager.getMode() != InputMode.MINI_MENU) return;
+        if (InputManager.isActionPressed(Action.MENU_UP)) moveUp();
+        if (InputManager.isActionPressed(Action.MENU_DOWN)) MiniMenuDrawer.moveDown();
+        if (InputManager.isActionPressed(Action.MENU_CONFIRM)) MiniMenuDrawer.confirm();
+        if (InputManager.isActionPressed(Action.MENU_CANCEL)) MiniMenuDrawer.cancel();
     }
 
     private static boolean pendingRetarget;

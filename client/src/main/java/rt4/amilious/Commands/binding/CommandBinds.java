@@ -1,4 +1,4 @@
-package rt4.amilious;
+package rt4.amilious.Commands.binding;
 
 import rt4.Chat;
 import rt4.Cheat;

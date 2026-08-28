@@ -1,5 +1,6 @@
 package rt4.amilious.input;
 
+import rt4.amilious.DialogueController;
 import rt4.amilious.MapController;
 import rt4.amilious.draw.MiniMenuDrawer;
 import rt4.amilious.input.action.Action;
@@ -184,13 +185,10 @@ public final class InputManager {
     }
 
     private static void processUiActions() {
-        pollMiniMenuActions();
-        pollDialogueActions();
-        rt4.amilious.InputController.pollSystemActions();
-        rt4.amilious.InputController.pollCommandBinds();
-        MiniMenuDrawer.finishRetargetIfReady();
+        MiniMenuDrawer.processActions();
+        DialogueController.processActions();
+        GenericActions.processActions();
     }
-
 
     public static void beginFrame(boolean enterDown, boolean escapeDown) {
         if (!initialized) {
@@ -769,42 +767,6 @@ public final class InputManager {
         }
         chatArmed = true;
         applyMode(deriveMode());
-    }
-
-    private static void pollMiniMenuActions() {
-        if (mode != InputMode.MINI_MENU) {
-            return;
-        }
-        if (!MiniMenuDrawer.enabled) {
-            return;
-        }
-        if (mapper.isPressed(Action.MENU_UP)) {
-            MiniMenuDrawer.moveUp();
-        }
-        if (mapper.isPressed(Action.MENU_DOWN)) {
-            MiniMenuDrawer.moveDown();
-        }
-        if (mapper.isPressed(Action.MENU_CONFIRM)) {
-            MiniMenuDrawer.confirm();
-        }
-        if (mapper.isPressed(Action.MENU_CANCEL)) {
-            MiniMenuDrawer.cancel();
-        }
-    }
-
-    private static void pollDialogueActions() {
-        if (mode != InputMode.DIALOGUE) {
-            return;
-        }
-        if (mapper.isPressed(Action.MENU_UP)) {
-            rt4.amilious.DialogueController.moveUp();
-        }
-        if (mapper.isPressed(Action.MENU_DOWN)) {
-            rt4.amilious.DialogueController.moveDown();
-        }
-        if (mapper.isPressed(Action.MENU_CONFIRM)) {
-            rt4.amilious.DialogueController.confirm();
-        }
     }
 
     public static void enterWorldMode() {

@@ -5,4 +5,9 @@ public interface ICommand {
     public boolean compare(String s);
 
     public boolean execute(String s);
+
+    default void processActions(){}
+
+    default void init(){}
+
 }

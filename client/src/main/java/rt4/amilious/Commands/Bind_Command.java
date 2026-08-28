@@ -1,7 +1,10 @@
 package rt4.amilious.Commands;
 
-import rt4.amilious.CommandBinds;
+import rt4.amilious.Commands.binding.CommandBinds;
 import rt4.amilious.debug.DebugConsole;
+import rt4.amilious.input.InputManager;
+import rt4.amilious.input.action.Action;
+import rt4.client;
 
 /**
  * ::bind <slot> <command>   e.g. ::bind 0 ::bank
@@ -69,6 +72,22 @@ public final class Bind_Command implements ICommand {
         CommandBinds.chat("Bound slot " + slot + " → " + command);
         DebugConsole.log("bind " + slot + " = " + command);
         return true;
+    }
+
+    @Override
+    public void processActions() {
+        if (!InputManager.shouldAllowWorldBinds()) {return;}
+        //process input
+        if (InputManager.isActionPressed(Action.HOTKEY_0)) CommandBinds.run(0);
+        else if (InputManager.isActionPressed(Action.HOTKEY_1)) CommandBinds.run(1);
+        else if (InputManager.isActionPressed(Action.HOTKEY_2)) CommandBinds.run(2);
+        else if (InputManager.isActionPressed(Action.HOTKEY_3)) CommandBinds.run(3);
+        else if (InputManager.isActionPressed(Action.HOTKEY_4)) CommandBinds.run(4);
+        else if (InputManager.isActionPressed(Action.HOTKEY_5)) CommandBinds.run(5);
+        else if (InputManager.isActionPressed(Action.HOTKEY_6)) CommandBinds.run(6);
+        else if (InputManager.isActionPressed(Action.HOTKEY_7)) CommandBinds.run(7);
+        else if (InputManager.isActionPressed(Action.HOTKEY_8)) CommandBinds.run(8);
+        else if (InputManager.isActionPressed(Action.HOTKEY_9)) CommandBinds.run(9);
     }
 
     private static Integer parseSlot(String raw) {

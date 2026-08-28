@@ -4,6 +4,7 @@ import rt4.*;
 import java.util.ArrayList;
 import plugin.PluginRepository;
 import rt4.amilious.Commands.DumpNames_Command;
+import rt4.amilious.Commands.binding.CommandBinds;
 import rt4.amilious.debug.DebugConsole;
 import rt4.amilious.menutab.MenuTab;
 import rt4.amilious.modal.ModalController;
@@ -51,6 +52,7 @@ public final class AmiliousClient {
         DebugConsole.Init();
         Voiceover.init();
         InputManager.setGamepadDebugLogging(true);
+        for (ICommand c : commands) c.init();
         DebugConsole.log("AmiliousScape client initialized!");
     }
 
@@ -101,6 +103,7 @@ public final class AmiliousClient {
             DialogueController.tick();
         }
         InputManager.tick();
+        for (ICommand c : commands) c.processActions();
         ModalTools.update();
         MapController.tickInput();
         Voiceover.tick();

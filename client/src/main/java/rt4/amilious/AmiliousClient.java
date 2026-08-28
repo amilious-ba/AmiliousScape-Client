@@ -29,14 +29,13 @@ public final class AmiliousClient {
     public static void Init() {
         if (initialized) return;
         DebugConsole.log("AmiliousScape client initializing...");
-        initialized = true;
 
         if (GlobalJsonConfig.instance != null && GlobalJsonConfig.instance.enableAmiliousDebugAtStart) {
             DebugConsole.enabled = true;
             DebugConsole.log("debug enabled at start");
         }
 
-        CommandBinds.load();
+
         AmiliousClient.AddCommand(new Bind_Command());
         AmiliousClient.AddCommand(new DumpNames_Command());
 
@@ -52,14 +51,19 @@ public final class AmiliousClient {
         DebugConsole.Init();
         Voiceover.init();
         InputManager.setGamepadDebugLogging(true);
-        for (ICommand c : commands) c.init();
+        initialized = true;
+        for (ICommand c : commands) c.init(); // all commands shoud be added first or this will not run
         DebugConsole.log("AmiliousScape client initialized!");
     }
 
 
 
-    public static void AddCommand(ICommand c){
+    public static void AddCommand(ICommand c) {
+        if (c == null) return;
         commands.add(c);
+        if (initialized) {
+            c.init();
+        }
     }
 
     public static void RemoveCommand(ICommand c){

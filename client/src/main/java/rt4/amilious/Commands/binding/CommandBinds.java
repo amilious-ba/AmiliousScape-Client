@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public final class CommandBinds {
 
-    public static final int MAX_SLOTS = 16;
+    public static final int MAX_SLOTS = 10;
     private static final String FILE_NAME = "binds.txt";
     private static final String[] binds = new String[MAX_SLOTS];
 

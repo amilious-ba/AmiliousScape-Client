@@ -124,4 +124,8 @@ public final class Bind_Command implements ICommand {
         CommandBinds.chat("       ::unbind <slot>           clear");
         CommandBinds.chat("       ::binds                   list all");
     }
+
+    public void init(){
+        CommandBinds.load();
+    }
 }

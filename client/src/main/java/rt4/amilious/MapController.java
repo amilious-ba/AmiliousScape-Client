@@ -29,6 +29,9 @@ public final class MapController {
     }
 
     public static boolean isOpen() {
+        if(WorldMap.loadPercentage > 0) {
+            return true;
+        }
         return Boolean.TRUE.equals(open);
     }
 
@@ -112,7 +115,17 @@ public final class MapController {
 
     /** Call every client tick from AmiliousClient.update() */
     public static void tickInput() {
-        if (!isOpen() || client.gameState != 30 || WorldMap.loadPercentage < 100) {
+        if(client.gameState != 30){
+            open = false;
+            return;
+        }
+        if (WorldMap.loadPercentage > 0) {
+            open = true;
+        } else if (Boolean.TRUE.equals(open)) {
+            open = false;
+        }
+
+        if (!isOpen() || WorldMap.loadPercentage < 100) {
             return;
         }
 

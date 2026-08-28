@@ -1,5 +1,7 @@
 package rt4.amilious.input;
 
+import rt4.GameShell;
+import rt4.InterfaceList;
 import rt4.amilious.DialogueController;
 import rt4.amilious.MapController;
 import rt4.amilious.menu.MiniMenuDrawer;
@@ -310,6 +312,9 @@ public final class InputManager {
         previousMode = mode;
         mode = next;
         fireModeChanged(previousMode, mode);
+        if(mode ==InputMode.CHAT||previousMode ==InputMode.CHAT) {
+            dirtyChatStrip();
+        }
     }
 
     private static void fireModeChanged(InputMode from, InputMode to) {
@@ -388,6 +393,12 @@ public final class InputManager {
             disarmChatIfNoSubmit = false;
             submittedSinceArmEnter = false;
         } else if (enterPressed && cfg.enterOpensChat) {
+            System.out.println("[enter] mode=" + getMode()
+                    + " consume=" + shouldConsumeEnter()
+                    + " blockQC=" + shouldBlockQuickChat()
+                    + " chatEmpty=" + isChatInputEmpty()
+                    + " chatboxModal=" + ChatBoxModalRegistry.isActive()
+                    + " name=" + ChatBoxModalRegistry.getActiveName());
             if (!chatArmed) {
                 if (ChatboxState.isVisible() || !cfg.forceWorldWhenChatHidden) {
                     chatArmed = true;
@@ -904,6 +915,26 @@ public final class InputManager {
         }
         pendingInjectEnter = false;
         return true;
+    }
+
+    private static void dirtyChatStrip() {
+        GameShell.fullRedraw = true;
+        int[] ids = {
+                8978483,   // iface 137 chat input (your onKey id)
+                49283074,  // 752 chrome
+                49283075,
+                49283077,
+                49283079   // placeholder / “disabled” bar
+        };
+        for (int id : ids) {
+            try {
+                rt4.Component c = InterfaceList.method1418(id, -1);
+                if (c != null) {
+                    InterfaceList.redraw(c);
+                }
+            } catch (Exception ignored) {
+            }
+        }
     }
 
 }

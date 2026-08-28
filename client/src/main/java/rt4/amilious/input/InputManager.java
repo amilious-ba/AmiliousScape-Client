@@ -2,7 +2,7 @@ package rt4.amilious.input;
 
 import rt4.amilious.DialogueController;
 import rt4.amilious.MapController;
-import rt4.amilious.draw.MiniMenuDrawer;
+import rt4.amilious.menu.MiniMenuDrawer;
 import rt4.amilious.input.action.Action;
 import rt4.amilious.input.action.ActionMapper;
 import rt4.amilious.input.device.BotInputDevice;

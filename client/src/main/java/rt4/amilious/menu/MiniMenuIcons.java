@@ -1,4 +1,4 @@
-package rt4.amilious.draw;
+package rt4.amilious.menu;
 
 import rt4.CursorType;
 import rt4.CursorTypeList;
@@ -146,6 +146,10 @@ public final class MiniMenuIcons {
         }
         if (op.startsWith("teleport")) {
             return ui(SPR_MAGIC);
+        }
+        if (op.startsWith("view stats") || op.equals("stats")) {
+            Sprite tab = tabIcon(rt4.amilious.menutab.MenuTab.STATS);
+            return tab != null ? tab : ui(SPR_HITPOINTS); // fallback: HP icon
         }
         if (op.startsWith("examine")) {
             return magnifier();
@@ -383,6 +387,18 @@ public final class MiniMenuIcons {
 
         followArrows = GlRenderer.enabled ? new GlSprite(raw) : raw;
         return followArrows;
+    }
+
+    private static Sprite tabIcon(rt4.amilious.menutab.MenuTab tab) {
+        try {
+            rt4.Component c = rt4.InterfaceList.method1418(tab.componentId, -1);
+            if (c == null) {
+                return null;
+            }
+            return c.method489(false); // idle tab sprite
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static void drawLeftChevron(int[] p, int w, int ox, int fill, int outline) {

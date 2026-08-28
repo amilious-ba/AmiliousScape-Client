@@ -1,4 +1,4 @@
-package rt4.amilious.draw;
+package rt4.amilious.menu;
 
 import rt4.*;
 import rt4.amilious.input.InputManager;

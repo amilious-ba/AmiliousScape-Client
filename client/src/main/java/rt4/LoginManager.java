@@ -4,7 +4,7 @@ import org.openrs2.deob.annotation.OriginalArg;
 import org.openrs2.deob.annotation.OriginalMember;
 import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
-import rt4.amilious.draw.MiniMenuDrawer;
+import rt4.amilious.menu.MiniMenuDrawer;
 
 import java.io.IOException;
 import java.net.Socket;

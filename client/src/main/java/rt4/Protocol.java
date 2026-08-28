@@ -6,7 +6,7 @@ import org.openrs2.deob.annotation.Pc;
 import plugin.PluginRepository;
 import rt4.amilious.AmiliousClient;
 import rt4.amilious.ChatController;
-import rt4.amilious.draw.MiniMenuDrawer;
+import rt4.amilious.menu.MiniMenuDrawer;
 import rt4.amilious.patch.TutorialPatch;
 
 import java.io.IOException;

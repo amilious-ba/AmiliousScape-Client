@@ -817,7 +817,17 @@ public final class InputManager {
      * Check if the chat input is currently empty.
      */
     public static boolean isChatInputEmpty() {
-        return lastChatInputText == null || lastChatInputText.length() == 0;
+        if (lastChatInputText == null || lastChatInputText.length() == 0) {
+            return true;
+        }
+        String raw = lastChatInputText.toString();
+        String stripped = raw.replaceAll("<[^>]+>", "").trim();
+        if (stripped.endsWith("*")) {
+            stripped = stripped.substring(0, stripped.length() - 1).trim();
+        }
+        int colon = stripped.lastIndexOf(':');
+        String typed = colon >= 0 ? stripped.substring(colon + 1).trim() : stripped;
+        return typed.length() == 0;
     }
 
     // ===== Mouse/Cursor Helper Methods =====

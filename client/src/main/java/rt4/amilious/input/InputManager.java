@@ -175,11 +175,16 @@ public final class InputManager {
         if (rt4.Mouse.clickButton == 1 || isMouseButtonPressed(InputButtons.MOUSE_BUTTON_1)) {
             MiniMenuDrawer.handleClick(getLastClickX(), getLastClickY());
         }
+        if (rt4.Mouse.clickButton == 2 || isMouseButtonPressed(InputButtons.MOUSE_BUTTON_2)) {
+            MiniMenuDrawer.retargetFromWorldClick(getLastClickX(), getLastClickY());
+        }
         pollMiniMenuActions();
         pollDialogueActions();
 
         rt4.amilious.InputController.pollSystemActions();
         rt4.amilious.InputController.pollCommandBinds();
+
+        MiniMenuDrawer.finishRetargetIfReady();
     }
 
     public static void beginFrame(boolean enterDown, boolean escapeDown) {

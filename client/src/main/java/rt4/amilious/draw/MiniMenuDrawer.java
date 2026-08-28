@@ -14,6 +14,7 @@ public final class MiniMenuDrawer {
     public static boolean enabled = true;
     /** true = vanilla: open at cursor, clamp on canvas. false = current chat-reserved corner. */
     public static boolean anchorAtCursor = true;
+    public static boolean showIcons = true;
 
     private static final int COLOR_PANEL = 0x5D5447;
     private static final int COLOR_HEADER = 0x000000;
@@ -43,7 +44,6 @@ public final class MiniMenuDrawer {
     public static void onOpenFrame() {
         if (!wasOpen) {
             wasOpen = true;
-            // top visible row = last index
             selectedIndex = MiniMenu.size > 0 ? MiniMenu.size - 1 : 0;
             scrollOffset = 0;
             ensureSelectedVisible();
@@ -66,11 +66,38 @@ public final class MiniMenuDrawer {
         return wasOpen && Cs1ScriptRunner.aBoolean108 && MiniMenu.size > 0;
     }
 
+    /**
+     * RMB outside the open panel: keep a menu up, but drop the frozen list
+     * so vanilla MiniMenu.add can fill options for the new target.
+     *
+     * Call from the mouse path that records the right-click, BEFORE consume.
+     * Return false = do not consume the click.
+     */
+    public static boolean retargetFromWorldClick(int px, int py) {
+        if (!enabled || !Cs1ScriptRunner.aBoolean108) {
+            return false;
+        }
+        if (contains(px, py)) {
+            return false;
+        }
+
+        MiniMenu.size = 0;
+        Cs1ScriptRunner.aBoolean108 = false;
+        wasOpen = false;
+        selectedIndex = 0;
+        scrollOffset = 0;
+        pendingRetarget = true;
+
+        InterfaceList.redrawScreen(
+                InterfaceList.anInt4271, InterfaceList.anInt761,
+                InterfaceList.anInt5138, InterfaceList.anInt436);
+        return false;
+    }
+
     public static int getSelectedIndex() {
         return selectedIndex;
     }
 
-    /** Visual up = toward top of panel = higher index. */
     public static void moveUp() {
         if (!isOpen()) {
             return;
@@ -81,7 +108,6 @@ public final class MiniMenuDrawer {
         }
     }
 
-    /** Visual down = toward bottom of panel = lower index. */
     public static void moveDown() {
         if (!isOpen()) {
             return;
@@ -131,22 +157,15 @@ public final class MiniMenuDrawer {
             visible = MAX_VISIBLE;
         }
 
-
+        int extra = showIcons ? MiniMenuIcons.SLOT : 0;
         int w = Fonts.b12Full.getStringWidth(rt4.LocalizedText.CHOOSE_OPTION) + PAD_X * 2 + 8;
         for (int i = 0; i < MiniMenu.size; i++) {
             int ow = Fonts.b12Full.getStringWidth(MiniMenu.getOp(i))
-                    + PAD_X * 2 + 8 + MiniMenuIcons.SLOT;
+                    + PAD_X * 2 + 8 + extra;
             if (ow > w) {
                 w = ow;
             }
         }
-        /*int w = Fonts.b12Full.getStringWidth(rt4.LocalizedText.CHOOSE_OPTION) + PAD_X * 2 + 8;
-        for (int i = 0; i < MiniMenu.size; i++) {
-            int ow = Fonts.b12Full.getStringWidth(MiniMenu.getOp(i)) + PAD_X * 2 + 8;
-            if (ow > w) {
-                w = ow;
-            }
-        }*/
 
         int h = HEADER_H + visible * ROW_H + 8;
 
@@ -231,24 +250,21 @@ public final class MiniMenuDrawer {
             }
 
             int color = (i == selectedIndex || hovered) ? COLOR_HOVER : COLOR_TEXT;
-            Sprite icon = MiniMenuIcons.forIndex(i);
-            if (icon != null) {
-                MiniMenuIcons.render(icon, x + 3, rowTop, ROW_H);
+            int textX = x + PAD_X;
+            if (showIcons) {
+                Sprite icon = MiniMenuIcons.forIndex(i);
+                if (icon != null) {
+                    MiniMenuIcons.render(icon, x + 3, rowTop, ROW_H);
+                }
+                textX += MiniMenuIcons.SLOT;
             }
-            int textX = x + PAD_X + MiniMenuIcons.SLOT;
             Fonts.b12Full.renderLeft(MiniMenu.getOp(i), textX, baseline, color, 0);
-            /*int color = (i == selectedIndex || hovered) ? COLOR_HOVER : COLOR_TEXT;
-            Fonts.b12Full.renderLeft(MiniMenu.getOp(i), x + PAD_X, baseline, color, 0);
-            */
-
             drawn++;
-
         }
 
         InterfaceList.forceRedrawScreen(x, y, h, w);
     }
 
-    /** Packed index, or -1 if not on a row. */
     public static int hitTest(int px, int py) {
         if (!enabled || MiniMenu.size <= 0) {
             return -1;
@@ -274,15 +290,18 @@ public final class MiniMenuDrawer {
         return -1;
     }
 
-
     public static boolean handleClick(int px, int py) {
         if (!enabled || !Cs1ScriptRunner.aBoolean108) {
             return false;
         }
 
-        // Temp: this click belongs to the menu, not the world
-        rt4.amilious.input.InputManager.consumeMouseClick();
-        rt4.Mouse.clickButton = 0;
+        // Left click only. RMB is retargetFromWorldClick.
+        if (Mouse.clickButton == 2) {
+            return false;
+        }
+
+        InputManager.consumeMouseClick();
+        Mouse.clickButton = 0;
 
         if (MiniMenu.size > 0 && contains(px, py)) {
             int index = hitTest(px, py);
@@ -299,30 +318,6 @@ public final class MiniMenuDrawer {
         return true;
     }
 
-    /** True if this click belongs to the panel (consume + maybe select). */
-    /*public static boolean handleClick(int px, int py) {
-        if (!enabled || !Cs1ScriptRunner.aBoolean108 || MiniMenu.size <= 0) {
-            return false;
-        }
-        if (!contains(px, py)) {
-            return false;
-        }
-
-        rt4.amilious.input.InputManager.consumeMouseClick();
-
-        int index = hitTest(px, py);
-        if (index != -1) {
-            MiniMenu.doAction(index);
-        }
-
-        Cs1ScriptRunner.aBoolean108 = false;
-        InterfaceList.redrawScreen(
-                InterfaceList.anInt4271, InterfaceList.anInt761,
-                InterfaceList.anInt5138, InterfaceList.anInt436);
-        onClosed();
-        return true;
-    }*/
-
     public static boolean contains(int px, int py) {
         if (!enabled) {
             return false;
@@ -332,6 +327,22 @@ public final class MiniMenuDrawer {
         int w = InterfaceList.anInt761;
         int h = InterfaceList.anInt436;
         return px >= x && px < x + w && py >= y && py < y + h;
+    }
+
+    private static boolean pendingRetarget;
+
+
+    /** Call at the start of InputManager.tick() every frame. */
+    public static void finishRetargetIfReady() {
+        if (!pendingRetarget) {
+            return;
+        }
+        if (MiniMenu.size <= 0) {
+            return;
+        }
+        Cs1ScriptRunner.aBoolean108 = true;
+        pendingRetarget = false;
+        onOpenFrame();
     }
 
     private static void ensureSelectedVisible() {

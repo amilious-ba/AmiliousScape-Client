@@ -1575,7 +1575,6 @@ public final class client extends GameShell {
 			}
 		} else if (mainLoadState == 140) {
 			LoginManager.loginScreenId = js5Archive3.getGroupId(LOGINSCREEN);
-			rt4.amilious.draw.MiniMenuIcons.preload(js5Archive8);
 			js5Archive5.discardNames(false);
 			js5Archive6.discardNames(true);
 			js5Archive8.discardNames(true);

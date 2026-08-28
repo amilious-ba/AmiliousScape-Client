@@ -134,6 +134,7 @@ public final class AmiliousClient {
         PluginRepository.OnLogin();
         InputManager.onLogin();
         Voiceover.onLogin();
+        System.out.println("[icons] mapfuncs=" + (Sprites.mapfuncs == null ? 0 : Sprites.mapfuncs.length));
     }
 
     public static void onInterfaceOpen(int interfaceId) {

@@ -1,6 +1,8 @@
-package rt4.amilious.input.device;
+package rt4.amilious.input.device.poller;
 
 import net.java.games.input.*;
+import rt4.amilious.input.device.GamepadDevice;
+import rt4.amilious.input.device.JInputNativeLoader;
 
 /**
  * JInput-based gamepad poller for native controller support.

@@ -93,99 +93,104 @@ public final class InputManager {
     }
 
     public static void tick() {
-        if (!initialized) {
-            init();
-        }
+        if (!initialized) init();
 
-        if (disarmChatIfNoSubmit) {
-            disarmChatIfNoSubmit = false;
-            if (!submittedSinceArmEnter) {
-                chatArmed = false;
-            }
-            submittedSinceArmEnter = false;
-        }
+        resolveDeferredChatDisarm();
+        resetFrameFlags();
+        pollInputFrame();
+        processModeAndChatArming();
+        applyMode(deriveMode());
+        maybeInjectGamepadEnter();
+        mapper.update(currentFrame, mode);
+        processWorldClicks();
+        processUiActions();
+    }
 
+    private static void resolveDeferredChatDisarm() {
+        if (!disarmChatIfNoSubmit) {
+            return;
+        }
+        disarmChatIfNoSubmit = false;
+        if (!submittedSinceArmEnter) {
+            chatArmed = false;
+        }
+        submittedSinceArmEnter = false;
+    }
+
+    private static void resetFrameFlags() {
         consumeEnterThisFrame = false;
         pendingInjectEnter = false;
         submittedThisFrame = false;
+    }
 
-        // IMPORTANT: We swap previous/current frames BEFORE clearing.
-        // This keeps currentFrame valid throughout the entire game loop,
-        // including event handlers that fire AFTER tick() completes.
-        // We only clear current when we're about to poll fresh data.
+    private static void pollInputFrame() {
+        // Swap before clear so currentFrame stays valid for handlers after tick().
         previousFrame.copyDownFrom(currentFrame);
 
         if (pollDevices) {
-            // Clear current frame JUST before polling new data
             currentFrame.clear();
-
             for (int i = 0; i < devices.size(); i++) {
                 InputDevice d = devices.get(i);
-                if (d.isConnected()) {
-                    d.poll(currentFrame);
-                    // Poll idle counters for AF K detection
-                    if (d == keyboardDevice) {
-                        currentFrame.keyboardIdleLoops = d.getIdleLoops();
-                    } else if (d == mouseDevice) {
-                        currentFrame.mouseIdleLoops = d.getIdleLoops();
-                    }
+                if (!d.isConnected()) {
+                    continue;
+                }
+                d.poll(currentFrame);
+                if (d == keyboardDevice) {
+                    currentFrame.keyboardIdleLoops = d.getIdleLoops();
+                } else if (d == mouseDevice) {
+                    currentFrame.mouseIdleLoops = d.getIdleLoops();
                 }
             }
         }
 
-        // Convert left stick axes to virtual buttons BEFORE computing edges
         convertLeftStickToButtons(currentFrame);
-
         currentFrame.computeEdges(previousFrame);
-
-        // Apply gamepad mouse control (right stick → cursor movement, triggers → clicks)
         GamepadMouseController.tick(currentFrame, mode);
+    }
 
-        if (processModeKeys) {
-            boolean enterDown = currentFrame.buttonDown[InputButtons.ENTER]
-                    || currentFrame.buttonDown[InputButtons.GP_A];
-            boolean escapeDown = currentFrame.buttonDown[InputButtons.ESCAPE]
-                    || currentFrame.buttonDown[InputButtons.GP_B];
-            processChatArming(enterDown, escapeDown);
-
-            // GP_A edge → same as physical Enter for CS2 key queue (chat/modals)
-            /*if (currentFrame.buttonPressed[InputButtons.GP_A]) {
-                pendingInjectEnter = true;
-            }*/
-        } else {
+    private static void processModeAndChatArming() {
+        if (!processModeKeys) {
             prevEnter = false;
             prevEscape = false;
+            return;
         }
+        boolean enterDown = currentFrame.buttonDown[InputButtons.ENTER]
+                || currentFrame.buttonDown[InputButtons.GP_A];
+        boolean escapeDown = currentFrame.buttonDown[InputButtons.ESCAPE]
+                || currentFrame.buttonDown[InputButtons.GP_B];
+        processChatArming(enterDown, escapeDown);
+    }
 
-        applyMode(deriveMode());
-
-        // Only inject when this A-press should act like Enter *in* a text context —
-        // NOT when it was the WORLD → CHAT arm (consumeEnterThisFrame is set then).
-        if (processModeKeys && currentFrame.buttonPressed[InputButtons.GP_A]) {
-            if (client.gameState != 30) {
-                // Login / pre-game: A = Enter (submit username/password)
-                pendingInjectEnter = true;
-            } else if (!consumeEnterThisFrame && shouldAcceptTextInput()) {
-                // In-game text contexts only — not the WORLD→CHAT arm (avoids QC)
-                pendingInjectEnter = true;
-            }
+    private static void maybeInjectGamepadEnter() {
+        if (!processModeKeys || !currentFrame.buttonPressed[InputButtons.GP_A]) {
+            return;
         }
+        if (client.gameState != 30) {
+            pendingInjectEnter = true;
+            return;
+        }
+        if (!consumeEnterThisFrame && shouldAcceptTextInput()) {
+            pendingInjectEnter = true;
+        }
+    }
 
-        mapper.update(currentFrame, mode);
+    private static void processWorldClicks() {
         if (rt4.Mouse.clickButton == 1 || isMouseButtonPressed(InputButtons.MOUSE_BUTTON_1)) {
             MiniMenuDrawer.handleClick(getLastClickX(), getLastClickY());
         }
         if (rt4.Mouse.clickButton == 2 || isMouseButtonPressed(InputButtons.MOUSE_BUTTON_2)) {
             MiniMenuDrawer.retargetFromWorldClick(getLastClickX(), getLastClickY());
         }
+    }
+
+    private static void processUiActions() {
         pollMiniMenuActions();
         pollDialogueActions();
-
         rt4.amilious.InputController.pollSystemActions();
         rt4.amilious.InputController.pollCommandBinds();
-
         MiniMenuDrawer.finishRetargetIfReady();
     }
+
 
     public static void beginFrame(boolean enterDown, boolean escapeDown) {
         if (!initialized) {

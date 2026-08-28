@@ -1,9 +1,10 @@
-package rt4.amilious.input.device;
+package rt4.amilious.input.device.poller;
 
 import de.ralleytn.wrapper.microsoft.xinput.XInput;
 import de.ralleytn.wrapper.microsoft.xinput.XInputState;
 import de.ralleytn.wrapper.microsoft.xinput.XInputGamepad;
 import com.sun.jna.Native;
+import rt4.amilious.input.device.GamepadDevice;
 
 /**
  * Polls XInput controllers using RalleYTN's XInput-Wrapper.

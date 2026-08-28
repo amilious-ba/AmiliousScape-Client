@@ -1,11 +1,9 @@
 package rt4.amilious.input.device;
 
+import rt4.amilious.input.device.poller.JInputGamepadPoller;
+import rt4.amilious.input.device.poller.XInputGamepadPoller;
 import rt4.amilious.input.state.InputButtons;
 import rt4.amilious.input.state.InputFrame;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Cross-platform gamepad support with XInput and JInput.

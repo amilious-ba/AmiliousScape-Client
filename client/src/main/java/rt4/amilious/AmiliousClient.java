@@ -4,7 +4,6 @@ import rt4.*;
 import java.util.ArrayList;
 import plugin.PluginRepository;
 import rt4.amilious.Commands.DumpNames_Command;
-import rt4.amilious.Commands.binding.CommandBinds;
 import rt4.amilious.debug.DebugConsole;
 import rt4.amilious.menutab.MenuTab;
 import rt4.amilious.modal.ModalController;

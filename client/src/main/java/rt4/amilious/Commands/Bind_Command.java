@@ -1,10 +1,13 @@
 package rt4.amilious.Commands;
 
-import rt4.amilious.Commands.binding.CommandBinds;
+//#region Imports ######################################################################################################
+
 import rt4.amilious.debug.DebugConsole;
 import rt4.amilious.input.InputManager;
 import rt4.amilious.input.action.Action;
-import rt4.client;
+import rt4.amilious.Commands.binding.CommandBinds;
+
+//#endregion ###########################################################################################################
 
 /**
  * ::bind <slot> <command>   e.g. ::bind 0 ::bank
@@ -13,6 +16,8 @@ import rt4.client;
  * ::binds
  */
 public final class Bind_Command implements ICommand {
+
+    //#region Override Methods #########################################################################################
 
     @Override
     public boolean compare(String s) {
@@ -90,6 +95,24 @@ public final class Bind_Command implements ICommand {
         else if (InputManager.isActionPressed(Action.HOTKEY_9)) CommandBinds.run(9);
     }
 
+    @Override
+    public void init(){
+        CommandBinds.load();
+    }
+
+    //#endregion #######################################################################################################
+
+
+    //#region Private Methods ##########################################################################################
+
+    /**
+     * Parses a string representing a slot number. If the string is a valid integer within the
+     * allowable range of slots, the integer is returned. Otherwise, error messages are displayed
+     * to the user, and null is returned.
+     *
+     * @param raw the string input to be parsed as a slot number
+     * @return the parsed slot number if valid, or null if the input is invalid or out of range
+     */
     private static Integer parseSlot(String raw) {
         try {
             int slot = Integer.parseInt(raw.trim());
@@ -104,6 +127,16 @@ public final class Bind_Command implements ICommand {
         }
     }
 
+
+    /**
+     * Displays a list of all currently set command binds.
+     *
+     * Iterates through all available command bind slots, defined by the constant
+     * {@code CommandBinds.MAX_SLOTS}, and retrieves the associated command using
+     * {@code CommandBinds.get(int)}. If a command is found in a slot, it is
+     * displayed in chat using {@code CommandBinds.chat(String)}. If no commands
+     * are set, a message indicating that no binds are set is displayed.
+     */
     private static void list() {
         boolean any = false;
         for (int i = 0; i < CommandBinds.MAX_SLOTS; i++) {
@@ -118,6 +151,18 @@ public final class Bind_Command implements ICommand {
         }
     }
 
+
+    /**
+     * Displays instructions for using command binding functionality in the chat.
+     *
+     * This method provides usage information for the following commands:
+     * - `::bind <slot> <command>`: Binds a command to a specific slot.
+     * - `::bind <slot>`: Displays the command currently bound to the given slot.
+     * - `::unbind <slot>`: Clears the command binding for the specified slot.
+     * - `::binds`: Lists all currently set command bindings.
+     *
+     * The usage details are printed to the chat using the {@code CommandBinds.chat(String)} method.
+     */
     private static void usage() {
         CommandBinds.chat("Usage: ::bind <slot> <command>   e.g. ::bind 0 ::bank");
         CommandBinds.chat("       ::bind <slot>             show binding");
@@ -125,7 +170,6 @@ public final class Bind_Command implements ICommand {
         CommandBinds.chat("       ::binds                   list all");
     }
 
-    public void init(){
-        CommandBinds.load();
-    }
+    //#endregion #######################################################################################################
+
 }

@@ -5,6 +5,9 @@ public class ServerProt {
 	public static final int REBUILD_NORMAL = 162;
 	public static final int REBUILD_REGION = 214; // Dynamic regions
 
+	public static final int AMILIOUS_NPC_MENU = 200;
+	public static final int AMILIOUS_GIGOS_HUD = 201;
+
 	// zone updates
 	public static final int UPDATE_ZONE_FULL_FOLLOWS = 112; // NXT naming
 	public static final int UPDATE_ZONE_PARTIAL_FOLLOWS = 26; // NXT naming

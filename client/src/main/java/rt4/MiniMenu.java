@@ -1437,6 +1437,24 @@ public class MiniMenu {
 			}
 		} else {
 			@Pc(129) JagString[] local129 = arg0.ops;
+			rt4.amilious.menu.NpcMenuOverrides.Override ov = rt4.amilious.menu.NpcMenuOverrides.get(arg2);
+			if (ov != null) {
+				JagString[] merged = new JagString[5];
+				if (local129 != null) {
+					for (int i = 0; i < 5 && i < local129.length; i++) {
+						merged[i] = local129[i];
+					}
+				}
+				if (ov.slots[0] != null) merged[0] = JagString.of(ov.slots[0]);
+				if (ov.slots[1] != null) merged[1] = JagString.of(ov.slots[1]);
+				if (ov.slots[2] != null) merged[2] = JagString.of(ov.slots[2]);
+				if (ov.slots[3] != null) merged[3] = JagString.of(ov.slots[3]);
+				if (ov.slots[4] != null) merged[4] = JagString.of(ov.slots[4]);
+				local129 = merged;
+				if (ov.displayName != null && ov.displayName.length() > 0) {
+					local35 = JagString.of(ov.displayName);
+				}
+			}
 			if (aBoolean237) {
 				local129 = annotateOps(local129);
 			}

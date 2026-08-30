@@ -106,6 +106,13 @@ public final class InputManager {
         maybeInjectGamepadEnter();
         mapper.update(currentFrame, mode);
         processWorldClicks();
+        rt4.amilious.menu.GigosHud.poll(
+                getCursorX(),
+                getCursorY(),
+                currentFrame.buttonDown[InputButtons.MOUSE_BUTTON_1],
+                currentFrame.buttonPressed[InputButtons.MOUSE_BUTTON_1]
+        );
+        processWorldClicks();
         processUiActions();
     }
 

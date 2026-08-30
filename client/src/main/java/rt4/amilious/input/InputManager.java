@@ -197,6 +197,7 @@ public final class InputManager {
         MiniMenuDrawer.processActions();
         DialogueController.processActions();
         GenericActions.processActions();
+        ChatHistory.processActions();
     }
 
     public static void beginFrame(boolean enterDown, boolean escapeDown) {
@@ -747,6 +748,9 @@ public final class InputManager {
         submittedSinceArmEnter = true;
         disarmChatIfNoSubmit = false;
         consumeEnterThisFrame = true; // FIX: prevent QC opening on same-frame Enter after submit
+        if (lastChatInputText != null) {
+            ChatHistory.push(lastChatInputText.toString());
+        }
         lastChatInputText = null; // FIX: clear tracked text after submit so next empty Enter is detected
         if (InputConfig.INSTANCE.autoWorldAfterSend) {
             chatArmed = false;

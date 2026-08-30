@@ -115,11 +115,8 @@ public final class ActionMapper {
         bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.GP_LSTICK_LEFT, InputMode.WORLD);
         bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.GP_LSTICK_RIGHT, InputMode.WORLD);
 
-        // Camera in CHAT mode (arrows only, NOT WASD) - GameShell.java:608-611
-        bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.UP, InputMode.CHAT);
-        bind(Action.CAMERA_DOWN, rt4.amilious.input.state.InputButtons.DOWN, InputMode.CHAT);
-        bind(Action.CAMERA_LEFT, rt4.amilious.input.state.InputButtons.LEFT, InputMode.CHAT);
-        bind(Action.CAMERA_RIGHT, rt4.amilious.input.state.InputButtons.RIGHT, InputMode.CHAT);
+        bind(Action.CHAT_HISTORY_PREV, rt4.amilious.input.state.InputButtons.UP,   InputMode.CHAT);
+        bind(Action.CHAT_HISTORY_NEXT, rt4.amilious.input.state.InputButtons.DOWN, InputMode.CHAT);
 
         // Gamepad left stick camera control in CHAT mode
         bind(Action.CAMERA_UP, rt4.amilious.input.state.InputButtons.GP_LSTICK_UP, InputMode.CHAT);

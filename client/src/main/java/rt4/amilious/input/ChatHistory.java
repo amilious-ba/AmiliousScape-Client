@@ -1,5 +1,7 @@
 package rt4.amilious.input;
 
+import rt4.amilious.input.action.Action;
+
 public final class ChatHistory {
     private static final int MAX = 50;
     private static final java.util.ArrayList<String> lines = new java.util.ArrayList<String>();
@@ -38,4 +40,35 @@ public final class ChatHistory {
         int colon = stripped.lastIndexOf(':');
         return colon >= 0 ? stripped.substring(colon + 1).trim() : stripped;
     }
+
+    public static void processActions() {
+        if (InputManager.getMode() != InputMode.CHAT) {
+            return;
+        }
+        if (InputManager.isActionPressed(Action.CHAT_HISTORY_PREV)) {
+            apply(prev());
+        }
+        if (InputManager.isActionPressed(Action.CHAT_HISTORY_NEXT)) {
+            apply(next());
+        }
+    }
+
+    private static final int CHAT_INPUT_ID = 8978483;
+
+    private static void apply(String line) {
+        if (line == null) {
+            return;
+        }
+        try {
+            rt4.Component c = rt4.InterfaceList.method1418(CHAT_INPUT_ID, -1);
+            if (c == null) {
+                return;
+            }
+            c.text = rt4.JagString.parse(line);
+            rt4.InterfaceList.redraw(c);
+            InputManager.updateChatInputText(c.text);
+        } catch (Exception ignored) {
+        }
+    }
+
 }

@@ -17,6 +17,11 @@ public enum Action {
     TOUCH_KEYBOARD,
     CHEAT_TELEPORT,
 
+    /** Previous sent line (Up in CHAT) */
+    CHAT_HISTORY_PREV,
+
+    /** Next sent line / live empty (Down in CHAT) */
+    CHAT_HISTORY_NEXT,
 
     MENU_UP,
     MENU_DOWN,

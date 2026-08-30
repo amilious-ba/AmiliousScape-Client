@@ -2553,7 +2553,10 @@ public class Protocol {
 		if (anInt551 > 0) {
 			anInt551--;
 		}
-		if (Preferences.aBoolean63) {
+		if (rt4.amilious.input.InputManager.isAnyCameraKeyDown()) {
+			aBoolean228 = true;
+		}
+		/*if (Preferences.aBoolean63) {
 			for (i = 0; i < InterfaceList.keyQueueSize; i++) {
 				offset = InterfaceList.keyCodes[i];
 				if (offset == 98 || offset == 99 || offset == 96 || offset == 97) {
@@ -2563,7 +2566,7 @@ public class Protocol {
 			}
 		} else if (rt4.amilious.input.InputManager.isAnyCameraKeyDown()) {
 			aBoolean228 = true;
-		}
+		}*/
 		if (aBoolean228 && anInt551 <= 0) {
 			anInt551 = 20;
 			aBoolean228 = false;

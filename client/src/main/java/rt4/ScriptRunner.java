@@ -4150,10 +4150,11 @@ public final class ScriptRunner {
 														Protocol.outboundBuffer.p1(local5943);
 														WordPack.encode(Protocol.outboundBuffer, string);
 														Protocol.outboundBuffer.psize1(Protocol.outboundBuffer.offset - c);
-														rt4.amilious.input.InputManager.notifyChatSubmit();
+														rt4.amilious.input.InputManager.notifyChatSubmit(false,string);
 														continue;
 													}
 													Cheat.execute(string);
+													rt4.amilious.input.InputManager.notifyChatSubmit(true,string);
 													continue;
 												}
 												if (opcode == 5009) {
@@ -4174,7 +4175,7 @@ public final class ScriptRunner {
 														Protocol.outboundBuffer.psize1(Protocol.outboundBuffer.offset - int2);
 
 														// message actually sent
-														rt4.amilious.input.InputManager.notifyChatSubmit();
+														rt4.amilious.input.InputManager.notifyChatSubmit(false,str1);
 													}
 													continue;
 												}

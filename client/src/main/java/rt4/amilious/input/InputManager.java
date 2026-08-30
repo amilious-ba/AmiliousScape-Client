@@ -2,6 +2,7 @@ package rt4.amilious.input;
 
 import rt4.GameShell;
 import rt4.InterfaceList;
+import rt4.JagString;
 import rt4.amilious.DialogueController;
 import rt4.amilious.MapController;
 import rt4.amilious.menu.MiniMenuDrawer;
@@ -743,14 +744,15 @@ public final class InputManager {
     // Events
     // -------------------------------------------------------------------------
 
-    public static void notifyChatSubmit() {
+    public static void notifyChatSubmit(boolean cheat, JagString sent) {
+        if (sent != null) {
+            ChatHistory.push(sent.toString());
+        }
+        //if(cheat) {return;} <- may need to add if weird cheat behavior
         submittedThisFrame = true;
         submittedSinceArmEnter = true;
         disarmChatIfNoSubmit = false;
         consumeEnterThisFrame = true; // FIX: prevent QC opening on same-frame Enter after submit
-        if (lastChatInputText != null) {
-            ChatHistory.push(lastChatInputText.toString());
-        }
         lastChatInputText = null; // FIX: clear tracked text after submit so next empty Enter is detected
         if (InputConfig.INSTANCE.autoWorldAfterSend) {
             chatArmed = false;

@@ -1,5 +1,6 @@
 package rt4.amilious.input;
 
+import rt4.amilious.debug.DebugConsole;
 import rt4.amilious.input.action.Action;
 
 public final class ChatHistory {
@@ -8,6 +9,7 @@ public final class ChatHistory {
     private static int cursor = -1; // -1 = live line
 
     public static void push(String raw) {
+        DebugConsole.log("ChatHistory: " + raw);
         String s = stripPrompt(raw);
         if (s == null || s.length() == 0) return;
         if (lines.isEmpty() || !s.equals(lines.get(lines.size() - 1))) {

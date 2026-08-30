@@ -2393,7 +2393,6 @@ public final class ScriptRunner {
 								if (opcode == Cs2Opcodes.setText) {
 									ssp--;
 									str1 = stringStack[ssp];
-									str1 = rt4.amilious.input.ChatHistory.filterText(component.id, str1);
 									if (!str1.strEquals(component.text)) {
 										component.text = str1;
 										InterfaceList.redraw(component);
@@ -2778,7 +2777,6 @@ public final class ScriptRunner {
 									}
 									if (opcode == Cs2Opcodes.getText) {
 										stringStack[ssp++] = component.text;
-										stringStack[ssp++] = rt4.amilious.input.ChatHistory.filterText(component.id, component.text);
 										continue;
 									}
 									if (opcode == Cs2Opcodes.getScrollMaxH) {
@@ -2904,7 +2902,6 @@ public final class ScriptRunner {
 									}
 									if (opcode == Cs2Opcodes.getText2) {
 										stringStack[ssp++] = component.text;
-										stringStack[ssp++] = rt4.amilious.input.ChatHistory.filterText(component.id, component.text);
 										continue;
 									}
 									if (opcode == Cs2Opcodes.getScrollMaxH2) {

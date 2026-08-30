@@ -99,17 +99,22 @@ public final class AmiliousClient {
 
     /** call after PluginRepository.Update(); in client.mainLoop */
     public static void update() {
+        OverlayClickBlocker.beginFrame();
         if (rt4.client.gameState == 30) {
             ModalController.tick();
             DialogueController.tick();
+            TradeInviteOverlay.tick();
         }
         InputManager.tick();
+        OverlayClickBlocker.consumeIfBlocked();
         CameraController.processActions();
         for (ICommand c : commands) c.processActions();
         ModalTools.update();
         MapController.tickInput();
         Voiceover.tick();
         TutorialPatch.tick();
+
+       // OverlayClickBlocker.consumeIfBlocked();
     }
 
     public static void onDraw() {
@@ -121,6 +126,7 @@ public final class AmiliousClient {
         // Draw gamepad virtual cursor (always enabled for now so we can see it)
         //DialogueController.applyHighlight();
         rt4.amilious.menu.GigosHud.draw();
+        TradeInviteOverlay.draw();
         rt4.amilious.input.GamepadMouseController.drawVirtualCursor(true);
     }
 
@@ -131,6 +137,7 @@ public final class AmiliousClient {
 
     private static void onLogout() {
         Voiceover.onLogout();
+        TradeInviteOverlay.clear();
         rt4.amilious.menu.NpcMenuOverrides.clearAll();
     }
 

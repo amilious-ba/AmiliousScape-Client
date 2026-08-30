@@ -106,7 +106,7 @@ public final class InputManager {
         applyMode(deriveMode());
         maybeInjectGamepadEnter();
         mapper.update(currentFrame, mode);
-        processWorldClicks();
+        //processWorldClicks();
         rt4.amilious.menu.GigosHud.poll(
                 getCursorX(),
                 getCursorY(),
@@ -186,6 +186,11 @@ public final class InputManager {
     }
 
     private static void processWorldClicks() {
+        if (rt4.amilious.OverlayClickBlocker.contains(getLastClickX(), getLastClickY())) {
+            consumeMouseClick();
+            rt4.Mouse.clickButton = 0;
+            return;
+        }
         if (rt4.Mouse.clickButton == 1 || isMouseButtonPressed(InputButtons.MOUSE_BUTTON_1)) {
             MiniMenuDrawer.handleClick(getLastClickX(), getLastClickY());
         }

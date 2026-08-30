@@ -4,10 +4,13 @@ import rt4.amilious.debug.DebugConsole;
 import rt4.amilious.input.action.Action;
 
 public final class ChatHistory {
+
+    private static boolean prevHistPrev;
+    private static boolean prevHistNext;
     private static final int MAX = 50;
     private static final java.util.ArrayList<String> lines = new java.util.ArrayList<String>();
     private static int cursor = -1; // -1 = live line
-    private static String override = null;
+    private static String pendingInject = null;
 
 
     public static void push(String raw) {
@@ -47,36 +50,48 @@ public final class ChatHistory {
 
     public static void processActions() {
         if (InputManager.getMode() != InputMode.CHAT) {
+            prevHistPrev = false;
+            prevHistNext = false;
             return;
         }
-        if (InputManager.isActionPressed(Action.CHAT_HISTORY_PREV)) {
-            DebugConsole.log("ChatHistory: prev");
+        boolean up = InputManager.isActionDown(Action.CHAT_HISTORY_PREV);
+        boolean down = InputManager.isActionDown(Action.CHAT_HISTORY_NEXT);
+        if (up && !prevHistPrev) {
             apply(prev());
         }
-        if (InputManager.isActionPressed(Action.CHAT_HISTORY_NEXT)) {
-            DebugConsole.log("ChatHistory: next");
+        if (down && !prevHistNext) {
             apply(next());
         }
+        prevHistPrev = up;
+        prevHistNext = down;
     }
 
     private static final int CHAT_INPUT_ID = 8978483;
 
     private static void apply(String line) {
-        if (line == null) {
+        if (line == null || line.length() == 0) {
             return;
         }
+        pendingInject = line;
+        System.out.println("[history] inject " + line);
+    }
+
+    public static String takePendingInject() {
+        String s = pendingInject;
+        pendingInject = null;
+        return s;
+    }
+
+    public static int currentTypedLength() {
         try {
-            rt4.Component c = rt4.InterfaceList.method1418(CHAT_INPUT_ID, -1);
-            String current = (c != null && c.text != null) ? c.text.toString() : "";
-            override = prefixOf(current) + line + "*";
-            if (c != null) {
-                c.text = rt4.JagString.parse(override);
-                rt4.InterfaceList.redraw(c);
+            rt4.Component c = rt4.InterfaceList.method1418(8978483, -1);
+            if (c == null || c.text == null) {
+                return 0;
             }
-            InputManager.updateChatInputText(rt4.JagString.parse(override));
-            System.out.println("[history] override=" + override);
+            String s = stripPrompt(c.text.toString());
+            return s == null ? 0 : s.length();
         } catch (Exception e) {
-            e.printStackTrace();
+            return 0;
         }
     }
 
@@ -89,20 +104,5 @@ public final class ChatHistory {
         return "";
     }
 
-    public static boolean hasOverride() {
-        return override != null;
-    }
-
-    /** CS2 setText / getText for the chat input */
-    public static rt4.JagString filterText(int componentId, rt4.JagString incoming) {
-        if (override == null || componentId != CHAT_INPUT_ID) {
-            return incoming;
-        }
-        return rt4.JagString.parse(override);
-    }
-
-    public static void clearOverride() {
-        override = null;
-    }
 
 }

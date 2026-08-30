@@ -2853,6 +2853,27 @@ public class Protocol {
 			}
 		}
 
+		//history inject
+		String hist = rt4.amilious.input.ChatHistory.takePendingInject();
+		if (acceptKeys && hist != null) {
+			int typed = rt4.amilious.input.ChatHistory.currentTypedLength();
+			System.out.println("[history] clear typed=" + typed + " write=" + hist);
+			for (int b = 0; b < typed && InterfaceList.keyQueueSize < 124; b++) {
+				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = Keyboard.KEY_BACK_SPACE; // 85
+				InterfaceList.keyChars[InterfaceList.keyQueueSize] = -1;
+				InterfaceList.keyQueueSize++;
+				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = -1;
+				InterfaceList.keyChars[InterfaceList.keyQueueSize] = 8;
+				InterfaceList.keyQueueSize++;
+			}
+			int n = hist.length();
+			for (int hi = 0; hi < n && InterfaceList.keyQueueSize < 126; hi++) {
+				InterfaceList.keyCodes[InterfaceList.keyQueueSize] = -1;
+				InterfaceList.keyChars[InterfaceList.keyQueueSize] = hist.charAt(hi);
+				InterfaceList.keyQueueSize++;
+			}
+		}
+
 
 		// Update chat focus state AFTER keyboard processing (only in-game)
 		if (client.gameState == 30) {
@@ -3616,6 +3637,10 @@ public class Protocol {
 			return;
 		}
 		@Pc(20) int local20 = Mouse.clickButton;
+		if (rt4.amilious.OverlayClickBlocker.contains(Mouse.clickX, Mouse.clickY)) {
+			Mouse.clickButton = 0;
+			return;
+		}
 		@Pc(93) int local93;
 		@Pc(99) int local99;
 		if (!Cs1ScriptRunner.aBoolean108) {

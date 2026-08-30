@@ -46,6 +46,9 @@ public class Chat {
 		phraseIds[0] = arg0;
 		messages[0] = arg2;
 		clans[0] = arg3;
+
+		rt4.amilious.TradeInviteOverlay.onChat(arg1, arg4, arg2);
+
 	}
 
 	@OriginalMember(owner = "client!i", name = "a", descriptor = "(Lclient!na;ILclient!na;I)V")

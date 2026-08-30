@@ -113,6 +113,7 @@ public final class GigosHud {
             placed = true;
         }
         panelH = HEADER_H + toggles.length * ROW_H;
+        rt4.amilious.OverlayClickBlocker.add(panelX, panelY, PANEL_W, panelH);
         drawPanel(panelX, panelY, PANEL_W, panelH);
         Fonts.b12Full.renderLeft(JagString.of(title), panelX + 6, panelY + 12, 0xffff00, 0);
         if (hpMax > 0) {

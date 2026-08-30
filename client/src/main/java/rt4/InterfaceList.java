@@ -1047,6 +1047,10 @@ public class InterfaceList {
 										}
 									}
 
+									if (component.id == 8978483 && keyChars[i] >= 32) {
+										rt4.amilious.input.ChatHistory.clearOverride();
+									}
+
 									@Pc(1430) HookRequest local1430 = new HookRequest();
 									local1430.source = component;
 									local1430.keyCode = keyCodes[i];

@@ -7,6 +7,8 @@ public final class ChatHistory {
     private static final int MAX = 50;
     private static final java.util.ArrayList<String> lines = new java.util.ArrayList<String>();
     private static int cursor = -1; // -1 = live line
+    private static String override = null;
+
 
     public static void push(String raw) {
         DebugConsole.log("ChatHistory: " + raw);
@@ -48,9 +50,11 @@ public final class ChatHistory {
             return;
         }
         if (InputManager.isActionPressed(Action.CHAT_HISTORY_PREV)) {
+            DebugConsole.log("ChatHistory: prev");
             apply(prev());
         }
         if (InputManager.isActionPressed(Action.CHAT_HISTORY_NEXT)) {
+            DebugConsole.log("ChatHistory: next");
             apply(next());
         }
     }
@@ -63,14 +67,42 @@ public final class ChatHistory {
         }
         try {
             rt4.Component c = rt4.InterfaceList.method1418(CHAT_INPUT_ID, -1);
-            if (c == null) {
-                return;
+            String current = (c != null && c.text != null) ? c.text.toString() : "";
+            override = prefixOf(current) + line + "*";
+            if (c != null) {
+                c.text = rt4.JagString.parse(override);
+                rt4.InterfaceList.redraw(c);
             }
-            c.text = rt4.JagString.parse(line);
-            rt4.InterfaceList.redraw(c);
-            InputManager.updateChatInputText(c.text);
-        } catch (Exception ignored) {
+            InputManager.updateChatInputText(rt4.JagString.parse(override));
+            System.out.println("[history] override=" + override);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
+
+    private static String prefixOf(String raw) {
+        String s = raw.replaceAll("<[^>]+>", "");
+        int colon = s.lastIndexOf(':');
+        if (colon >= 0) {
+            return s.substring(0, colon + 1) + " ";
+        }
+        return "";
+    }
+
+    public static boolean hasOverride() {
+        return override != null;
+    }
+
+    /** CS2 setText / getText for the chat input */
+    public static rt4.JagString filterText(int componentId, rt4.JagString incoming) {
+        if (override == null || componentId != CHAT_INPUT_ID) {
+            return incoming;
+        }
+        return rt4.JagString.parse(override);
+    }
+
+    public static void clearOverride() {
+        override = null;
     }
 
 }

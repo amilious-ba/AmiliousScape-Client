@@ -32,7 +32,6 @@ public final class TradeInviteOverlay {
         if (!msg.contains("wishes to trade") && !msg.contains("wish to trade")) {
             return;
         }
-        System.out.println("[trade] type=" + type + " name=" + name + " msg=" + message);
         show(strip(name.toString()));
     }
 
@@ -64,9 +63,11 @@ public final class TradeInviteOverlay {
         int my = Mouse.clickY;
         if (hit(mx, my, acceptX, acceptY, btnW, btnH)) {
             InputManager.consumeMouseClick();
+            Mouse.clickButton = 0;
             accept();
         } else if (hit(mx, my, rejectX, rejectY, btnW, btnH)) {
             InputManager.consumeMouseClick();
+            Mouse.clickButton = 0;
             System.out.println("[trade] rejected " + pendingName);
             clear();
         }

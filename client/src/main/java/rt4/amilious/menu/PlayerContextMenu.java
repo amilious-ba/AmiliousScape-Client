@@ -31,7 +31,8 @@ public final class PlayerContextMenu {
 
         // Staff
         if (LoginManager.staffModLevel > 0) {
-            add("Teleport to me", name, () -> run("::teletome " + name));
+            add("Summon", name, () -> run("::teletome " + name));
+            add("Teleport to", name, () -> run("::teleto " + name));
         }
     }
 

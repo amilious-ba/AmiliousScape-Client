@@ -74,6 +74,7 @@ public class ClientProt {
 			return;
 		}
 		AmiliousClient.onInterfaceButton(arg0, arg1, arg2, arg3);
+
 		if (arg2 == 1) {
 			Protocol.outboundBuffer.p1isaac(155);
 			Protocol.outboundBuffer.p4(arg3);

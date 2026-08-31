@@ -12,27 +12,39 @@ public final class ChatHistory {
     private static int cursor = -1; // -1 = live line
     private static String pendingInject = null;
 
+    public static final int CHAT_INPUT_ID = 8978483;
 
     public static void push(String raw) {
         DebugConsole.log("ChatHistory: " + raw);
         String s = stripPrompt(raw);
-        if (s == null || s.length() == 0) return;
+        if (s == null || s.length() == 0) {
+            return;
+        }
         if (lines.isEmpty() || !s.equals(lines.get(lines.size() - 1))) {
             lines.add(s);
-            if (lines.size() > MAX) lines.remove(0);
+            if (lines.size() > MAX) {
+                lines.remove(0);
+            }
         }
         cursor = -1;
     }
 
     public static String prev() {
-        if (lines.isEmpty()) return null;
-        if (cursor < 0) cursor = lines.size() - 1;
-        else if (cursor > 0) cursor--;
+        if (lines.isEmpty()) {
+            return null;
+        }
+        if (cursor < 0) {
+            cursor = lines.size() - 1;
+        } else if (cursor > 0) {
+            cursor--;
+        }
         return lines.get(cursor);
     }
 
     public static String next() {
-        if (cursor < 0) return "";
+        if (cursor < 0) {
+            return "";
+        }
         cursor++;
         if (cursor >= lines.size()) {
             cursor = -1;
@@ -41,9 +53,21 @@ public final class ChatHistory {
         return lines.get(cursor);
     }
 
+    /**
+     * Widget text is often "To: hello*" or colored.
+     * Do not treat "::command" as a prompt prefix.
+     */
     private static String stripPrompt(String raw) {
+        if (raw == null) {
+            return "";
+        }
         String stripped = raw.replaceAll("<[^>]+>", "").trim();
-        if (stripped.endsWith("*")) stripped = stripped.substring(0, stripped.length() - 1).trim();
+        if (stripped.endsWith("*")) {
+            stripped = stripped.substring(0, stripped.length() - 1).trim();
+        }
+        if (stripped.startsWith("::")) {
+            return stripped;
+        }
         int colon = stripped.lastIndexOf(':');
         return colon >= 0 ? stripped.substring(colon + 1).trim() : stripped;
     }
@@ -66,8 +90,6 @@ public final class ChatHistory {
         prevHistNext = down;
     }
 
-    private static final int CHAT_INPUT_ID = 8978483;
-
     private static void apply(String line) {
         if (line == null || line.length() == 0) {
             return;
@@ -84,7 +106,7 @@ public final class ChatHistory {
 
     public static int currentTypedLength() {
         try {
-            rt4.Component c = rt4.InterfaceList.method1418(8978483, -1);
+            rt4.Component c = rt4.InterfaceList.method1418(CHAT_INPUT_ID, -1);
             if (c == null || c.text == null) {
                 return 0;
             }
@@ -94,15 +116,4 @@ public final class ChatHistory {
             return 0;
         }
     }
-
-    private static String prefixOf(String raw) {
-        String s = raw.replaceAll("<[^>]+>", "");
-        int colon = s.lastIndexOf(':');
-        if (colon >= 0) {
-            return s.substring(0, colon + 1) + " ";
-        }
-        return "";
-    }
-
-
 }

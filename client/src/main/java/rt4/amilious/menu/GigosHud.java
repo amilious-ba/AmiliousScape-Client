@@ -260,7 +260,7 @@ public final class GigosHud {
             dragOffY = my - panelY;
             return true;
         }
-        int row = (my - panelY - HEADER_H) / ROW_H;
+        int row = (my - panelY - HEADER_H - SKIN_H) / ROW_H;
         if (row >= 0 && row < toggles.length) {
             API.DispatchCommand("::gigosop " + toggles[row].id);
         }

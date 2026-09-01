@@ -110,7 +110,8 @@ public final class ChatHistory {
             if (c == null || c.text == null) {
                 return 0;
             }
-            String s = stripPrompt(c.text.toString());
+            //String s = stripPrompt(c.text.toString());
+            String s = c.text.toString();
             return s == null ? 0 : s.length();
         } catch (Exception e) {
             return 0;

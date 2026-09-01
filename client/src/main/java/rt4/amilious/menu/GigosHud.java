@@ -45,6 +45,7 @@ public final class GigosHud {
     private static final int MARGIN = 4;
     private static final int BAG_W = 14;
     private static final int BAG_H = 12;
+    private static final int SKIN_H = 16;
     /** Server command that opens Gigos pack. Change if yours differs. */
     private static final String BAG_COMMAND = "::monkeybag";
 
@@ -140,7 +141,7 @@ public final class GigosHud {
             return;
         }
         ensureLoaded();
-        panelH = collapsed ? HEADER_H : HEADER_H + toggles.length * ROW_H;
+        panelH = panelHeight();
         clampToScreen();
         rt4.amilious.OverlayClickBlocker.add(panelX, panelY, PANEL_W, panelH);
 
@@ -160,7 +161,7 @@ public final class GigosHud {
             return;
         }
         ensureLoaded();
-        panelH = collapsed ? HEADER_H : HEADER_H + toggles.length * ROW_H;
+        panelH = panelHeight();
         clampToScreen();
         rt4.amilious.OverlayClickBlocker.add(panelX, panelY, PANEL_W, panelH);
 
@@ -211,10 +212,19 @@ public final class GigosHud {
         }
 
         if (collapsed) {return;}
+        int y = panelY + HEADER_H;
+        fillRect(panelX + 4, y + 1, PANEL_W - 8, SKIN_H - 2, COLOR_BTN);
+        drawRect(panelX + 4, y + 1, PANEL_W - 8, SKIN_H - 2, COLOR_BORDER);
+        String skinLabel = title == null || title.length() == 0 ? "Gigos" : title;
+        if (skinLabel.length() > 14) {
+            skinLabel = skinLabel.substring(0, 14);
+        }
+        Fonts.b12Full.renderLeft(JagString.of(skinLabel), panelX + 8, y + 12, COLOR_TITLE, 0);
+
         for (int i = 0; i < toggles.length; i++) {
-            int y = panelY + HEADER_H + i * ROW_H;
-            drawCheckbox(panelX + 6, y + 2, toggles[i].on);
-            Fonts.b12Full.renderLeft(JagString.of(toggles[i].label), panelX + 22, y + 12, COLOR_TEXT, 0);
+            int rowY = panelY + HEADER_H + SKIN_H + i * ROW_H;
+            drawCheckbox(panelX + 6, rowY + 2, toggles[i].on);
+            Fonts.b12Full.renderLeft(JagString.of(toggles[i].label), panelX + 22, rowY + 12, COLOR_TEXT, 0);
         }
     }
 
@@ -236,6 +246,11 @@ public final class GigosHud {
         }
         if (hitBagBtn(mx, my)) {
             API.DispatchCommand(BAG_COMMAND);
+            dragging = false;
+            return true;
+        }
+        if (!collapsed && my >= panelY + HEADER_H && my < panelY + HEADER_H + SKIN_H) {
+            API.DispatchCommand("::gigosop 10");
             dragging = false;
             return true;
         }
@@ -318,7 +333,7 @@ public final class GigosHud {
         if (ch < 1) {
             ch = 503;
         }
-        panelH = collapsed ? HEADER_H : HEADER_H + toggles.length * ROW_H;
+        panelH = panelHeight();
         if (panelX + PANEL_W > cw - MARGIN) {
             panelX = cw - PANEL_W - MARGIN;
         }
@@ -331,6 +346,10 @@ public final class GigosHud {
         if (panelY < MARGIN) {
             panelY = MARGIN;
         }
+    }
+
+    private static int panelHeight(){
+        return collapsed ? HEADER_H : HEADER_H + SKIN_H + toggles.length * ROW_H;
     }
 
     private static File layoutFile() {

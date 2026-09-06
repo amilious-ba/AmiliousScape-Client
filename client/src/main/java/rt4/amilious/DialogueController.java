@@ -5,6 +5,7 @@ import rt4.InterfaceList;
 import rt4.amilious.input.InputManager;
 import rt4.amilious.input.InputMode;
 import rt4.amilious.input.action.Action;
+import rt4.amilious.voice.Voiceover;
 import rt4.client;
 
 /**
@@ -14,14 +15,33 @@ import rt4.client;
 public final class DialogueController {
 
     public static boolean enabled = true;
+    public static boolean speakSelected = true;
 
     private static final int COLOR_HIGHLIGHT = 0xFFFF00;
 
     /** 530 option / continue interfaces. Not 137 (chat). */
     private static final int[] OPTION_IFACES = {
-            140, 228, 229, 230, 231, 232, 233, 234,
-            64, 241, 242, 243, 244, 210, 211
+            // Select an Option
+            140, 228, 229, 230, 231, 232, 233, 234, 235,
+            554, 555, 557,
+
+            // Player chathead + continue (chat1–4)
+            64, 65, 66, 67,
+
+            // NPC chathead + continue (npcchat1–4)
+            241, 242, 243, 244,
+
+            // Message boxes + continue
+            210, 211, 212, 213, 214,
+            215, 216, 217, 218, 219,
+
+            // Large chat + continue
+            173, 757,
+
+            // Level up
+            158
     };
+
 
     private static final int[] OPTION_IDS = new int[8];
     private static final int[] OPTION_COLORS = new int[8];
@@ -81,6 +101,7 @@ public final class DialogueController {
         }
         if (selected > 0) {
             selected--;
+            speakSelected();
         }
     }
 
@@ -90,10 +111,23 @@ public final class DialogueController {
         }
         if (selected < optionCount - 1) {
             selected++;
+            speakSelected();
         }
     }
 
+    private static void speakSelected() {
+        if (selected < 0 || selected >= optionCount|| !speakSelected) {
+            return;
+        }
+        Component c = safeGet(OPTION_IDS[selected]);
+        if (c == null || c.text == null) {
+            return;
+        }
+        Voiceover.speak("Narrator", c.text.toString());
+    }
+
     public static void confirm() {
+        Voiceover.stop();
         if (!isOpen()) {
             return;
         }
@@ -278,8 +312,22 @@ public final class DialogueController {
                 }
                 OPTION_COLORS[i] = col;
             }
+            optionCount = n;
+            for (int i = 0; i < n; i++) {
+                OPTION_IDS[i] = foundIds[i];
+            }
+            if (selected >= n) {
+                selected = n - 1;
+            }
+            activeIface = foundIface;
+            continueOnly = foundContinue;
+            open = true;
+
             System.out.println("[dialogue] open iface=" + foundIface
                     + " options=" + n + " continue=" + foundContinue);
+
+            speakSelected();
+            return;
         }
 
         optionCount = n;

@@ -4,6 +4,7 @@ import rt4.*;
 import rt4.amilious.input.InputManager;
 import rt4.amilious.input.InputMode;
 import rt4.amilious.input.action.Action;
+import rt4.amilious.voice.Voiceover;
 
 /**
  * Larger "Choose Option" panel for mouse + controller.
@@ -14,9 +15,13 @@ import rt4.amilious.input.action.Action;
 public final class MiniMenuDrawer {
 
     public static boolean enabled = true;
+
     /** true = vanilla: open at cursor, clamp on canvas. false = current chat-reserved corner. */
     public static boolean anchorAtCursor = true;
     public static boolean showIcons = true;
+    public static boolean speakSelected = false;
+
+    private static int lastSpokenIndex = -1;
 
     private static final int COLOR_PANEL = 0x5D5447;
     private static final int COLOR_HEADER = 0x000000;
@@ -49,6 +54,8 @@ public final class MiniMenuDrawer {
             selectedIndex = MiniMenu.size > 0 ? MiniMenu.size - 1 : 0;
             scrollOffset = 0;
             ensureSelectedVisible();
+            lastSpokenIndex = -1;
+            speakSelected();
         }
         if (MiniMenu.size <= 0) {
             selectedIndex = 0;
@@ -59,9 +66,11 @@ public final class MiniMenuDrawer {
     }
 
     public static void onClosed() {
+        Voiceover.stop();
         wasOpen = false;
         selectedIndex = 0;
         scrollOffset = 0;
+        lastSpokenIndex = -1;
     }
 
     public static boolean isOpen() {
@@ -100,6 +109,24 @@ public final class MiniMenuDrawer {
         return selectedIndex;
     }
 
+    private static void speakSelected() {
+        if (!isOpen() || MiniMenu.size <= 0 || !speakSelected) {
+            return;
+        }
+        if (selectedIndex < 0 || selectedIndex >= MiniMenu.size) {
+            return;
+        }
+        if (selectedIndex == lastSpokenIndex) {
+            return;
+        }
+        lastSpokenIndex = selectedIndex;
+        JagString op = MiniMenu.getOp(selectedIndex);
+        if (op == null) {
+            return;
+        }
+        Voiceover.speak("Narrator", op.toString());
+    }
+
     public static void moveUp() {
         if (!isOpen()) {
             return;
@@ -107,6 +134,7 @@ public final class MiniMenuDrawer {
         if (selectedIndex < MiniMenu.size - 1) {
             selectedIndex++;
             ensureSelectedVisible();
+            speakSelected();
         }
     }
 
@@ -117,6 +145,7 @@ public final class MiniMenuDrawer {
         if (selectedIndex > 0) {
             selectedIndex--;
             ensureSelectedVisible();
+            speakSelected();
         }
     }
 
@@ -124,6 +153,7 @@ public final class MiniMenuDrawer {
         if (!isOpen()) {
             return;
         }
+        Voiceover.stop();
         MiniMenu.doAction(selectedIndex);
         Cs1ScriptRunner.aBoolean108 = false;
         onClosed();
@@ -240,7 +270,10 @@ public final class MiniMenuDrawer {
             boolean hovered = mx > x && mx < x + w
                     && my >= rowTop && my < rowTop + ROW_H;
             if (mouseMoved && hovered) {
-                selectedIndex = i;
+                if (selectedIndex != i) {
+                    selectedIndex = i;
+                    speakSelected();
+                }
             }
 
             if (i == selectedIndex) {

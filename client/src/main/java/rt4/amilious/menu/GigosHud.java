@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 public final class GigosHud {
 
     public static final int OPCODE = 201;
+    public static final int MAX_TOGGLES = 16;
 
     public static final class Toggle {
         public int id;
@@ -119,8 +120,8 @@ public final class GigosHud {
         if (n < 0) {
             n = 0;
         }
-        if (n > 8) {
-            n = 8;
+        if (n > MAX_TOGGLES) {
+            n = MAX_TOGGLES;
         }
         Toggle[] next = new Toggle[n];
         for (int i = 0; i < n; i++) {

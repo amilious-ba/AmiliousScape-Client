@@ -1424,7 +1424,10 @@ public class MiniMenu {
 			return;
 		}
 		@Pc(35) JagString local35 = arg0.name;
-		if (arg0.combatLevel != 0) {
+		rt4.amilious.menu.NpcMenuOverrides.Override nameOv = rt4.amilious.menu.NpcMenuOverrides.get(arg2);
+		if (nameOv != null && nameOv.displayName != null && nameOv.displayName.length() > 0) {
+			local35 = JagString.of(nameOv.displayName);
+		} else if (arg0.combatLevel != 0) {
 			@Pc(47) JagString local47 = client.game == 1 ? LocalizedText.RATING : LocalizedText.LEVEL;
 			local35 = JagString.concatenate(new JagString[]{local35, getCombatLevelColor(arg0.combatLevel, PlayerList.self.combatLevel), OPEN_PARENTHESIS, local47, JagString.parseInt(arg0.combatLevel), CLOSE_PARENTHESIS});
 		}

@@ -323,7 +323,11 @@ public class MiniMap {
 					if (local507 != null && local507.minimapdisplay && local507.interactive) {
 						local154 = local498.xFine / 32 - PlayerList.self.xFine / 32;
 						local231 = local498.zFine / 32 - PlayerList.self.zFine / 32;
-						if (local507.minimapmarkerobjectentry == -1) {
+						rt4.amilious.menu.NpcMenuOverrides.Override ov =
+								rt4.amilious.menu.NpcMenuOverrides.get(NpcList.ids[local146]);
+						if (ov != null) {
+							drawGigosDot(arg3, local231, local154, arg1, arg2);
+						} else if (local507.minimapmarkerobjectentry == -1) {
 							method1446(arg3, Sprites.mapdots[1], local231, local154, arg1, arg2);
 						} else {
 							method1446(arg3, Sprites.mapfuncs[local507.minimapmarkerobjectentry], local231, local154, arg1, arg2);
@@ -409,6 +413,26 @@ public class MiniMap {
 			SoftwareRaster.method2504(arg2, arg1, arg3.anIntArray37, arg3.anIntArray45);
 		}
 		InterfaceList.rectangleRedraw[arg0] = true;
+	}
+
+	private static void drawGigosDot(Component arg0, int arg2, int arg3, int arg4, int arg5) {
+		int dist = arg3 * arg3 + arg2 * arg2;
+		int reach = Math.max(arg0.width / 2, arg0.height / 2) + 10;
+		if (reach * reach < dist) {
+			return;
+		}
+		int yaw = minimapOffsetY + (int) Camera.yawTarget & 0x7FF;
+		int sin = MathUtils.sin[yaw] * 256 / (minimapOffsetX + 256);
+		int cos = MathUtils.cos[yaw] * 256 / (minimapOffsetX + 256);
+		int dx = sin * arg2 + arg3 * cos >> 16;
+		int dy = cos * arg2 - arg3 * sin >> 16;
+		int x = arg0.width / 2 + arg5 + dx - 1;
+		int y = arg0.height / 2 + arg4 - dy - 1;
+		if (GlRenderer.enabled) {
+			GlRaster.fillRect(x, y, 3, 3, 0xFF8800);
+		} else {
+			SoftwareRaster.fillRect(x, y, 3, 3, 0xFF8800);
+		}
 	}
 
 	@OriginalMember(owner = "client!em", name = "a", descriptor = "(Lclient!be;Lclient!qf;IIIBI)V")

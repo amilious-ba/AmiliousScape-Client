@@ -11,6 +11,9 @@ import rt4.client;
 /**
  * Keyboard / controller highlight on "Select an Option"
  * and "Click here to continue". Does not redraw the interface.
+ *
+ * Option lists: speak selected line (Narrator).
+ * Chathead / continue pages: ChatHeadReader owns TTS and auto-continue.
  */
 public final class DialogueController {
 
@@ -41,7 +44,6 @@ public final class DialogueController {
             // Level up
             158
     };
-
 
     private static final int[] OPTION_IDS = new int[8];
     private static final int[] OPTION_COLORS = new int[8];
@@ -101,7 +103,9 @@ public final class DialogueController {
         }
         if (selected > 0) {
             selected--;
-            speakSelected();
+            if (!continueOnly) {
+                speakSelected();
+            }
         }
     }
 
@@ -111,12 +115,17 @@ public final class DialogueController {
         }
         if (selected < optionCount - 1) {
             selected++;
-            speakSelected();
+            if (!continueOnly) {
+                speakSelected();
+            }
         }
     }
 
     private static void speakSelected() {
-        if (selected < 0 || selected >= optionCount|| !speakSelected) {
+        if (!speakSelected || continueOnly) {
+            return;
+        }
+        if (selected < 0 || selected >= optionCount) {
             return;
         }
         Component c = safeGet(OPTION_IDS[selected]);
@@ -127,9 +136,15 @@ public final class DialogueController {
     }
 
     public static void confirm() {
-        Voiceover.stop();
         if (!isOpen()) {
             return;
+        }
+        // Chathead / "click to continue" — ChatHeadReader owns TTS + auto-continue
+        if (continueOnly) {
+            return;
+        }
+        if (speakSelected) {
+            Voiceover.stop();
         }
         int id = OPTION_IDS[selected];
         Component c = safeGet(id);
@@ -138,7 +153,6 @@ public final class DialogueController {
             return;
         }
 
-        // opcode 132 — same family the server uses for dialogue buttons
         rt4.MiniMenu.method10(c.createdComponentId, id);
 
         System.out.println("[dialogue] confirm-132 selected=" + selected
@@ -171,13 +185,25 @@ public final class DialogueController {
     }
 
     public static void processActions() {
-        if(!enabled) return;
-        if (InputManager.getMode() != InputMode.DIALOGUE) return;
-        if (InputManager.isActionPressed(Action.MENU_UP)) moveUp();
-        if (InputManager.isActionPressed(Action.MENU_DOWN)) moveDown();
-        if (InputManager.isActionPressed(Action.MENU_CONFIRM)) confirm();
+        if (!enabled) {
+            return;
+        }
+        if (InputManager.getMode() != InputMode.DIALOGUE) {
+            return;
+        }
+        if (InputManager.isActionPressed(Action.MENU_UP)) {
+            moveUp();
+        }
+        if (InputManager.isActionPressed(Action.MENU_DOWN)) {
+            moveDown();
+        }
+        if (continueOnly) {
+            return;
+        }
+        if (InputManager.isActionPressed(Action.MENU_CONFIRM)) {
+            confirm();
+        }
     }
-
 
     public static void reset() {
         for (int i = 0; i < optionCount; i++) {
@@ -326,8 +352,6 @@ public final class DialogueController {
             System.out.println("[dialogue] open iface=" + foundIface
                     + " options=" + n + " continue=" + foundContinue);
 
-            // ChatHeadReader owns TTS + auto-continue on npc/player chatheads.
-            // Only speak option rows here so we do not stop() the NPC line.
             if (!foundContinue) {
                 speakSelected();
             }

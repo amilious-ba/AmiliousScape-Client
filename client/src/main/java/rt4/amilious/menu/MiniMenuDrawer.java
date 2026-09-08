@@ -66,7 +66,9 @@ public final class MiniMenuDrawer {
     }
 
     public static void onClosed() {
-        Voiceover.stop();
+        if (speakSelected) {
+            Voiceover.stop();
+        }
         wasOpen = false;
         selectedIndex = 0;
         scrollOffset = 0;
@@ -153,7 +155,9 @@ public final class MiniMenuDrawer {
         if (!isOpen()) {
             return;
         }
-        Voiceover.stop();
+        if (speakSelected) {
+            Voiceover.stop();
+        }
         MiniMenu.doAction(selectedIndex);
         Cs1ScriptRunner.aBoolean108 = false;
         onClosed();

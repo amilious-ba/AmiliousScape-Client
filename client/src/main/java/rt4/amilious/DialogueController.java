@@ -326,7 +326,11 @@ public final class DialogueController {
             System.out.println("[dialogue] open iface=" + foundIface
                     + " options=" + n + " continue=" + foundContinue);
 
-            speakSelected();
+            // ChatHeadReader owns TTS + auto-continue on npc/player chatheads.
+            // Only speak option rows here so we do not stop() the NPC line.
+            if (!foundContinue) {
+                speakSelected();
+            }
             return;
         }
 

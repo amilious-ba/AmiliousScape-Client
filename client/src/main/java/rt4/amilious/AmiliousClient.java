@@ -49,6 +49,7 @@ public final class AmiliousClient {
 
         DebugConsole.Init();
         Voiceover.init();
+        rt4.amilious.guide.ProgressGuide.init();
         InputManager.setGamepadDebugLogging(true);
         initialized = true;
         for (ICommand c : commands) c.init(); // all commands should be added first or this will not run
@@ -104,6 +105,7 @@ public final class AmiliousClient {
             ModalController.tick();
             DialogueController.tick();
             TradeInviteOverlay.tick();
+            rt4.amilious.guide.ProgressGuide.tick();
         }
         InputManager.tick();
         OverlayClickBlocker.consumeIfBlocked();
@@ -126,6 +128,7 @@ public final class AmiliousClient {
         // Draw gamepad virtual cursor (always enabled for now so we can see it)
         //DialogueController.applyHighlight();
         rt4.amilious.menu.GigosHud.draw();
+        rt4.amilious.guide.GuideHud.draw();
         TradeInviteOverlay.draw();
         rt4.amilious.input.GamepadMouseController.drawVirtualCursor(true);
     }

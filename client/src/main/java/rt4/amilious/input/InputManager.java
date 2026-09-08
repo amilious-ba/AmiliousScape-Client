@@ -113,6 +113,12 @@ public final class InputManager {
                 currentFrame.buttonDown[InputButtons.MOUSE_BUTTON_1],
                 currentFrame.buttonPressed[InputButtons.MOUSE_BUTTON_1]
         );
+        rt4.amilious.guide.GuideHud.poll(
+                getCursorX(),
+                getCursorY(),
+                currentFrame.buttonDown[InputButtons.MOUSE_BUTTON_1],
+                currentFrame.buttonPressed[InputButtons.MOUSE_BUTTON_1]
+        );
         processWorldClicks();
         processUiActions();
     }
